@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>旅行小猫 · 文档</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="docnav">
+    <a href="index.html">← 返回目录</a>
+    <a href="decisions.html">🚪 待决策议题</a>
+  </div>
+
+  <div id="doc-content">
+    <div class="doc-loading">🐾 文档加载中…</div>
+  </div>
+
+  <footer>
+    <p>🐾 旅行小猫 · 由产品战略团队 AI 协作推进 · 重要决策由产品负责人审定</p>
+  </footer>
+
+</div>
+<script>
+var DOCS = {
+  "idea":               { file: "docs/idea.md",               title: "《旅行小猫初始想法》" },
+  "manual":             { file: "docs/manual.md",             title: "旅行小猫项目执行总纲" },
+  "phase1-summary":     { file: "docs/phase1-summary.md",     title: "Phase 1 调研汇总（概念收敛会材料包）" },
+  "report-competitive": { file: "docs/report-competitive.md", title: "「旅行小猫」竞品全景调研报告" },
+  "report-market":      { file: "docs/report-market.md",      title: "「旅行小猫」赛道数据分析报告" },
+  "report-user":        { file: "docs/report-user.md",        title: "「旅行小猫」目标用户研究综合报告" }
+};
+
+function getParam(name) {
+  var m = new RegExp("[?&]" + name + "=([^&]*)").exec(window.location.search);
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
+var key = getParam("doc") || "idea";
+var meta = DOCS[key] || DOCS["idea"];
+document.title = meta.title + " · 旅行小猫";
+
+fetch(meta.file)
+  .then(function (r) {
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return r.text();
+  })
+  .then(function (md) {
+    marked.setOptions({ breaks: true, gfm: true });
+    document.getElementById("doc-content").innerHTML = marked.parse(md);
+  })
+  .catch(function (e) {
+    document.getElementById("doc-content").innerHTML =
+      '<div class="doc-loading">😿 文档加载失败（' + e.message + '），请返回目录重试。</div>';
+  });
+</script>
+</body>
+</html>
