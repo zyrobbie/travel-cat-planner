@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>当下待决策议题 · 旅行小猫</title>
+<title>当下待决策议题 · 有猫来信</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -19,9 +19,9 @@
     <div class="hero" style="padding:8px 0 12px;">
       <div class="paw">🚪</div>
       <h1>当下待决策议题</h1>
-      <div class="sub">Phase 1 已完成 · Gate 1 与收敛会前需要产品负责人拍板的事项</div>
+      <div class="sub">手册 V2.1 终审与收敛会前需要产品负责人拍板的事项</div>
       <div class="meta-bar">
-        <span>📅 2026-09-08</span>
+        <span>📅 2026-09-09</span>
         <span>选择题点选卡片 · 开放题直接作答</span>
         <span>答案自动保存在本机浏览器</span>
       </div>
@@ -37,12 +37,12 @@
   <div id="summary-view" style="display:none;">
     <div class="summary-head">
       <div class="paw" style="font-size:40px;">🐈</div>
-      <h2>旅行小猫 · 决策汇总</h2>
+      <h2>有猫来信 · 决策汇总</h2>
       <div class="sub" id="summary-date" style="color:var(--ink-soft);font-size:14px;"></div>
     </div>
     <div id="answers"></div>
     <div class="summary-foot">
-      <p>本页供截图存档 · 截图后请将结论同步至《旅行小猫项目执行总纲》决策日志</p>
+      <p>本页供截图存档 · 截图后请将结论同步至《有猫来信项目执行总纲》决策日志</p>
     </div>
     <div class="summary-actions">
       <button class="btn ghost" id="back-btn">← 返回修改</button>
@@ -51,7 +51,7 @@
   </div>
 
   <footer>
-    <p>🐾 旅行小猫 · 由产品战略团队 AI 协作推进 · 重要决策由产品负责人审定</p>
+    <p>🐾 有猫来信 · 由产品战略团队 AI 协作推进 · 重要决策由产品负责人审定</p>
   </footer>
 
 </div>
@@ -59,78 +59,69 @@
 var QUESTIONS = [
   {
     id: "q1", type: "choice",
-    title: "Gate 1 是否签字过门？（三项门槛已满足：三问题有答案 / 三报告落盘 / 留存基准线有数值）",
-    ctx: "签字即进入 Phase 2 概念收敛会。依据：《Phase 1 调研汇总》🚪 检查表",
+    title: "《有猫来信初始想法》V2.1 + 《项目执行总纲》V2.1，是否终审通过？",
+    ctx: "终审后项目正式重启，进入 Phase 2 收敛会筹备",
     options: [
-      { key: "A", label: "签字过门，进入 Phase 2", desc: "确认汇总与三份报告，启动收敛会筹备" },
-      { key: "B", label: "暂缓，需补充材料", desc: "在 Q9 写明需要补充什么" },
-      { key: "C", label: "不签字", desc: "在 Q9 说明原因" }
+      { key: "A", label: "全部通过", desc: "两份文档作为项目基准生效" },
+      { key: "B", label: "修改后通过", desc: "修改意见写在 Q8" },
+      { key: "C", label: "不通过", desc: "原因写在 Q8" }
     ]
   },
   {
     id: "q2", type: "choice",
-    title: "红线提案 R7「善终机制」是否批准？",
-    ctx: "任何模型更换 / 功能下线 / 服务终止，必须有用户情感资产处置方案（数据导出 / 纪念册 / 温柔告别）",
-    options: [
-      { key: "A", label: "批准，写入红线 R7", desc: "Phase 3 设计时纳入善终机制" },
-      { key: "B", label: "修改后批准", desc: "修改意见写在 Q9" },
-      { key: "C", label: "不批准", desc: "在 Q9 说明理由" }
-    ]
-  },
-  {
-    id: "q3", type: "choice",
-    title: "旅蛙停运怀旧流量窗口（2026.9–12，12-08 关服）是否改变现有节奏？",
-    ctx: "窗口期真实存在，但手册原则是不因流量窗口牺牲红线与质量门槛",
-    options: [
-      { key: "A", label: "保持原节奏", desc: "按手册相对时间轴推进，不为窗口赶工" },
-      { key: "B", label: "提前 MVP 承接窗口", desc: "压缩 Phase 2–4 节奏，争取窗口期内上线" },
-      { key: "C", label: "仅营销侧承接，不动开发节奏", desc: "做内容/话题承接怀旧情绪，产品节奏不变" }
-    ]
-  },
-  {
-    id: "q4", type: "choice",
-    title: "载体形态拍板：小程序 / App / H5？",
-    ctx: "原始想法中出现「小程序」提法；手册原定留 Gate 2 决策，可提前拍板",
+    title: "载体形态：小程序 / App / H5？",
+    ctx: "原定留 Gate 2 拍板，可提前决定",
     options: [
       { key: "A", label: "微信小程序", desc: "低门槛触达、碎片时间场景匹配目标用户" },
       { key: "B", label: "独立 App", desc: "体验完整、推送能力强，但获客门槛高" },
-      { key: "C", label: "H5 先行验证", desc: "最轻量验证记忆联动，之后再看载体" },
+      { key: "C", label: "H5 先行验证", desc: "最轻量验证核心闭环，之后再看载体" },
       { key: "D", label: "留到收敛会再定", desc: "按原计划 Gate 2 拍板" }
     ]
   },
   {
-    id: "q5", type: "choice",
-    title: "情绪记录可视化：做不做、做到什么程度？",
-    ctx: "瑞思提示双面性：回顾成就感 vs 自我监控焦虑",
+    id: "q3", type: "choice",
+    title: "R9 心理识别透明：是否向用户展示人格特质标签？",
+    ctx: "展示=更强的透明与校正能力，但可能影响「被自然理解」的体验感",
     options: [
-      { key: "A", label: "做完整版", desc: "含情绪曲线、词云等丰富可视化" },
-      { key: "B", label: "只做简化版", desc: "仅明信片册时间线回看，不做情绪打分" },
-      { key: "C", label: "暂不做", desc: "MVP 外，Later 候选再评" }
+      { key: "A", label: "展示，且用户可校正", desc: "误配兜底能力最强" },
+      { key: "B", label: "展示，但不可修改", desc: "透明但不干预识别" },
+      { key: "C", label: "不展示标签，只给自然语言解释", desc: "如「你的小猫最近变得更安静了」" },
+      { key: "D", label: "交给收敛会讨论", desc: "8 项议题中一并拍板" }
     ]
   },
   {
+    id: "q4", type: "choice",
+    title: "V2 收敛会档期？",
+    ctx: "8 项议题清单见执行总纲 §7",
+    options: [
+      { key: "A", label: "本周内召开", desc: "按手册建议第 1–2 周节奏" },
+      { key: "B", label: "下周召开", desc: "留出更多材料准备时间" },
+      { key: "C", label: "暂缓，先等三份规则文档", desc: "人格识别/节奏/情感安全规则成文后再开" }
+    ]
+  },
+  {
+    id: "q5", type: "open",
+    title: "内容库规模与 MVP 分批方式，你的意见？",
+    ctx: "建议值：100–150 个通用事件（不分型）+ 每字母维度 16 张需求卡母库（共 128 张）。MVP 可按字母维度分批上线"
+  },
+  {
     id: "q6", type: "open",
-    title: "呼应质量盲评「感动 / 真实」达标率阈值，你定多少？",
-    ctx: "Phase 3 技术 PoC 的 Gate 3 标准（如：≥80%）。定高了可能不过门，定低了伤害体验"
+    title: "Phase 1 底层结论哪些沿用、哪些作废？",
+    ctx: "候选：留存基准（D1≥30%/D7≥12%/D30≥5%）、AI 成本标尺（≈0.01 元/条）、监管环境判断、善终机制案例、延迟耐受度（2–3 天）"
   },
   {
     id: "q7", type: "open",
-    title: "慢 vs 快需求分裂：2–3 天延迟是在筛选用户，还是会流失「想被即时接住」的人？",
-    ctx: "瑞思矛盾点 1：Slowly 证明慢有忠粉，但「秒回师」热销证明另一批人为即时回应付费。你的倾向与理由？"
+    title: "三份单独规则文档：优先级排序 + 你想写入的要求",
+    ctx: "① 人格识别准确性规则（含误配处理）② 需求卡供给节奏规则（三阶段频率参数）③ 情感安全规则（危机信号识别与转介）"
   },
   {
     id: "q8", type: "open",
-    title: "法务 / 伦理评审资源：Phase 3 危机机制（P0）需要法务介入，是否有可用资源？",
-    ctx: "可写：可用的法务渠道 / 外部顾问 / 需要团队先出自查清单替代等"
-  },
-  {
-    id: "q9", type: "open",
-    title: "机制砍留与其他补充意见",
-    ctx: "心愿卡 / 选择性领取 / 出行节奏 / 记忆联动 / 回看记录——想砍、想改、想加什么？以及任何其他决策意见（含上面选择题选 B/C 的说明）"
+    title: "其他补充意见",
+    ctx: "含上面选择题选 B/C 的说明，以及任何想补充的决策或担忧"
   }
 ];
 
-var LS_KEY = "travel-cat-decisions-v1";
+var LS_KEY = "youmao-decisions-v2";
 
 function loadAnswers() {
   try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; }

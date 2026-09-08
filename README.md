@@ -1,7 +1,8 @@
-# 旅行小猫 · travel-cat-planner
+# 有猫来信 · travel-cat-planner
 
 一款心理陪伴型产品的项目规划文档站，由 GitHub Pages 托管。
 
+**产品名称**：有猫来信（2026-09-09 定名，原名「旅行小猫」）
 **线上地址**：https://zyrobbie.github.io/travel-cat-planner/
 
 ## 站点结构
@@ -16,12 +17,8 @@
 
 | key | 文件 | 内容 |
 |-----|------|------|
-| `idea` | `docs/idea.md` | 《旅行小猫初始想法》 |
-| `manual` | `docs/manual.md` | 旅行小猫项目执行总纲（v1.1 已审定） |
-| `phase1-summary` | `docs/phase1-summary.md` | Phase 1 调研汇总（概念收敛会材料包） |
-| `report-competitive` | `docs/report-competitive.md` | 竞品全景调研报告（线 A · 竞析） |
-| `report-market` | `docs/report-market.md` | 赛道数据分析报告（线 C · 数析） |
-| `report-user` | `docs/report-user.md` | 目标用户研究综合报告（线 B · 瑞思） |
+| `idea` | `docs/idea.md` | 《有猫来信初始想法》V2.1（项目逻辑基准） |
+| `manual` | `docs/manual.md` | 有猫来信项目执行总纲 V2.1（单一事实来源） |
 
 ## 更新方式
 
