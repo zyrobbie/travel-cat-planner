@@ -134,7 +134,14 @@ function saveAnswers(a) {
 function updateProgress() {
   var a = loadAnswers(), done = 0;
   QUESTIONS.forEach(function (q) {
-    if (a[q.id] && String(a[q.id]).trim() !== "") done++;
+    var v = a[q.id];
+    if (!v || String(v).trim() === "") return;
+    if (v === "__custom__") {
+      var c = a[q.id + "_custom"];
+      if (c && String(c).trim() !== "") done++;
+    } else {
+      done++;
+    }
   });
   document.getElementById("progress-hint").textContent = "已答 " + done + " / " + QUESTIONS.length;
 }
@@ -157,7 +164,14 @@ function renderForm() {
           '<span class="key">' + o.key + '</span>' +
           "<span>" + o.label + (o.desc ? '<span class="od">' + o.desc + "</span>" : "") + "</span></div>";
       });
+      var custSel = answers[q.id] === "__custom__" ? " sel" : "";
+      html += '<div class="opt' + custSel + '" data-q="' + q.id + '" data-v="__custom__">' +
+        '<span class="key">✎</span>' +
+        "<span>以上都不是，我自己说<span class=\"od\">选中后在下方填写你的想法</span></span></div>";
       html += "</div>";
+      var cv = answers[q.id + "_custom"] ? String(answers[q.id + "_custom"]).replace(/</g, "&lt;") : "";
+      var cshow = answers[q.id] === "__custom__" ? "" : ' style="display:none;"';
+      html += '<textarea data-custom-for="' + q.id + '" placeholder="写下你自己的答案…"' + cshow + ">" + cv + "</textarea>";
     } else {
       var v = answers[q.id] ? String(answers[q.id]).replace(/</g, "&lt;") : "";
       html += '<textarea data-q="' + q.id + '" placeholder="在这里写下你的回答…">' + v + "</textarea>";
@@ -175,12 +189,22 @@ function renderForm() {
       document.querySelectorAll('.opt[data-q="' + qid + '"]').forEach(function (o) {
         o.classList.toggle("sel", o.getAttribute("data-v") === v);
       });
+      var ct = document.querySelector('textarea[data-custom-for="' + qid + '"]');
+      if (ct) ct.style.display = (v === "__custom__") ? "" : "none";
+      if (v === "__custom__" && ct) ct.focus();
     });
   });
   document.querySelectorAll("textarea[data-q]").forEach(function (el) {
     el.addEventListener("input", function () {
       var a = loadAnswers();
       a[el.getAttribute("data-q")] = el.value;
+      saveAnswers(a);
+    });
+  });
+  document.querySelectorAll("textarea[data-custom-for]").forEach(function (el) {
+    el.addEventListener("input", function () {
+      var a = loadAnswers();
+      a[el.getAttribute("data-custom-for") + "_custom"] = el.value;
       saveAnswers(a);
     });
   });
@@ -202,8 +226,18 @@ function renderSummary() {
   var html = "";
   QUESTIONS.forEach(function (q, i) {
     var v = answers[q.id];
-    var has = v && String(v).trim() !== "";
-    var text = has ? (q.type === "choice" ? optionLabel(q, v) : String(v).replace(/</g, "&lt;").replace(/\n/g, "<br>")) : "";
+    var text = "";
+    if (q.type === "choice") {
+      if (v === "__custom__") {
+        var c = answers[q.id + "_custom"];
+        text = (c && String(c).trim() !== "") ? "✎ " + String(c).replace(/</g, "&lt;").replace(/\n/g, "<br>") : "";
+      } else if (v) {
+        text = optionLabel(q, v);
+      }
+    } else if (v && String(v).trim() !== "") {
+      text = String(v).replace(/</g, "&lt;").replace(/\n/g, "<br>");
+    }
+    var has = text !== "";
     html += '<div class="ans-card">';
     html += '<div class="q"><b>Q' + (i + 1) + "</b> · " + q.title + "</div>";
     html += '<div class="a' + (has ? "" : " empty") + '">' + (has ? text : "（未作答）") + "</div>";
