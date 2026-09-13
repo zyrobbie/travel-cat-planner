@@ -29,7 +29,7 @@ test("Real published old UI → atomic multi-participant upgrade → reload/edit
     other.getByRole("button", { name: "打开看看", exact: true }),
   ).toBeVisible();
   const after = await snapshot(page);
-  expect(after.version).toBe(2);
+  expect(after.version).toBe(3);
   expect(after.rows).toHaveLength(before.rows.length);
   for (const old of before.rows) {
     const next = after.rows.find(
@@ -56,8 +56,13 @@ test("Real published old UI → atomic multi-participant upgrade → reload/edit
   await page.reload();
   expect(await snapshot(page)).toEqual(after);
   await openControl(page);
-  await page.getByLabel("本次旅行故事").selectOption("O-LIGHTHOUSE-01");
-  await act(page, "寄出旅行明信片");
+  const rid = (await snapshot(page)).rows
+    .find((r) => r.participant.id === a)
+    .letters.find((l: any) => l.responseId).responseId;
+  const { mark } = await import("./helpers");
+  await mark(page, "rest", rid);
+  await act(page, "核验并选择旅行信");
+  await act(page, "寄出已选旅行信");
   await act(page, "结束旅行回家");
   await enter(page);
   await openDemandHistory(page);
@@ -117,7 +122,7 @@ test("Upgrade abort is atomic; unknown record survives; retry upgrades same data
   await expect(
     page.getByRole("heading", { name: "继续已有体验" }),
   ).toBeVisible();
-  expect((await snapshot(page)).version).toBe(2);
+  expect((await snapshot(page)).version).toBe(3);
   await ctx.close();
   const other = await browser.newContext(),
     p = await other.newPage();

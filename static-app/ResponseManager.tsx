@@ -1,27 +1,41 @@
 import { useRef, useState } from "react";
-import { editResponse, deleteResponse } from "./store";
-import { currentText, type ResponseRecord } from "./model";
+import { editResponse, deleteResponse, saveDraft } from "./store";
+import { currentText, type ResponseRecord, type Draft } from "./model";
 import s from "../src/app/page.module.css";
 export default function ResponseManager({
   participantId,
   response,
+  initialDraft,
   onBusy,
   onDone,
   onCancel,
 }: {
   participantId: string;
   response: ResponseRecord;
+  initialDraft?: Draft;
   onBusy: (value: boolean) => void;
   onDone: (result: { message?: string; safety?: string }) => void;
   onCancel: () => void;
 }) {
-  const [text, setText] = useState(currentText(response) ?? ""),
-    [expected] = useState(response.currentRevision),
+  const [text, setText] = useState(
+      initialDraft?.kind === "edit"
+        ? initialDraft.text
+        : (currentText(response) ?? ""),
+    ),
+    [expected] = useState(
+      initialDraft?.kind === "edit"
+        ? initialDraft.revision!
+        : response.currentRevision,
+    ),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [confirmDelete, setConfirmDelete] = useState(false);
   const pending = useRef(false),
     key = useRef(crypto.randomUUID());
+  const [draftStatus, setDraftStatus] = useState(
+    initialDraft ? "已恢复更正草稿，尚未保存为回应。" : "",
+  );
+  const draftWrite = useRef(0);
   async function run(fn: () => Promise<{ message?: string; safety?: string }>) {
     if (pending.current) return;
     pending.current = true;
@@ -91,8 +105,28 @@ export default function ResponseManager({
             onChange={(e) => {
               setText(e.target.value);
               key.current = crypto.randomUUID();
+              const text = e.target.value,
+                sequence = ++draftWrite.current;
+              setDraftStatus("正在保存草稿…");
+              saveDraft(
+                participantId,
+                response.letterId,
+                "edit",
+                text,
+                response.id,
+                expected,
+              )
+                .then(() => {
+                  if (sequence === draftWrite.current)
+                    setDraftStatus("更正草稿已保存在本机，尚未提交。");
+                })
+                .catch((e) => {
+                  if (sequence === draftWrite.current)
+                    setDraftStatus(`草稿尚未保存：${e.message}`);
+                });
             }}
           />
+          {draftStatus && <p className={s.meta}>{draftStatus}</p>}
           <button
             className={s.primary}
             disabled={busy || !text.trim()}
@@ -124,6 +158,14 @@ export default function ResponseManager({
         disabled={busy}
         onClick={() => {
           setText("");
+          saveDraft(
+            participantId,
+            response.letterId,
+            "edit",
+            "",
+            response.id,
+            expected,
+          ).catch(() => {});
           onCancel();
         }}
       >

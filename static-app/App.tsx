@@ -8,6 +8,7 @@ import {
   listParticipants,
   subscribe,
   LocalError,
+  saveDraft,
   type LocalState,
 } from "./store";
 import { selectedId } from "./local-api";
@@ -35,6 +36,8 @@ export default function Home() {
     [message, setMessage] = useState(""),
     [firstRead, setFirstRead] = useState(false);
   const generation = useRef(0);
+  const [draftStatus, setDraftStatus] = useState("");
+  const draftWrite = useRef(0);
   const [saved, setSaved] = useState<LocalState[]>([]);
   const pending = useRef(false);
   const currentView = useRef<{ responseId?: string }>({});
@@ -51,7 +54,26 @@ export default function Home() {
     setError("");
     setLoadFailed(false);
     try {
-      await reload();
+      const restored = await reload();
+      if (epoch === generation.current && restored) {
+        const entry = Object.entries(restored.drafts).sort((a, b) =>
+          b[1].updatedAt.localeCompare(a[1].updatedAt),
+        )[0];
+        const hasUnread = restored.letters.some((l) => !l.read_at);
+        if (entry && !hasUnread) {
+          setLetterId(entry[0]);
+          setDraft(entry[1].kind === "reply" ? entry[1].text : "");
+          setManage(entry[1].kind === "edit");
+          setScreen("letter");
+          setFirstRead(false);
+          setDraftStatus("已恢复本机草稿，尚未发送。");
+        } else if (hasUnread) {
+          setScreen("home");
+          setLetterId(null);
+          setManage(false);
+          setDraft("");
+        }
+      }
       const rows = await listParticipants();
       if (epoch === generation.current) setSaved(rows);
     } catch (e) {
@@ -72,11 +94,18 @@ export default function Home() {
   }, []);
   useEffect(() => {
     const refresh = () => {
-      if (!pending.current && !draft) reload().catch(() => {});
+      if (!pending.current && document.visibilityState === "visible")
+        reload().catch((e) => setError(e.message));
     };
     window.addEventListener("focus", refresh);
-    return () => window.removeEventListener("focus", refresh);
-  }, [draft]);
+    document.addEventListener("visibilitychange", refresh);
+    const timer = window.setInterval(refresh, 15000);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+      window.clearInterval(timer);
+    };
+  }, []);
   useEffect(
     () =>
       subscribe((change) => {
@@ -117,14 +146,21 @@ export default function Home() {
     await run(async () => {
       const epoch = generation.current,
         pid = selectedId();
-      await api(`letters/${l.id}/read`, {});
-      await reload();
+      const committed = (await api(`letters/${l.id}/read`, {})) as {
+        state: AppState;
+        firstRead: boolean;
+      };
+      const fresh = committed.state;
       if (epoch !== generation.current || pid !== selectedId()) return;
+      setState(fresh);
       setLetterId(l.id);
-      setFirstRead(!l.read_at);
-      setManage(false);
+      setFirstRead(committed.firstRead);
+      setManage(fresh.drafts[l.id]?.kind === "edit");
       setMessage("");
-      setDraft("");
+      setDraft(
+        fresh.drafts[l.id]?.kind === "reply" ? fresh.drafts[l.id].text : "",
+      );
+      setDraftStatus(fresh.drafts[l.id] ? "已恢复本机草稿，尚未发送。" : "");
       setScreen("letter");
       window.scrollTo(0, 0);
     });
@@ -162,9 +198,7 @@ export default function Home() {
   }
   const cat = state?.participant.cat_name ?? "小咪",
     letter = state?.letters.find((x) => x.id === letterId),
-    latest = state?.letters.find(
-      (x) => !x.read_at && !x.skipped_at && !x.response,
-    ),
+    latest = state?.letters.find((x) => !x.read_at),
     intercepted = safety || state?.participant.safety_state === "INTERCEPTED";
   currentView.current = {
     responseId:
@@ -217,6 +251,26 @@ export default function Home() {
           {error}
         </p>
       )}
+      {!controlOpen &&
+        loaded &&
+        !loadFailed &&
+        !intercepted &&
+        screen === "letter" &&
+        latest &&
+        latest.id !== letterId && (
+          <aside className={s.note}>
+            <button
+              className={s.secondary}
+              disabled={busy}
+              onClick={() => {
+                setManage(false);
+                setScreen("home");
+              }}
+            >
+              有一封新来信
+            </button>
+          </aside>
+        )}
       {controlOpen ? (
         <LocalControl onSelect={selectExperience} />
       ) : !loaded ? (
@@ -346,6 +400,7 @@ export default function Home() {
                   key={letter.responseId}
                   participantId={state.participant.id}
                   response={state.responses[letter.responseId]}
+                  initialDraft={state.drafts[letter.id]}
                   onBusy={(value) => {
                     pending.current = value;
                     setBusy(value);
@@ -386,10 +441,34 @@ export default function Home() {
                 id="response"
                 maxLength={2000}
                 value={draft}
-                onChange={(e) => setDraft(e.target.value)}
+                onChange={(e) => {
+                  const text = e.target.value,
+                    sequence = ++draftWrite.current;
+                  setDraft(text);
+                  setDraftStatus("正在保存草稿…");
+                  saveDraft(
+                    state.participant.id,
+                    letter.id,
+                    "reply",
+                    text,
+                    letter.responseId ?? null,
+                    null,
+                  )
+                    .then(() => {
+                      if (sequence === draftWrite.current)
+                        setDraftStatus(
+                          text ? "草稿已保存在本机，尚未发送。" : "",
+                        );
+                    })
+                    .catch((e) => {
+                      if (sequence === draftWrite.current)
+                        setDraftStatus(`草稿尚未保存：${e.message}`);
+                    });
+                }}
                 placeholder="写几句就好……"
               />
               <div className={s.count}>{draft.length} / 2000</div>
+              {draftStatus && <p className={s.meta}>{draftStatus}</p>}
               {letter.snapshot.tip && (
                 <details>
                   <summary>看看小提示</summary>

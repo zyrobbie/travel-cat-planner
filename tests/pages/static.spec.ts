@@ -69,6 +69,7 @@ test("Static P1–P6, refresh persistence, double tabs, zero response travel and
   await page.getByRole("button", { name: "回到体验", exact: true }).click();
   await page.getByRole("button", { name: "看看来信", exact: true }).click();
   await page.getByLabel("你想跟它说什么？").fill("合成回应甲");
+  await expect(page.getByText("草稿已保存在本机，尚未发送。")).toBeVisible();
   const second = await ctx.newPage();
   // Keep a deliberately stale form for the duplicate-write test. Otherwise the
   // cross-tab refresh can remove its button before Playwright dispatches click.
@@ -76,8 +77,7 @@ test("Static P1–P6, refresh persistence, double tabs, zero response travel and
     Object.defineProperty(window, "BroadcastChannel", { value: undefined });
   });
   await second.goto(urlA);
-  await second.getByRole("button", { name: "来信盒", exact: true }).click();
-  await second.getByRole("button", { name: /阿橘/ }).click();
+  await expect(second.getByLabel("你想跟它说什么？")).toHaveValue("合成回应甲");
   await second.getByLabel("你想跟它说什么？").fill("合成回应甲");
   await Promise.all([
     page.getByRole("button", { name: "送出去", exact: true }).click(),
@@ -133,9 +133,9 @@ test("Static P1–P6, refresh persistence, double tabs, zero response travel and
     page.getByText("今天没有新来信。", { exact: true }),
   ).toBeVisible();
   await consoleOpen(page);
+  await page.getByLabel("普通故事／出发场景").selectOption("O-FIREFLY-01");
   await page.getByRole("button", { name: "独立开始旅行" }).click();
-  await page.getByLabel("本次旅行故事").selectOption("O-FIREFLY-01");
-  await page.getByRole("button", { name: "寄出旅行明信片" }).click();
+  await page.getByRole("button", { name: "寄出普通旅行信" }).click();
   await enter(page);
   await page.getByRole("button", { name: "打开看看", exact: true }).click();
   await expect(page.getByText(/怕把它们吓跑喵~/)).toBeVisible();
@@ -168,7 +168,7 @@ test("Static P1–P6, refresh persistence, double tabs, zero response travel and
   const idB = new URL(page.url()).hash.slice(1);
   await consoleOpen(page);
   await page.getByRole("button", { name: "独立开始旅行" }).click();
-  await page.getByRole("button", { name: "寄出旅行明信片" }).click();
+  await page.getByRole("button", { name: "寄出普通旅行信" }).click();
   await enter(page);
   await page.getByRole("button", { name: "打开看看", exact: true }).click();
   await expect(page.getByText(/差点忘记肚子饿了喵~/)).toBeVisible();

@@ -1,6 +1,6 @@
 import { LocalError, migrateRecord, type LocalState } from "./model";
 const DB = "cat-letters-pages-v1";
-const VERSION = 2;
+const VERSION = 3;
 let opened: Promise<IDBDatabase> | null = null;
 export type Change = { participantId: string; redacted?: string };
 const listeners = new Set<(change: Change) => void>();
@@ -20,6 +20,13 @@ export function subscribe(fn: (change: Change) => void) {
 export function notify(change: Change) {
   listeners.forEach((fn) => fn(change));
   channel?.postMessage(change);
+}
+function storedRecord(value: unknown): LocalState {
+  if (!value || (value as { schema?: number }).schema !== 3)
+    throw new LocalError(
+      "本机记录与数据库版本不一致，原数据未改写。请保留数据并联系维护者。",
+    );
+  return migrateRecord(value);
 }
 function database(): Promise<IDBDatabase> {
   if (!opened)
@@ -45,6 +52,7 @@ function database(): Promise<IDBDatabase> {
       };
       req.onupgradeneeded = (event) => {
         const tx = req.transaction!;
+        const initializedAt = Date.now();
         if (abandoned) {
           tx.abort();
           return;
@@ -67,8 +75,8 @@ function database(): Promise<IDBDatabase> {
           const row = cursor.result;
           if (!row) return;
           try {
-            const upgraded = migrateRecord(row.value);
-            if (row.value.schema !== 2) row.update(upgraded);
+            const upgraded = migrateRecord(row.value, initializedAt);
+            if (row.value.schema !== 3) row.update(upgraded);
             row.continue();
           } catch (e) {
             problem =
@@ -107,12 +115,19 @@ function database(): Promise<IDBDatabase> {
 }
 export async function write<T>(
   id: string,
-  change: (state: LocalState | undefined) => { state: LocalState; result: T },
+  change: (state: LocalState | undefined) => {
+    state: LocalState;
+    result: T;
+    changed?: boolean;
+  },
   redacted?: string,
 ): Promise<T> {
   const db = await database();
   return new Promise((resolve, reject) => {
-    let tx: IDBTransaction, result: T, problem: unknown;
+    let tx: IDBTransaction,
+      result: T,
+      problem: unknown,
+      didWrite = false;
     try {
       tx = db.transaction("participants", "readwrite");
     } catch {
@@ -121,7 +136,7 @@ export async function write<T>(
     }
     tx.oncomplete = () => {
       resolve(result);
-      notify({ participantId: id, redacted });
+      if (didWrite) notify({ participantId: id, redacted });
     };
     tx.onabort = () =>
       reject(
@@ -136,11 +151,14 @@ export async function write<T>(
     req.onsuccess = () => {
       try {
         const changed = change(
-          req.result ? migrateRecord(req.result) : undefined,
+          req.result ? storedRecord(req.result) : undefined,
         );
         migrateRecord(changed.state);
         result = changed.result;
-        store.put(changed.state);
+        if (changed.changed !== false) {
+          store.put(changed.state);
+          didWrite = true;
+        }
       } catch (e) {
         problem =
           e instanceof LocalError
@@ -160,7 +178,7 @@ export async function listParticipants(): Promise<LocalState[]> {
       r = tx.objectStore("participants").getAll();
     tx.oncomplete = () => {
       try {
-        resolve(r.result.map(migrateRecord));
+        resolve(r.result.map(storedRecord));
       } catch (e) {
         reject(e);
       }

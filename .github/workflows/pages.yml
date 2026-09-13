@@ -27,6 +27,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run pages:test
       - run: npm run pages:test:e2a
+      - run: npm run pages:test:e2b
       - run: node scripts/package-pages.mjs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4

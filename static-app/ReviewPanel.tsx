@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { selectReview, deliverReview } from "./store";
+import { selectReview, deliverReview, tripScene } from "./store";
 import frozen from "../src/content/frozen.json";
 import {
   stories,
@@ -23,6 +23,11 @@ export default function ReviewPanel({
     [evidence, setEvidence] = useState<Partial<Record<Claim, Evidence>>>({});
   const chosen = stories.find((s) => s.id === storyId)!;
   const requests = useRef<{ signature: string; key: string } | null>(null);
+  useEffect(() => {
+    if (state.trip) setStoryId(`L-${tripScene(state)}`);
+    setEvidence({});
+    requests.current = null;
+  }, [state.trip?.id]);
   useEffect(() => {
     setEvidence({});
     requests.current = null;
@@ -56,7 +61,11 @@ export default function ReviewPanel({
         }}
       >
         {stories.map((x) => (
-          <option key={x.id} value={x.id}>
+          <option
+            key={x.id}
+            value={x.id}
+            disabled={!!state.trip && x.id !== `L-${tripScene(state)}`}
+          >
             {x.title}
           </option>
         ))}

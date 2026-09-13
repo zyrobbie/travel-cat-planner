@@ -1,5 +1,5 @@
 import { expect, type Page } from "@playwright/test";
-export const base = "http://127.0.0.1:4180/travel-cat-planner/app/";
+export const base = "http://127.0.0.1:4181/travel-cat-planner/app/";
 export async function snapshot(page: Page) {
   return page.evaluate(async () => {
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
@@ -70,22 +70,8 @@ export async function mark(
       .check();
 }
 export async function openDemandHistory(page: Page, title = "阿橘") {
-  await page
-    .getByRole("button", { name: /^(← )?来信盒$/ })
-    .first()
-    .click();
+  await page.getByRole("button", { name: "来信盒", exact: true }).click();
   await page.getByRole("button", { name: new RegExp(title) }).click();
-  await expect(
-    page
-      .getByRole("button", { name: "管理这条回应", exact: true })
-      .or(page.getByRole("button", { name: "取消管理", exact: true })),
-  ).toBeVisible();
-  if (
-    await page
-      .getByRole("button", { name: "取消管理", exact: true })
-      .isVisible()
-  )
-    await page.getByRole("button", { name: "取消管理", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "管理这条回应", exact: true }),
   ).toBeVisible();
@@ -124,4 +110,32 @@ export async function seedOld(page: Page) {
     page.getByRole("button", { name: "打开看看", exact: true }),
   ).toBeVisible();
   return { a, b, before: await snapshot(page) };
+}
+export async function storeCall(page: Page, method: string, args: any[] = []) {
+  return page.evaluate(
+    async ({ method, args }) => {
+      const url = location.pathname + "store-test.js",
+        store = await import(/* @vite-ignore */ url);
+      return store[method](...args);
+    },
+    { method, args },
+  );
+}
+export async function replaceRows(page: Page, rows: any[]) {
+  await page.evaluate(async (rows) => {
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const r = indexedDB.open("cat-letters-pages-v1");
+      r.onsuccess = () => resolve(r.result);
+      r.onerror = () => reject(r.error);
+    });
+    await new Promise<void>((resolve, reject) => {
+      const t = db.transaction("participants", "readwrite"),
+        s = t.objectStore("participants");
+      s.clear();
+      for (const row of rows) s.put(row);
+      t.oncomplete = () => resolve();
+      t.onabort = () => reject(t.error);
+    });
+    db.close();
+  }, rows);
 }

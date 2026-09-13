@@ -57,6 +57,9 @@ test("Three complete linked stories, missing/negative/conditional claims fallbac
     ["L-LIGHTHOUSE", ["new_friends"], "灯塔亮起来的时候"],
   ] as const) {
     if (story !== "L-RHINE") {
+      await page
+        .getByLabel("普通故事／出发场景")
+        .selectOption(story.replace("L-", "O-") + "-01");
       await act(page, "独立开始旅行");
     }
     if (story === "L-FIREFLY") {
@@ -216,7 +219,7 @@ test("Edit invalidates selected story; stale send/version conflicts reject; deli
   await openControl(control);
   await act(control, "结束旅行回家");
   await act(control, "独立开始旅行");
-  await act(control, "寄出旅行明信片");
+  await act(control, "寄出普通旅行信");
   expect(
     (await snapshot(control)).rows[0].letters.filter(
       (l: any) => l.type === "POSTCARD",
@@ -247,8 +250,14 @@ test("Deleting another local participant does not erase unrelated draft; failed 
   await b.getByLabel("更正后的回应").fill("[SYNTHETIC:UNAVAILABLE]");
   await b.getByRole("button", { name: "保存更正" }).click();
   await expect(b.locator("p[role=alert]")).toContainText("尚未完成更正");
-  const before = await snapshot(b);
+  expect(
+    (await snapshot(b)).rows
+      .find((r: any) => r.participant.id === idB)
+      .letters.find((l: any) => l.response).response,
+  ).toBe("乙独有的合成回应");
   await b.getByLabel("更正后的回应").fill("写失败不应留下");
+  await expect(b.getByText("更正草稿已保存在本机，尚未提交。")).toBeVisible();
+  const before = await snapshot(b);
   await b.evaluate(() => {
     IDBObjectStore.prototype.put = function () {
       throw new DOMException("synthetic", "QuotaExceededError");
@@ -338,7 +347,7 @@ test("Delete before send invalidates; stale edit cannot resurrect; a new respons
   await stale.getByRole("button", { name: "保存更正" }).click();
   expect((await snapshot(p)).rows[0]).toEqual(row);
   await control.getByRole("button", { name: "刷新演示状态" }).click();
-  await act(control, "寄出旅行明信片");
+  await act(control, "寄出普通旅行信");
   await act(control, "结束旅行回家");
   await ctx.close();
 });
@@ -365,25 +374,28 @@ test("Two pages simultaneously delete/send and edit/send serialize safely", asyn
         .getByRole("button", { name: "删除这条回应", exact: true })
         .click();
     else await p.getByLabel("更正后的回应").fill("并发更正后的原文");
-    await Promise.all([
-      p
-        .getByRole("button", {
-          name: mutation === "delete" ? "确认删除回应" : "保存更正",
-          exact: true,
-        })
-        .click(),
-      control
-        .getByRole("button", { name: "寄出已选旅行信", exact: true })
-        .click(),
+    // Dispatch both real store operations before cross-tab rendering can disable a button.
+    // Separate UI tests above retain the user click, confirmation and source refresh checks.
+    const reviewId = (await snapshot(p)).rows[0].reviews.at(-1).id;
+    const invoke = (page: any, method: string, args: any[]) =>
+      page.evaluate(
+        async ({ method, args }: any) => {
+          const store = await import(location.pathname + "store-test.js");
+          return store[method](...args);
+        },
+        { method, args },
+      );
+    const outcomes = await Promise.allSettled([
+      invoke(
+        p,
+        mutation === "delete" ? "deleteResponse" : "editResponse",
+        mutation === "delete"
+          ? [id, rid, 1]
+          : [id, rid, 1, "并发更正后的原文", "concurrent-edit"],
+      ),
+      invoke(control, "deliverReview", [id, reviewId, "concurrent-send"]),
     ]);
-    await expect(
-      p.getByText(mutation === "delete" ? "已删除。" : "已更正。", {
-        exact: true,
-      }),
-    ).toBeVisible();
-    await expect(
-      control.getByRole("button", { name: "刷新演示状态" }),
-    ).toBeEnabled();
+    expect(outcomes[0].status).toBe("fulfilled");
     const row = (await snapshot(p)).rows[0],
       events = row.events.map((e: any) => e.event),
       sent = events.lastIndexOf("POSTCARD_DELIVERED"),

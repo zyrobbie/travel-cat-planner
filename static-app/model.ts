@@ -1,4 +1,9 @@
 import { z } from "zod";
+import {
+  calendarSchema,
+  initializeCalendar,
+  type Calendar,
+} from "./calendar-plan";
 import type {
   AppState as PreviousAppState,
   Letter as PreviousLetter,
@@ -64,8 +69,17 @@ export type Letter = PreviousLetter & {
   sourceRefs?: Evidence[];
   storyId?: string;
 };
+export type Draft = {
+  kind: "reply" | "edit";
+  text: string;
+  responseId: string | null;
+  revision: number | null;
+  updatedAt: string;
+};
 export type LocalState = Omit<PreviousAppState, "letters"> & {
-  schema: 2;
+  schema: 3;
+  calendar: Calendar;
+  drafts: Record<string, Draft>;
   letters: Letter[];
   controlRevision: number;
   tripCount: number;
@@ -180,10 +194,11 @@ const second = base.extend({
   ),
 });
 /** Pure conversion. No fallback to blank participants; caller commits all records in one upgrade transaction. */
-export function migrateRecord(value: unknown): LocalState {
+export function migrateRecord(value: unknown, now = Date.now()): LocalState {
   try {
     const old = base.parse(value);
-    if (old.schema !== 1 && old.schema !== 2) throw Error("unknown schema");
+    if (old.schema !== 1 && old.schema !== 2 && old.schema !== 3)
+      throw Error("unknown schema");
     if (new Set(old.letters.map((l) => l.id)).size !== old.letters.length)
       throw Error("duplicate letters");
     if (
@@ -215,8 +230,9 @@ export function migrateRecord(value: unknown): LocalState {
         letters,
         responses,
         reviews: [],
-      } as LocalState;
-    } else result = second.parse(value) as LocalState;
+      } as unknown as LocalState;
+    } else
+      result = second.parse({ ...old, schema: 2 }) as unknown as LocalState;
     for (const [id, r] of Object.entries(result.responses)) {
       if (
         id !== r.id ||
@@ -266,6 +282,53 @@ export function migrateRecord(value: unknown): LocalState {
         )
           throw Error("invalid source reference");
       }
+    if (old.schema === 3) {
+      result.drafts = z
+        .record(
+          z.string(),
+          z.object({
+            kind: z.enum(["reply", "edit"]),
+            text: z.string().max(2000),
+            responseId: z.string().nullable(),
+            revision: z.number().int().positive().nullable(),
+            updatedAt: stamp,
+          }),
+        )
+        .parse(old.drafts);
+      for (const [id, d] of Object.entries(result.drafts)) {
+        const l = result.letters.find(
+          (l) => l.id === id && l.type === "DEMAND",
+        );
+        if (
+          !l ||
+          (l.responseId ?? null) !== d.responseId ||
+          (d.kind === "reply" && l.response !== null) ||
+          (d.kind === "edit" &&
+            (!d.responseId ||
+              result.responses[d.responseId]?.status !== "ACTIVE" ||
+              result.responses[d.responseId]?.currentRevision !== d.revision))
+        )
+          throw Error("invalid draft");
+      }
+      result.calendar = calendarSchema.parse(old.calendar);
+      if (
+        new Set(result.calendar.nodes.map((n) => n.id)).size !==
+          result.calendar.nodes.length ||
+        new Set(result.calendar.nodes.map((n) => n.order)).size !==
+          result.calendar.nodes.length ||
+        result.calendar.processedCount !==
+          result.calendar.nodes.filter((n) => n.result).length
+      )
+        throw Error("invalid calendar progress");
+      for (const n of result.calendar.nodes) {
+        if (n.kind === "DEMAND" ? !n.contentId : !n.tripId || !n.scene)
+          throw Error("invalid calendar node");
+      }
+    } else {
+      result.calendar = initializeCalendar(result, now);
+      result.drafts = {};
+    }
+    result.schema = 3;
     return result;
   } catch {
     throw new LocalError(
