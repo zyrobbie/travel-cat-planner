@@ -1,6 +1,6 @@
 # 有猫来信 · GitHub Pages 本机体验版
 
-[打开本机体验](https://zyrobbie.github.io/travel-cat-planner/app/)。当前开发构建为 E2-B：离开与返回、单封未读新信及本机日历；独立验收与实际发布状态见 [E2-B 验收记录](docs/E2-B_验收与发布记录.md)。原小猫、来信和回应在原浏览器升级后保留；新体验无需安装 Node 或 PostgreSQL，首次打开直接给小猫起名。
+[打开本机体验](https://zyrobbie.github.io/travel-cat-planner/app/)。E2-B 已发布：离开与返回、单封未读新信及本机日历；独立验收、远程 CI 和真实线上旧数据升级已通过，等待用户体验验收，见 [E2-B 验收记录](docs/E2-B_验收与发布记录.md)。原小猫、来信和回应在原浏览器升级后保留；新体验无需安装 Node 或 PostgreSQL，首次打开直接给小猫起名。
 
 最快确认新规则，不需要等满 14 天：
 

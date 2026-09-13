@@ -2,7 +2,7 @@
 
 日期：2026-09-14。执行：程序员 Astra 轻；统筹与独立复核：开发策略 Astra Ultra。
 
-当前状态：本地开发与独立复核通过，准备发布，尚未获得用户对 E2-B 的验收。线上结果在实际部署后另记。本记录不将开发测试代替发布或用户体验确认。
+当前状态：本地开发、独立复核、远程 CI、GitHub Pages 发布及实际 HTTPS 旧数据升级均通过；等待用户对 E2-B 的体验验收。本记录不将开发测试或发布检查代替用户确认。
 
 ## 本轮规则
 
@@ -50,4 +50,15 @@ GitHub Pages 使用当前浏览器 IndexedDB。关闭网页期间没有进程执
 
 ## 实际发布与线上升级
 
-待远程构建、部署及保留存档的实际 HTTPS 升级完成后补记。
+- 应用提交：`eb99c58b00c220a9e74447a7b7069b45ba83f2d5`，非强制推送至 `main` 与 `codex/e2-b`。
+- [Pages 构建、回归与部署 34768567215](https://github.com/zyrobbie/travel-cat-planner/actions/runs/34768567215)：全部成功，包括原 Pages、E2-A 与 E2-B 回归，再打包和部署。
+- [保留后端 CI 34768567217](https://github.com/zyrobbie/travel-cat-planner/actions/runs/34768567217)：同一应用提交在 `main` 上成功。阶段分支 CI 34768567335 亦成功。
+- [正式体验](https://zyrobbie.github.io/travel-cat-planner/app/)与原网址一致；[首页](https://zyrobbie.github.io/travel-cat-planner/)已更新 E2-B 标记与实际能力说明。
+
+2026-09-14，统筹在发布前保留的同一隔离浏览器资料中直接访问真实 HTTPS 新版，没有请求路由替换、存储注入或清除浏览器数据。实际响应脚本为 `index-CsL8Yg1C.js`，下载字节 SHA-256 与最终冻结构建完全一致。
+
+三只旧版合成猫全部原字段逐项比较通过，版本升至 3；刷新不重复迁移，原旅行 ID 和 FIREFLY `NEEDS_REVIEW` 场景保留。真实页面快进后，旧多未读信和已删原文的清除状态不变，当前旅行结束；原未读明信片仍可首读和收好。空体验跨完日历只留下 D-03 第一封合法来信、两次旅行均完成；读完不回应再刷新没有补发。全过程页面运行错误为空。
+
+随后从线上首页实际点击体验入口，确认新版标记、可继续原体验；已查看线上首页、回家后的未读旅行信入口和正文 PNG。线上证据单独位于 `/tmp/catletters-e2b-live-evidence/after-release/`，包含 `result.json`、迁移／交互后快照和 PNG。远程 Pages 日志保存在 `/tmp/catletters-e2b-pages-ci.log`。
+
+上述为真实线上合成数据升级和指定浏览器范围的工程验收，未读取用户私有存档，也未记录用户已验收 E2-B。补记本节的后续提交只修改说明，不改变已验证应用产物。
