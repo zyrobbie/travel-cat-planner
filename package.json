@@ -14,7 +14,10 @@
     "demo": "tsx scripts/demo.ts",
     "test": "tsx --test tests/*.test.ts",
     "test:e2e": "playwright test",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "pages:build": "vite build --config static-app/vite.config.ts",
+    "pages:preview": "vite preview --config static-app/vite.config.ts",
+    "pages:test": "playwright test --config static-app/playwright.config.ts"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
@@ -32,7 +35,8 @@
     "@types/react-dom": "^19.3.0",
     "prettier": "3.9.6",
     "tsx": "^4.23.13",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vite": "8.3.0"
   },
   "type": "module"
 }

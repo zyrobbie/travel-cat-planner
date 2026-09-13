@@ -1,4 +1,35 @@
-# 有猫来信 · E0＋E1 内部应用
+# 有猫来信 · GitHub Pages 本机体验版
+
+[打开本机体验](https://zyrobbie.github.io/travel-cat-planner/app/)（由发布流程部署；实际发布状态见验收与部署记录）。无需安装 Node 或 PostgreSQL，首次打开直接给小猫起名。
+
+1. 起名后，点击右上角“演示推进”，投递一张需求卡，再进入体验。
+2. 回应或选择“这次先不回”；回应成功只有“送出去啦。”。
+3. 在演示控制台独立开始旅行、选择旅行故事并寄出；不回应也能旅行。
+4. 打开完整明信片、收好、从来信盒回看；在演示控制台结束旅行回家。
+
+**数据仅保存在此浏览器，清除浏览器数据后可能丢失。** 没有云端账号或跨设备同步。本机控制台可切换或新建体验，新建不会覆盖旧体验；从不带编号的原始链接返回，可以“继续已有体验”。各体验只是本机数据分区，不是安全隔离，请使用合成内容。
+
+页面通过 IndexedDB 事务保存，成功确认只在事务提交后出现。两标签页的重复回应只保存一次；过时控制台操作要求先刷新。存储不可用／空间不足时明确报错，不假报成功。没有虚假密码／邀请码后台、不接 LLM、不做 E2；图片仍为明确标注的内部占位。
+
+## 静态版开发与检查
+
+```sh
+npm ci
+npm run pages:build
+npm run pages:preview
+# http://127.0.0.1:4173/travel-cat-planner/app/
+npm run pages:test
+```
+
+`pages:build` 只输出 `dist/pages/app`，默认 base 为 `/travel-cat-planner/app/`，可用 `PAGES_BASE` 覆盖。旧策划站和 Pages 发布 workflow 由整合脚本单独处理。静态版不需要 `.env`、管理员密钥或数据库。
+
+测试覆盖真实浏览器 IndexedDB 读写、刷新、裸链接继续、双击／两页重复、零回应旅行、本机分区、故障写入、延迟读取切换和发送期间切换保护，以及 390px／1280px 截图。运行前如未装浏览器：`npx playwright install chromium`。详细结果见 `docs/Pages_开发验证记录.md`。
+
+以下 Node＋PostgreSQL 版本仍完整保留，属于另一种运行方式；GitHub Pages 不运行这些服务。
+
+---
+
+## 保留的 Node 后端工程（E0＋E1）
 
 本轮提供真实 PostgreSQL 持久化的首条普通旅行闭环：命名 → 需求卡 → 回应／跳过 → 独立旅行 → 完整明信片 → 来信盒 → 回家。尚未进入 E2，也未开放真实用户测试。
 
@@ -45,15 +76,15 @@ npm run test:e2e
 
 - 服务端参数化 SQL、邀请摘要、HttpOnly 会话、Origin 校验、限流和归属校验。HTTPS 部署必须设置 `COOKIE_SECURE=true`。
 - 一张需求卡最多一个回应；用户发送与 Admin 推进支持幂等。单次旅行最多一张明信片，同故事不重复投递。
-仅重新提取冻结内容时需要原收口包：`python3 scripts/import-content.py /path/to/02_原型规格与内容`。普通启动与部署直接使用已入库的 `src/content/frozen.json`，不依赖开发者本机原文目录。
-
 - 冻结内容：6 demand、3 linked（仅导入）、3 ordinary、6 tips、53 合法系统词条。保留来源与正文哈希，负例不会作为可用词条。季节与时段分开记录。
 - `SAFETY_ADAPTER=synthetic-v1` 仅对明确的 `[SYNTHETIC:INTERCEPT]`、`[SYNTHETIC:UNAVAILABLE]` 测试输入分流；没有真实识别能力。拦截内容不写普通历史；安全覆盖阻止普通投递。
 - 不含 E2 的 linked 投递、来源管理、更正删除、暂停恢复、自留句或 REALTIME worker；页面不提供这些伪入口。
 
-## 部署
+仅重新提取冻结内容时需要原收口包：`python3 scripts/import-content.py /path/to/02_原型规格与内容`。普通启动与部署直接使用已入库的 `src/content/frozen.json`，不依赖开发者本机原文目录。
 
-这是常驻 Node＋PostgreSQL 应用。GitHub Pages 只保留原策划文档站，不能运行本应用后端。尚需确定实际托管平台和数据库；没有创建付费资源。
+## 保留后端的可选部署方式
+
+本轮只发布 GitHub Pages 静态本机体验版和策划站，不部署云后端，也无需先选择其他托管平台。以下仅为保留的常驻 Node＋PostgreSQL 工程提供可选运行说明；GitHub Pages 不承担其服务端功能。没有创建付费资源。
 
 部署环境：`DATABASE_URL`、`APP_ORIGIN`（精确 HTTPS 来源，无尾斜杠）、至少 32 字符随机 `ADMIN_SECRET`、`APP_MODE=INTERNAL`、`SAFETY_ADAPTER=synthetic-v1`、`COOKIE_SECURE=true`、可选 `PORT`。
 
