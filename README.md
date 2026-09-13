@@ -1,6 +1,6 @@
 # 有猫来信 · GitHub Pages 本机体验版
 
-[打开本机体验](https://zyrobbie.github.io/travel-cat-planner/app/)（由发布流程部署；实际发布状态见验收与部署记录）。无需安装 Node 或 PostgreSQL，首次打开直接给小猫起名。
+[打开本机体验](https://zyrobbie.github.io/travel-cat-planner/app/)（已发布并完成线上走查；证据见 `docs/E0-E1_验收与部署记录.md`）。无需安装 Node 或 PostgreSQL，首次打开直接给小猫起名。
 
 1. 起名后，点击右上角“演示推进”，投递一张需求卡，再进入体验。
 2. 回应或选择“这次先不回”；回应成功只有“送出去啦。”。
