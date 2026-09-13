@@ -1,6 +1,6 @@
 # 有猫来信 · GitHub Pages 本机体验版
 
-[打开本机体验](https://zyrobbie.github.io/travel-cat-planner/app/)（线上已发布基线为 E0＋E1；E2-A 本地开发与发布状态见 [验收记录](docs/E2-A_验收与发布记录.md)）。无需安装 Node 或 PostgreSQL，首次打开直接给小猫起名。
+[打开本机体验](https://zyrobbie.github.io/travel-cat-planner/app/)（E2-A 已发布，线上旧版升级与完整操作走查通过，见 [验收记录](docs/E2-A_验收与发布记录.md)）。已有体验在原浏览器刷新即可升级，原小猫、来信和回应保留；新体验无需安装 Node 或 PostgreSQL，首次打开直接给小猫起名。
 
 1. 起名后，点击右上角“演示推进”，投递一张需求卡，再进入体验。
 2. 回应或选择“这次先不回”；回应成功只有“送出去啦。”。
