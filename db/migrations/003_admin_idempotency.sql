@@ -1,0 +1,1 @@
+CREATE TABLE admin_requests (participant_id uuid NOT NULL REFERENCES participants(id), request_key uuid NOT NULL, action text NOT NULL, content_id text, result jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY(participant_id,request_key));

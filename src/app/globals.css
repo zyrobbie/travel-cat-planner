@@ -1,0 +1,116 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: #f4f4f2;
+  color: #252722;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei",
+    sans-serif;
+}
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+button,
+a,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+button,
+a {
+  touch-action: manipulation;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+a {
+  color: inherit;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+select:focus-visible {
+  outline: 3px solid #57816d;
+  outline-offset: 4px;
+}
+button {
+  min-height: 46px;
+}
+input,
+textarea,
+select {
+  max-width: 100%;
+}
+h1,
+h2,
+p {
+  overflow-wrap: anywhere;
+}
+h1 {
+  font-size: 26px;
+  line-height: 1.5;
+  font-weight: 600;
+}
+h2 {
+  font-size: 21px;
+  line-height: 1.5;
+}
+p {
+  line-height: 1.85;
+}
+a {
+  text-underline-offset: 4px;
+}
+summary {
+  cursor: pointer;
+  min-height: 44px;
+  line-height: 44px;
+}
+label {
+  display: block;
+  line-height: 1.7;
+}
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #959b91;
+  background: #fff;
+  border-radius: 10px;
+  color: #252722;
+}
+textarea {
+  resize: vertical;
+  min-height: 150px;
+}
+small {
+  line-height: 1.65;
+}
+button {
+  border: 1px solid #737d71;
+  border-radius: 10px;
+  background: #fff;
+  padding: 11px 18px;
+  color: #283829;
+}
+ul {
+  padding-left: 20px;
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+  }
+}

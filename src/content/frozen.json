@@ -1,0 +1,1438 @@
+{
+  "version": "frozen-20260913-v1",
+  "items": [
+    {
+      "id": "D-01",
+      "version": "frozen-20260913-v1",
+      "type": "DEMAND",
+      "title": "阿橘",
+      "body": "今天喵了一整天，好累呀！明天不想和阿橘喵了，但我不知道怎么拒绝它，呜呜喵喵 😭",
+      "sha256": "4e9ccde41bc5917b8541fcebfc880e6e0fdb554076ec9ae244ccde55add90adf",
+      "sourceReference": {
+        "file": "有猫来信_W1核心体验样件与最小规则_V0.4.md",
+        "sha256": "69fea3e1709316515a6ef5cadc6b32ad5d82cafbbd6239dc7322663f15ec905f",
+        "section": "2.1"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "D-02",
+      "version": "frozen-20260913-v1",
+      "type": "DEMAND",
+      "title": "小黑虫子",
+      "body": "那个小黑虫子好烦人！怎么抓都抓不住，我是不是太笨了呀呜喵 ┭┮﹏┭┮",
+      "sha256": "9076c1bf233bddee6c93f1e791d042f0c89b9dabd624203fb4440fceee16fac2",
+      "sourceReference": {
+        "file": "有猫来信_W1核心体验样件与最小规则_V0.4.md",
+        "sha256": "69fea3e1709316515a6ef5cadc6b32ad5d82cafbbd6239dc7322663f15ec905f",
+        "section": "2.2"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "D-03",
+      "version": "frozen-20260913-v1",
+      "type": "DEMAND",
+      "title": "小礼物",
+      "body": "麻麻，我有个小礼物想送给你，但我担心你不喜欢，会觉得它没什么用呜呜~",
+      "sha256": "af16630efd691ce9edcc9733040bce1d3ea278e9b7216e91243b0800ee73b82f",
+      "sourceReference": {
+        "file": "有猫来信_W1核心体验样件与最小规则_V0.4.md",
+        "sha256": "69fea3e1709316515a6ef5cadc6b32ad5d82cafbbd6239dc7322663f15ec905f",
+        "section": "3.1"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "D-04",
+      "version": "frozen-20260913-v1",
+      "type": "DEMAND",
+      "title": "大橘",
+      "body": "今天大橘有点伤心，我想安慰它但不知道说什么，怎么办呀麻麻~",
+      "sha256": "7d11b6ea4409cd7e6bc203b1dde347c4471c54c8e0574144bf91381aa9676b5a",
+      "sourceReference": {
+        "file": "有猫来信_W1核心体验样件与最小规则_V0.4.md",
+        "sha256": "69fea3e1709316515a6ef5cadc6b32ad5d82cafbbd6239dc7322663f15ec905f",
+        "section": "3.2"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "D-05",
+      "version": "frozen-20260913-v1",
+      "type": "DEMAND",
+      "title": "追泡泡",
+      "body": "今天看到几只猫在玩追泡泡，好想加入呀，可是它们都不认识我，喵呜…我一直站在旁边没有动，好尴尬呜呜 😢",
+      "sha256": "cec01ce8686dca73033ae984d2fc2fa39affea459b3da2a3d6718a1397721a27",
+      "sourceReference": {
+        "file": "有猫来信_W1核心体验样件与最小规则_V0.4.md",
+        "sha256": "69fea3e1709316515a6ef5cadc6b32ad5d82cafbbd6239dc7322663f15ec905f",
+        "section": "4.1"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "D-06",
+      "version": "frozen-20260913-v1",
+      "type": "DEMAND",
+      "title": "小鱼干",
+      "body": "今天点心台上有好多种类的小鱼干，我光顾着犹豫选哪个了，最后什么都没吃到，肚子好饿呀喵 😭",
+      "sha256": "a74f3d5114ac39fdb15e08705dbe1b6d80c256c81ab3e017744dd4a88fd53142",
+      "sourceReference": {
+        "file": "有猫来信_W1核心体验样件与最小规则_V0.4.md",
+        "sha256": "69fea3e1709316515a6ef5cadc6b32ad5d82cafbbd6239dc7322663f15ec905f",
+        "section": "4.2"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "L-RHINE",
+      "version": "frozen-20260913-v1",
+      "type": "LINKED",
+      "title": "我走了另一条路",
+      "body": "今天爬山，旅伴们走得好快，我有点跟不上。\n\n想起你说过，累了可以歇一会，我就歇了一会儿。\n\n你猜我看到了什么？\n\n一条亮晶晶的河哎！我趴在那里看了好久好久。",
+      "sha256": "02022589f17ccdf253be408cb67f9c5f79a047f822993ae72b62b5e063a31b81",
+      "sourceReference": {
+        "file": "有猫来信_W1核心体验样件与最小规则_V0.4.md",
+        "sha256": "69fea3e1709316515a6ef5cadc6b32ad5d82cafbbd6239dc7322663f15ec905f",
+        "section": "2.3"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [
+        "允许累时休息"
+      ],
+      "exclusions": [],
+      "sceneId": "RHINE",
+      "ordinaryFallbackId": "O-RHINE-01",
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null,
+      "timeOfDay": "傍晚"
+    },
+    {
+      "id": "L-FIREFLY",
+      "version": "frozen-20260913-v1",
+      "type": "LINKED",
+      "title": "抱抱也是礼物",
+      "body": "麻麻，今天路上遇到一只小猫，它的风筝坏掉了，坐在草地上不说话，看起来好难过。\n\n我不知道该说什么，就想起你说的，陪着就好啦，于是我就静静地坐在它旁边，喵呜~\n\n你猜后来怎么样啦？\n\n天慢慢黑了，草地上飞起好多萤火虫，它突然笑了，还摘了一片叶子送给我当礼物呢！\n\n我抱着那片叶子，好开心呀麻麻，因为那是它的心意呀~",
+      "sha256": "f9856d0bc7366728d3b90d899381aa7f27049042afd0ae2f1f71d5fc16a83ae0",
+      "sourceReference": {
+        "file": "有猫来信_W1核心体验样件与最小规则_V0.4.md",
+        "sha256": "69fea3e1709316515a6ef5cadc6b32ad5d82cafbbd6239dc7322663f15ec905f",
+        "section": "3.3"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [
+        "陪伴表达关心",
+        "心意的价值"
+      ],
+      "exclusions": [],
+      "sceneId": "FIREFLY",
+      "ordinaryFallbackId": "O-FIREFLY-01",
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": "初夏",
+      "timeOfDay": "夜晚"
+    },
+    {
+      "id": "L-LIGHTHOUSE",
+      "version": "frozen-20260913-v1",
+      "type": "LINKED",
+      "title": "灯塔亮起来的时候",
+      "body": "今天走到海边，好多新朋友在追海浪，我一开始不敢过去。\n\n想起你说过，慢慢来就好，我就先站在旁边看了一会儿。\n\n你猜后来怎么样啦？\n\n灯塔亮起来啦！\n\n好多猫都围过来看，我也悄悄凑近了一点点，好暖呀～",
+      "sha256": "308754bcb26785b7d4f7fec11b5700c08b7c609b9f73337cf5c8e1f75b638b99",
+      "sourceReference": {
+        "file": "有猫来信_W1核心体验样件与最小规则_V0.4.md",
+        "sha256": "69fea3e1709316515a6ef5cadc6b32ad5d82cafbbd6239dc7322663f15ec905f",
+        "section": "4.3"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [
+        "面对新伙伴允许观察和慢慢来"
+      ],
+      "exclusions": [],
+      "sceneId": "LIGHTHOUSE",
+      "ordinaryFallbackId": "O-LIGHTHOUSE-01",
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null,
+      "timeOfDay": "傍晚"
+    },
+    {
+      "id": "O-RHINE-01",
+      "version": "frozen-20260913-v1",
+      "type": "ORDINARY",
+      "title": "山下面有一条亮亮的河",
+      "body": "麻麻，今天走到山上啦！\n\n风把旁边的叶子吹得哗啦哗啦，我往下面一看——有一条好长好长的河，亮得像一条带子。\n\n河上还有小船慢慢走，我趴着看了好久，差点忘记肚子饿了喵~",
+      "sha256": "af92db42e49dafb2bb0e28318287dda9072b20590773ddfe0beb9c4adddf659b",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "O-RHINE-01"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": "RHINE",
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null,
+      "timeOfDay": "傍晚"
+    },
+    {
+      "id": "O-FIREFLY-01",
+      "version": "frozen-20260913-v1",
+      "type": "ORDINARY",
+      "title": "好多小星星飞起来啦",
+      "body": "麻麻，今天晚上我去了一片安安静静的草地。\n\n天刚黑的时候，旁边忽然一闪、一闪，我还以为是谁在眨眼睛呢！\n\n后来好多萤火虫一起飞起来啦，像小星星掉到草地里。我坐着都不敢乱动，怕把它们吓跑喵~",
+      "sha256": "01582d33ae056157f8716fabdb95cd16e4ddb3a09661bffb4cd16c6d3cfac878",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "O-FIREFLY-01"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": "FIREFLY",
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": "初夏",
+      "timeOfDay": "夜晚"
+    },
+    {
+      "id": "O-LIGHTHOUSE-01",
+      "version": "frozen-20260913-v1",
+      "type": "ORDINARY",
+      "title": "灯塔一闪一闪的",
+      "body": "麻麻，今天海边的风超级大，我的耳朵一直被吹歪，哈哈！\n\n天慢慢暗下来的时候，远远的灯塔亮起来啦，一下一下照到海上。\n\n我和旁边几只猫一起抬头看了好久。海黑黑的，灯却好亮呀喵~",
+      "sha256": "d4faa3bba2e5a073765f2b7f6bf95987d5ddebaa0692f157e07635b41754cd0a",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "O-LIGHTHOUSE-01"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": "LIGHTHOUSE",
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null,
+      "timeOfDay": "傍晚"
+    },
+    {
+      "id": "TIPS-01",
+      "version": "frozen-20260913-v1",
+      "type": "TIP",
+      "title": "小提示 1",
+      "body": "不一定要替它决定明天怎么办。也可以先让它知道：累了、想休息，本身就可以说出来。",
+      "sha256": "d40c3b1e18e1a15feed81f08e75d0a6d119df850dc8ae78c0d2f04ead5976a05",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "TIPS-01"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "TIPS-02",
+      "version": "frozen-20260913-v1",
+      "type": "TIP",
+      "title": "小提示 2",
+      "body": "它现在好像把“没抓到”跟“我很笨”连在一起了。你可以先陪它把这两件事分开。",
+      "sha256": "66674333c2b003876216519068c21090c01beae6907fc5d1409cedd5946517a7",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "TIPS-02"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "TIPS-03",
+      "version": "frozen-20260913-v1",
+      "type": "TIP",
+      "title": "小提示 3",
+      "body": "它好像很在意：这份心意会不会被你喜欢。你可以先回应它的心意，不一定要评价礼物有没有用。",
+      "sha256": "9f67fb42a49f56054ee7f30e967c346c1bfae0ea646c9eaa0ce2d90b766587c9",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "TIPS-03"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "TIPS-04",
+      "version": "frozen-20260913-v1",
+      "type": "TIP",
+      "title": "小提示 4",
+      "body": "安慰不一定要说出一句很厉害的话。有时候，认真陪在旁边也已经是在关心了。",
+      "sha256": "643fa25997220a0ecbc3bfb0b3d53f2d8b968a73ef545c684d3325f5bce45be4",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "TIPS-04"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "TIPS-05",
+      "version": "frozen-20260913-v1",
+      "type": "TIP",
+      "title": "小提示 5",
+      "body": "不用保证它一定会被大家喜欢。也可以陪它想想：有没有一个更小、更舒服的第一步。",
+      "sha256": "d837611ca0232050ffcd5fa22b54ecf2b48f09740da07d9eb3d366f9213102ed",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "TIPS-05"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "TIPS-06",
+      "version": "frozen-20260913-v1",
+      "type": "TIP",
+      "title": "小提示 6",
+      "body": "选择太多的时候，可以先把第一步变小一点。比如先试一个，不需要一开始就选到“最好”的。",
+      "sha256": "323cc40a0973d24aa0cd4cb8821ef5617098ced792473fc55998413d4793aecb",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "TIPS-06"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-001",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 1",
+      "body": "这是一只还在慢慢长大的小猫。",
+      "sha256": "7d3ef4fb95cabd37e1ab53ba67ff3039ea6fffbd3f439655326b3f1858f366bd",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 1"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-002",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 2",
+      "body": "它会把每天的小事写给你。\n你想回的时候就回几句，不想回也没关系。\n\n有时候，它会自己跑出去旅行，再从远方寄信回来。",
+      "sha256": "137acd7abd1d8fceaade66dc17b0950232414a0e823b5f56a0ce4cf9484f713b",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 2"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-003",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 3",
+      "body": "给它起个名字吧",
+      "sha256": "501cbda78ca9397fb614e7d657575cf1a5c54b7ab5a742b7725c8a0348110e04",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 3"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-004",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 4",
+      "body": "小咪",
+      "sha256": "d79f82b7d6cea63adc3271052151092eff975db79f1e80412ba79e8f5b645eca",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 4"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-005",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 5",
+      "body": "开始一起生活",
+      "sha256": "59b0dc546a4ea9cbbde9608aa79c2329add316461e5940cb3b17df75c06c2a49",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 5"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-006",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 6",
+      "body": "测试与数据说明",
+      "sha256": "18ec8044c7da45988612b9857fdbfdb01a99f714bd09b451a433fb29e53eb0db",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 6"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-007",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 7",
+      "body": "暂时离开",
+      "sha256": "84f433a4ecbd1cc8e8036662b772ee202802c0930f249d78b0cd8ac4b760cba1",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 7"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-008",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 8",
+      "body": "今天有一封来信",
+      "sha256": "1b4ea4957c747ca01d1f55735f6490a95f4811e810899d57acd10ec1b6035816",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 8"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-009",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 9",
+      "body": "看看来信",
+      "sha256": "216c5a25923b6115a4d0ea10f99a5b5943ca2fa6da689d95462f4c4f1cb348e4",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 9"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-010",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 10",
+      "body": "今天没有新来信。",
+      "sha256": "812814b1b5dec9ed00af02504007fd80477f8afcb08f898dac88c22c5bd233cd",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 10"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-011",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 11",
+      "body": "小咪正在窗边追一块光。",
+      "sha256": "c1c05081b4d0f82e3dd11cd5bf328a1b053ea4ea912b5f1f92f752904391c4e3",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 11"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-012",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 12",
+      "body": "小咪刚刚钻进纸箱里了，只露出一只耳朵。",
+      "sha256": "3749cd522535e8b2be9af3434d94a29611246018440e4c77c3330d0f5f2cd17c",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 12"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-013",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 13",
+      "body": "在家",
+      "sha256": "5879c0bf32bb823f3ed464a13cdbfbd4c676b52954fd6b05b7ef85782371cb6c",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 13"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-014",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 14",
+      "body": "暂停来信\n测试与数据说明\n管理我的回应\n退出测试",
+      "sha256": "0b251935a3dd495c197efb1dcedf36f21ff3159615ed9760a1904398174a6aa2",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 14"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-015",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 15",
+      "body": "你想跟它说什么？",
+      "sha256": "b6738658f310b654955d14479e961158b68fcf40f5388a92a07176a4b1d2ed4c",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 15"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-016",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 16",
+      "body": "写几句就好……",
+      "sha256": "ea0b92469b808f43dae28874be6f23b1fd58599160d68091486395dc9242a013",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 16"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-017",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 17",
+      "body": "看看小提示",
+      "sha256": "77026fd96c88286248206564e20087e837685f5cee8097476c67215e9c536fe9",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 17"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-018",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 18",
+      "body": "送出去",
+      "sha256": "b556479b1c9058130fe6524fa7d33c9be9717dc64bfdcb6a032468043c12d7f1",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 18"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-019",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 19",
+      "body": "这次先不回",
+      "sha256": "5d398ce113012be9ce6de48756345afa8c8bd24c408f7ff766ab57cd57e1346e",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 19"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-020",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 20",
+      "body": "送出去啦。",
+      "sha256": "af0a1d0dd59e54b54db17f2fb5fcc5adf77d27ae674d17cd2acfa537e4abb03f",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 20"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-021",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 21",
+      "body": "回到小咪身边",
+      "sha256": "980e4ebe9cc75a36731a9fab41edddf074e1f6c641a1349c53c58e35ec90ba98",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 21"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-022",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 22",
+      "body": "好像没有送出去，再试一次吧。",
+      "sha256": "b66d86f3a49205542c4685d51b290e0bfb5a1a3cb7d09219e5575326d2b95ff4",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 22"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-023",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 23",
+      "body": "再试一次\n先保存草稿",
+      "sha256": "5fad2dea7c9055b204ba2aa6f13f76e70ab78e4747bc9e2433ec6429c2f203ce",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 23"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-024",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 24",
+      "body": "小咪出去旅行啦 🐾",
+      "sha256": "2bc2c9fdc6dbec9b569af365a60de9936a30ab58934855fdf2d4dc71e048f067",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 24"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-025",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 25",
+      "body": "它什么时候寄信回来？不知道呢。",
+      "sha256": "21fa54316f2066b8f04e4196675ea765cdb5f0c64c27198a345618971c6462b1",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 25"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-026",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 26",
+      "body": "远方来了一封信！",
+      "sha256": "f742feb4634789d29f5b89ffed10807648cb2f1a23e3670483a1fa4fb9d4eef0",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 26"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-027",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 27",
+      "body": "打开看看",
+      "sha256": "a2ebec4ef43126a7ce1d16a597ed501b998acf5a33b6c3f84cb8424d05373bda",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 27"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-028",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 28",
+      "body": "小咪还在外面转悠呢。",
+      "sha256": "5b0cbb5e8a556eac5540fe97abb02cc0478867b1a4b1e401d94d385afa9b370b",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 28"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-029",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 29",
+      "body": "收好这封信",
+      "sha256": "feb3f079d0a72dee3b30fd71814cd6cecdb11bf22d6a1a2a93df3a13ae63c1c1",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 29"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-030",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 30",
+      "body": "回到旅行页",
+      "sha256": "d79a837645d32ea34c59fb64fc0cea9944c266dac3dd3f2e67674aabad974d3f",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 30"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-031",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 31",
+      "body": "回到小咪身边",
+      "sha256": "980e4ebe9cc75a36731a9fab41edddf074e1f6c641a1349c53c58e35ec90ba98",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 31"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-033",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 33",
+      "body": "来信盒",
+      "sha256": "46856c2b1390ad89dc7e19faeaac300e3a86e326092caa8c246acbf83e9d885d",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 33"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-034",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 34",
+      "body": "全部\n在家时\n旅行时",
+      "sha256": "e1ddceecee75a206e02ff1bbeb43233a2d42fa86552fe2c00c54ba3e5eafd95a",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 34"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-035",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 35",
+      "body": "看看以前的来信",
+      "sha256": "6cffd87ed75eb1008141a813a4ff02c31ff25789dc35136668a01f6dd43f6e60",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 35"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-036",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 36",
+      "body": "以前有一次，小咪也跟你聊过一件小事。",
+      "sha256": "32c39aa24cae709a91123428ed7f3af0e0c63750040c44c40776cca5213b1b2f",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 36"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-037",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 37",
+      "body": "那次你对小咪说：",
+      "sha256": "8291b5f3d4b306a617b29b8e8e3d889d68757c23239d71c51b76197a9ea8eeb6",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 37"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-038",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 38",
+      "body": "留一句给自己",
+      "sha256": "b218a9d036760a9f1bd77e6231cbe79c8acf265c3ff5642408f71d84d4f61ae5",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 38"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-039",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 39",
+      "body": "你可以留下原话，也可以改成更适合现在的自己。",
+      "sha256": "9829e82220f9f68772920faf3a90349df799f789cf40a1bbd225fbab0cbf1f49",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 39"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-040",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 40",
+      "body": "保存\n算了",
+      "sha256": "ad87ce7f1e9052b0087383d9ea10eb136afaf7008c14e753f29dadb5c673eab4",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 40"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-041",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 41",
+      "body": "已留下。",
+      "sha256": "241a4660e5bfbc5acf15302753524f0bb99b9b2016fe63dbe644887e58979b90",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 41"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-042",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 42",
+      "body": "管理这条回应",
+      "sha256": "0b06648afaf8ab1218598470a1f0b18049fb64f4547ca2d76d8e097c8f7aa623",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 42"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-043",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 43",
+      "body": "删除这条回应？",
+      "sha256": "635729bf9c107c7d3e9dd060e59a16c8c9eacbe01d1680e39e8240dd7582b809",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 43"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-044",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 44",
+      "body": "删除后，它不会再被用于未来的旅行来信。\n已经寄到你这里的旧明信片不会被偷偷改掉。",
+      "sha256": "bcf92a8b52d6d7d14147c00db462eeeaa5b24a64edcf3c467fd2dd138374a61b",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 44"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-045",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 45",
+      "body": "删除\n取消",
+      "sha256": "ff5503d8ba7c39438a6a64168d1323eedac779dc3e3b230607c107b4f7e15f34",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 45"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-046",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 46",
+      "body": "已删除。",
+      "sha256": "7ab942d11ed6f020da58513ccbb29f00ec18944ce29381cfb2929cec78c63607",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 46"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-047",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 47",
+      "body": "暂停一阵子吗？",
+      "sha256": "e22009c810e3d78cf9d87e1b259b6925771795b2fd4b229066935fc0c5e1406a",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 47"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-048",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 48",
+      "body": "暂停后，暂时不会有新的来信。\n想回来的时候，再继续就好。",
+      "sha256": "426d946938ec181d8508c957489c8ef565c77daf9a0382416ae598907780ecc9",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 48"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-049",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 49",
+      "body": "暂停来信\n先不了",
+      "sha256": "2f8e22ddabdfb808bfb26bf3b3ee1d05288464f2e1bf04f3301f9a10b03e9a2b",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 49"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-050",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 50",
+      "body": "欢迎回来。",
+      "sha256": "a0764d02bf35fbdb8d2951849113c6f25b9c30bb7c3d53c7cbfbd905ce32ec92",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 50"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-051",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 51",
+      "body": "继续看看小咪",
+      "sha256": "8e2e80ff1b0399887ba40d97c573b00d4240b8ca853273db082e0b378d097e05",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 51"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-052",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 52",
+      "body": "退出这次测试？",
+      "sha256": "7fabbae4f0aa80251319aaaf22b3f91369484be76c7cc1d29dc8b3b3e63b9c5c",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 52"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-053",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 53",
+      "body": "退出后不会再收到新的测试来信。\n你的资料会按照测试说明中的规则处理。",
+      "sha256": "87e45f8e7517f8c5f02a25322c835cb45fb78aa55167f401d94cf155adfabab6",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 53"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    },
+    {
+      "id": "SYS-054",
+      "version": "frozen-20260913-v1",
+      "type": "SYSTEM",
+      "title": "系统词条 54",
+      "body": "确认退出\n返回",
+      "sha256": "e92b990340ee6d21f3ad683ade9d92d785dbcbf8cf9a5cf884a6d48a7fbdbf9d",
+      "sourceReference": {
+        "file": "有猫来信_W1-G原型内容补齐_V0.1.md",
+        "sha256": "030e7ee5ecc3a132d3065a3439f38894b8f6a708f8ce0bef2dfa9a4db988bd0d",
+        "section": "系统词条 block 54"
+      },
+      "status": "INTERNAL_DRAFT",
+      "claimRequirements": [],
+      "exclusions": [],
+      "sceneId": null,
+      "ordinaryFallbackId": null,
+      "visualId": "internal-placeholder-v1",
+      "narrativeSeason": null
+    }
+  ]
+}
