@@ -3,7 +3,7 @@ const base = "http://127.0.0.1:4173/travel-cat-planner/app/";
 async function data(page: Page) {
   return page.evaluate(async () => {
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
-      const r = indexedDB.open("cat-letters-pages-v1", 1);
+      const r = indexedDB.open("cat-letters-pages-v1");
       r.onsuccess = () => resolve(r.result);
       r.onerror = () => reject(r.error);
     });
@@ -70,6 +70,11 @@ test("Static P1–P6, refresh persistence, double tabs, zero response travel and
   await page.getByRole("button", { name: "看看来信", exact: true }).click();
   await page.getByLabel("你想跟它说什么？").fill("合成回应甲");
   const second = await ctx.newPage();
+  // Keep a deliberately stale form for the duplicate-write test. Otherwise the
+  // cross-tab refresh can remove its button before Playwright dispatches click.
+  await second.addInitScript(() => {
+    Object.defineProperty(window, "BroadcastChannel", { value: undefined });
+  });
   await second.goto(urlA);
   await second.getByRole("button", { name: "来信盒", exact: true }).click();
   await second.getByRole("button", { name: /阿橘/ }).click();
@@ -201,7 +206,7 @@ test("Unavailable storage and aborted writes never report success", async ({
   });
   const p = await unavailable.newPage();
   await p.goto(base);
-  await expect(p.locator("p[role=alert]")).toContainText("无法读取本机数据");
+  await expect(p.locator("p[role=alert]")).toContainText("无法保存本机数据");
   await expect(p.getByText("今天没有新来信。", { exact: true })).toHaveCount(0);
   await unavailable.close();
   const ctx = await browser.newContext(),

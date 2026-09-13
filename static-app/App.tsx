@@ -2,7 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { api, type AppState, type Letter } from "./local-api";
 import s from "../src/app/page.module.css";
 import LocalControl from "./Control";
-import { listParticipants, type LocalState } from "./store";
+import ResponseManager from "./ResponseManager";
+import SourceHistory from "./SourceHistory";
+import {
+  listParticipants,
+  subscribe,
+  LocalError,
+  type LocalState,
+} from "./store";
 import { selectedId } from "./local-api";
 const scenes: Record<string, string> = {
   RHINE: "德国 · 莱茵河谷",
@@ -24,9 +31,13 @@ export default function Home() {
     [draft, setDraft] = useState(""),
     [filter, setFilter] = useState("全部"),
     [safety, setSafety] = useState(false);
+  const [manage, setManage] = useState(false),
+    [message, setMessage] = useState(""),
+    [firstRead, setFirstRead] = useState(false);
   const generation = useRef(0);
   const [saved, setSaved] = useState<LocalState[]>([]);
   const pending = useRef(false);
+  const currentView = useRef<{ responseId?: string }>({});
   async function reload() {
     const epoch = generation.current,
       pid = selectedId();
@@ -46,7 +57,11 @@ export default function Home() {
     } catch (e) {
       if (epoch === generation.current) {
         setLoadFailed(true);
-        setError("无法读取本机数据，请检查浏览器存储设置后重试。");
+        setError(
+          e instanceof LocalError
+            ? e.message
+            : "无法读取本机数据，原数据保留，请稍后重试。",
+        );
       }
     } finally {
       if (epoch === generation.current) setLoaded(true);
@@ -62,6 +77,27 @@ export default function Home() {
     window.addEventListener("focus", refresh);
     return () => window.removeEventListener("focus", refresh);
   }, [draft]);
+  useEffect(
+    () =>
+      subscribe((change) => {
+        if (change.redacted) {
+          setSaved([]);
+          if (
+            change.participantId === selectedId() &&
+            change.redacted === currentView.current.responseId
+          ) {
+            setDraft("");
+            setManage(false);
+          }
+        }
+        if (change.participantId === selectedId() && !pending.current)
+          reload().catch((e) => setError(e.message));
+        listParticipants()
+          .then(setSaved)
+          .catch(() => {});
+      }),
+    [],
+  );
   async function run(action: () => Promise<void>) {
     if (pending.current) return;
     pending.current = true;
@@ -85,6 +121,9 @@ export default function Home() {
       await reload();
       if (epoch !== generation.current || pid !== selectedId()) return;
       setLetterId(l.id);
+      setFirstRead(!l.read_at);
+      setManage(false);
+      setMessage("");
       setDraft("");
       setScreen("letter");
       window.scrollTo(0, 0);
@@ -100,6 +139,9 @@ export default function Home() {
       };
       const result = await api(`letters/${submitted.letterId}/respond`, {
         text: submitted.text,
+        expectedResponseId:
+          state?.letters.find((l) => l.id === submitted.letterId)?.responseId ??
+          null,
       });
       if (
         submitted.pid !== selectedId() ||
@@ -108,6 +150,7 @@ export default function Home() {
         return;
       if ((result as { safety?: string }).safety) {
         setSafety(true);
+        setDraft("");
         reload().catch(() => {});
         return;
       }
@@ -123,11 +166,20 @@ export default function Home() {
       (x) => !x.read_at && !x.skipped_at && !x.response,
     ),
     intercepted = safety || state?.participant.safety_state === "INTERCEPTED";
+  currentView.current = {
+    responseId:
+      letter?.responseId &&
+      state?.responses[letter.responseId]?.status === "ACTIVE"
+        ? letter.responseId
+        : undefined,
+  };
   async function selectExperience(id: string) {
     if (pending.current) return;
     generation.current++;
     history.replaceState(null, "", id ? `#${id}` : location.pathname);
     setDraft("");
+    setManage(false);
+    setMessage("");
     setLetterId(null);
     setScreen("home");
     setSafety(false);
@@ -242,7 +294,14 @@ export default function Home() {
         </main>
       ) : screen === "letter" && letter ? (
         <main>
-          <button className={s.quiet} onClick={() => setScreen("inbox")}>
+          <button
+            disabled={busy}
+            className={s.quiet}
+            onClick={() => {
+              setManage(false);
+              setScreen("inbox");
+            }}
+          >
             ← 来信盒
           </button>
           {letter.type === "POSTCARD" ? (
@@ -268,9 +327,11 @@ export default function Home() {
           <article className={s.letter}>
             <div className={s.story}>{letter.snapshot.body}</div>
           </article>
+          {message && !letter.response && <p role="status">{message}</p>}
           {letter.type === "POSTCARD" ? (
             <>
               <p className={s.signature}>—— {letter.snapshot.catName}</p>
+              {!firstRead && <SourceHistory letter={letter} state={state} />}
               <button className={s.primary} onClick={() => setScreen("home")}>
                 收好这封信
               </button>
@@ -279,6 +340,39 @@ export default function Home() {
             <>
               <h2>那次你对{letter.snapshot.catName}说：</h2>
               <p className={s.story}>{letter.response}</p>
+              {message && <p role="status">{message}</p>}
+              {manage && letter.responseId ? (
+                <ResponseManager
+                  key={letter.responseId}
+                  participantId={state.participant.id}
+                  response={state.responses[letter.responseId]}
+                  onBusy={(value) => {
+                    pending.current = value;
+                    setBusy(value);
+                  }}
+                  onCancel={() => setManage(false)}
+                  onDone={(result) => {
+                    setManage(false);
+                    setDraft("");
+                    setMessage(result.message ?? "");
+                    if (result.safety) setSafety(true);
+                    reload().catch(() =>
+                      setError("保存已完成，但读取暂时失败，请刷新来信。"),
+                    );
+                  }}
+                />
+              ) : (
+                <button
+                  className={s.secondary}
+                  disabled={busy}
+                  onClick={() => {
+                    setManage(true);
+                    setMessage("");
+                  }}
+                >
+                  管理这条回应
+                </button>
+              )}
             </>
           ) : (
             <form

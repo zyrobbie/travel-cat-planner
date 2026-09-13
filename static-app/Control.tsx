@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { listParticipants, control, readState, type LocalState } from "./store";
+import {
+  listParticipants,
+  control,
+  readState,
+  type LocalState,
+  subscribe,
+} from "./store";
 import { selectedId } from "./local-api";
+import ReviewPanel from "./ReviewPanel";
 import s from "../src/app/page.module.css";
 export default function LocalControl({
   onSelect,
@@ -44,6 +51,14 @@ export default function LocalControl({
   useEffect(() => {
     run(() => refresh());
   }, []);
+  useEffect(
+    () =>
+      subscribe((change) => {
+        if (change.participantId === selection.current && !running.current)
+          run(() => refresh(selection.current));
+      }),
+    [],
+  );
   async function action(value: string) {
     await run(async () => {
       if (!state) return;
@@ -165,6 +180,17 @@ export default function LocalControl({
           >
             寄出旅行明信片
           </button>
+          <ReviewPanel
+            key={id}
+            state={state}
+            busy={busy}
+            perform={(fn) =>
+              run(async () => {
+                await fn();
+                await refresh();
+              })
+            }
+          />
           <details>
             <summary>演示操作记录</summary>
             {state.events.map((e, i) => (

@@ -17,7 +17,8 @@
     "typecheck": "tsc --noEmit",
     "pages:build": "vite build --config static-app/vite.config.ts",
     "pages:preview": "vite preview --config static-app/vite.config.ts",
-    "pages:test": "playwright test --config static-app/playwright.config.ts"
+    "pages:test": "playwright test --config static-app/playwright.config.ts",
+    "pages:test:e2a": "node scripts/prepare-e2a-baseline.mjs && playwright test --config static-app/e2a.playwright.config.ts"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
