@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>有猫来信 · 核心组件设计 V1.0</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="review-header">
+    <div><h1>有猫来信<span>核心组件</span></h1><p>一起写下的小日常</p></div>
+    <div class="edition">V1.0 · 设计提案<br><span>2026.09.23 · 待验收</span></div>
+  </header>
+  <nav class="review-nav" aria-label="组件设计导航">
+    <button data-view="overview" aria-pressed="true">总览</button>
+    <button data-view="daily" aria-pressed="false">日常需求卡</button>
+    <button data-view="postcard" aria-pressed="false">旅行明信片</button>
+    <button data-view="choice" aria-pressed="false">猫咪选择卡</button>
+    <button data-view="reply" aria-pressed="false">回复输入</button>
+    <button data-view="growth" aria-pressed="false">成长记录</button>
+    <button data-view="tokens" aria-pressed="false">基础规范</button>
+  </nav>
+  <div class="review-notice">组件设计预览 · 可点选、展开和输入；所有交互仅在当前页面演示，不录音、不发送，也不保存内容。</div>
+  <main id="canvas" tabindex="-1"></main>
+  <footer class="review-footer"><span>角色与场景使用已定稿原图，等比完整呈现。</span><a href="组件规范与使用说明.md">组件规范与使用说明</a></footer>
+  <script src="components.js"></script>
+</body>
+</html>

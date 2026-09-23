@@ -1,0 +1,80 @@
+[
+  {
+    "filename": "V1-cat-avatar-cat-01.png",
+    "sha256": "da2d107d519cc1369a0730002c38f113bb48aae4c2d4c54ec0e7eff19a112628",
+    "usage": "original PNG, no crop, no retouch",
+    "published_path": "assets/V1-cat-avatar-cat-01.png"
+  },
+  {
+    "filename": "V1-cat-avatar-cat-02.png",
+    "sha256": "d1f23de7ea7cb771de2e5607a7c04f53b929bf47d2f1da8e08e978c3f774a96d",
+    "usage": "original PNG, no crop, no retouch",
+    "published_path": "assets/V1-cat-avatar-cat-02.png"
+  },
+  {
+    "filename": "V1-cat-avatar-cat-03.png",
+    "sha256": "f8f0c91510e57290c2747e36f9487c384d9bd6e8eb6ab2c7731d057893b56d5f",
+    "usage": "original PNG, no crop, no retouch",
+    "published_path": "assets/V1-cat-avatar-cat-03.png"
+  },
+  {
+    "filename": "V1-cat-avatar-cat-04.png",
+    "sha256": "216117894faab55ab99f0442e5073f22f206c2787b3f818a0e99c29561076cbc",
+    "usage": "original PNG, no crop, no retouch",
+    "published_path": "assets/V1-cat-avatar-cat-04.png"
+  },
+  {
+    "filename": "V1-cat-fullbody-cat-01.png",
+    "sha256": "15f2bcc911f109e5b98f0d9cbea4231657661df7622f022deb7bfe39b3fa0392",
+    "usage": "original PNG, no crop, no retouch",
+    "published_path": "assets/V1-cat-fullbody-cat-01.png"
+  },
+  {
+    "filename": "V1-cat-fullbody-cat-02.png",
+    "sha256": "51fc3f3170b619f7dd59eee96dc7786ed474c23abae2386525681256bd550606",
+    "usage": "original PNG, no crop, no retouch",
+    "published_path": "assets/V1-cat-fullbody-cat-02.png"
+  },
+  {
+    "filename": "V1-cat-fullbody-cat-03.png",
+    "sha256": "fb38b8aae55d47349740acfcb169dd69ceddec8197b7c5fe405240a02e5c5baa",
+    "usage": "original PNG, no crop, no retouch",
+    "published_path": "assets/V1-cat-fullbody-cat-03.png"
+  },
+  {
+    "filename": "V1-cat-fullbody-cat-04.png",
+    "sha256": "5bc3e3454e0a4acfd6699293d66e020e0686a57d8611a927fb0243f65fb984c9",
+    "usage": "original PNG, no crop, no retouch",
+    "published_path": "assets/V1-cat-fullbody-cat-04.png"
+  },
+  {
+    "filename": "V1-postcard-rhine-cat-01.png",
+    "sha256": "2055a575cd0a5a45c6cfedde0e9e66d4f8d6ef88c6daf000976f561ebccd4693",
+    "usage": "original PNG, no crop, no retouch",
+    "published_path": "assets/V1-postcard-rhine-cat-01.png"
+  },
+  {
+    "filename": "V1-postcard-firefly-cat-02.png",
+    "sha256": "730a8b1b6e0d253bdab9099c0781911fdafd4e0bae66322d7bb85b37e51a4a7e",
+    "usage": "original PNG, no crop, no retouch",
+    "published_path": "assets/V1-postcard-firefly-cat-02.png"
+  },
+  {
+    "filename": "V1-postcard-lighthouse-cat-03.png",
+    "sha256": "f6216e28b31ca86d1a8328d82e853492ab3043c006b4e341fdea74a1d3aa73fa",
+    "usage": "original PNG, no crop, no retouch",
+    "published_path": "assets/V1-postcard-lighthouse-cat-03.png"
+  },
+  {
+    "filename": "V1-home-window-cat-01.png",
+    "sha256": "5c06438a4e6ac1829579db8d299b20a072db821caea1156a5ab3fc423e45b7b8",
+    "usage": "original PNG, no crop, no retouch",
+    "published_path": "assets/V1-home-window-cat-01.png"
+  },
+  {
+    "filename": "V1-travel-path-cat-04.png",
+    "sha256": "215e9e98594b84859dd10ef63fa3de7950e6b35e954fce9b4d77f8a31f9cd34b",
+    "usage": "original PNG, no crop, no retouch",
+    "published_path": "assets/V1-travel-path-cat-04.png"
+  }
+]
