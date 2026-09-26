@@ -1,0 +1,482 @@
+[
+  {
+    "id": "A-empty-M",
+    "scene": "A-empty",
+    "viewport": [
+      390,
+      844
+    ],
+    "contentHeight": 1085,
+    "scale": 2,
+    "filename": "V1-ui-page-01A-cat-selection.png",
+    "pixels": [
+      780,
+      2170
+    ],
+    "sha256": "3523685a808eceb7d290627d0098c4005a50b2e1b9aa8bf024c7f6e8d6d17f11"
+  },
+  {
+    "id": "A-selected-M",
+    "scene": "A-selected",
+    "viewport": [
+      390,
+      844
+    ],
+    "contentHeight": 1085,
+    "scale": 2,
+    "filename": "V1-ui-page-01A-cat-selection-state-selected.png",
+    "pixels": [
+      780,
+      2170
+    ],
+    "sha256": "fe703d6bec7af8376068fd9793d36aebb412e796bfac9aca7e84efad3993df64"
+  },
+  {
+    "id": "A-other-M",
+    "scene": "A-other",
+    "viewport": [
+      390,
+      844
+    ],
+    "contentHeight": 1085,
+    "scale": 2,
+    "filename": "V1-ui-page-01A-cat-selection-state-selected-cat04.png",
+    "pixels": [
+      780,
+      2170
+    ],
+    "sha256": "8b1337e55170305a4e29fe531a4443091a9a5fbdaf9a50c6325b645c080956e5"
+  },
+  {
+    "id": "A-image-error-M",
+    "scene": "A-image-error",
+    "viewport": [
+      390,
+      844
+    ],
+    "contentHeight": 1085,
+    "scale": 2,
+    "filename": "V1-ui-page-01A-cat-selection-state-image-error.png",
+    "pixels": [
+      780,
+      2170
+    ],
+    "sha256": "01e349ac425e87e91adcce38fb91d25fa8d67de1f18a2d7d4fdc72f7847757b6"
+  },
+  {
+    "id": "B-empty-M",
+    "scene": "B-empty",
+    "viewport": [
+      390,
+      844
+    ],
+    "contentHeight": 844,
+    "scale": 2,
+    "filename": "V1-ui-page-01B-cat-naming-state-empty.png",
+    "pixels": [
+      780,
+      1688
+    ],
+    "sha256": "0df5b6c4abd31065c3765f6d038e8169dddeebfb3b8af99421103aa33356ea8f"
+  },
+  {
+    "id": "B-focus-M",
+    "scene": "B-focus",
+    "viewport": [
+      390,
+      844
+    ],
+    "contentHeight": 844,
+    "scale": 2,
+    "filename": "V1-ui-page-01B-cat-naming-state-focus.png",
+    "pixels": [
+      780,
+      1688
+    ],
+    "sha256": "31081ba103cdd04ba5aca32ac3ad3cb2eeeaf44ed235ca8a5484bee76372b19b"
+  },
+  {
+    "id": "B-filled-M",
+    "scene": "B-filled",
+    "viewport": [
+      390,
+      844
+    ],
+    "contentHeight": 844,
+    "scale": 2,
+    "filename": "V1-ui-page-01B-cat-naming.png",
+    "pixels": [
+      780,
+      1688
+    ],
+    "sha256": "25b3ffcc11a071116b2e9abc30fb184903df66bdc10c0005c683ca781926b41c"
+  },
+  {
+    "id": "B-boundary-M",
+    "scene": "B-boundary",
+    "viewport": [
+      390,
+      844
+    ],
+    "contentHeight": 844,
+    "scale": 2,
+    "filename": "V1-ui-page-01B-cat-naming-state-12-characters.png",
+    "pixels": [
+      780,
+      1688
+    ],
+    "sha256": "16c80867c74c886d91ee40c4113137b9d35cd6c3fd6a00bb9f111c0ab06b6e8b"
+  },
+  {
+    "id": "B-too-long-M",
+    "scene": "B-too-long",
+    "viewport": [
+      390,
+      844
+    ],
+    "contentHeight": 844,
+    "scale": 2,
+    "filename": "V1-ui-page-01B-cat-naming-state-error.png",
+    "pixels": [
+      780,
+      1688
+    ],
+    "sha256": "564be9f8a3d88de9578cbf5a64ea9aa1f44baab4cb1a54e2f103d2440d794701"
+  },
+  {
+    "id": "B-empty-error-M",
+    "scene": "B-empty-error",
+    "viewport": [
+      390,
+      844
+    ],
+    "contentHeight": 844,
+    "scale": 2,
+    "filename": "V1-ui-page-01B-cat-naming-state-empty-error.png",
+    "pixels": [
+      780,
+      1688
+    ],
+    "sha256": "e59afc62067a4f3070e05f0ab28f6fbdffb80934ad6d075f76aa67833ed443bd"
+  },
+  {
+    "id": "B-keyboard-M",
+    "scene": "B-keyboard",
+    "viewport": [
+      390,
+      844
+    ],
+    "contentHeight": 844,
+    "scale": 2,
+    "filename": "V1-ui-page-01B-cat-naming-state-keyboard.png",
+    "pixels": [
+      780,
+      1688
+    ],
+    "sha256": "ca2a892765e584a6b84722b56ade31208e970fc6362bf9c58dec355d402a5ea3"
+  },
+  {
+    "id": "B-restored-M",
+    "scene": "B-restored",
+    "viewport": [
+      390,
+      844
+    ],
+    "contentHeight": 844,
+    "scale": 2,
+    "filename": "V1-ui-page-01B-cat-naming-state-draft-restored.png",
+    "pixels": [
+      780,
+      1688
+    ],
+    "sha256": "14dc6962e8b5b645aaf6238f20ef205695c70a41c77e8d6be5e1707610f79f5c"
+  },
+  {
+    "id": "C-ready-M",
+    "scene": "C-ready",
+    "viewport": [
+      390,
+      844
+    ],
+    "contentHeight": 844,
+    "scale": 2,
+    "filename": "V1-ui-page-01C-adoption-confirm.png",
+    "pixels": [
+      780,
+      1688
+    ],
+    "sha256": "bf3492066951f624d2a8257588750e39dfb3288b564d6fdff92bc51e4e89c244"
+  },
+  {
+    "id": "C-submitting-M",
+    "scene": "C-submitting",
+    "viewport": [
+      390,
+      844
+    ],
+    "contentHeight": 844,
+    "scale": 2,
+    "filename": "V1-ui-page-01C-adoption-confirm-state-submitting.png",
+    "pixels": [
+      780,
+      1688
+    ],
+    "sha256": "ad6bb5cd677a07303a1582e5bdbc71b4b078b78a6f038604c5e957312850d762"
+  },
+  {
+    "id": "C-error-M",
+    "scene": "C-error",
+    "viewport": [
+      390,
+      844
+    ],
+    "contentHeight": 844,
+    "scale": 2,
+    "filename": "V1-ui-page-01C-adoption-confirm-state-error.png",
+    "pixels": [
+      780,
+      1688
+    ],
+    "sha256": "158d220a5b5b2d4c5fa12a8c6bf3132c10265c3d9f73af0c214d858a7e435697"
+  },
+  {
+    "id": "C-unknown-M",
+    "scene": "C-unknown",
+    "viewport": [
+      390,
+      844
+    ],
+    "contentHeight": 844,
+    "scale": 2,
+    "filename": "V1-ui-page-01C-adoption-confirm-state-unknown.png",
+    "pixels": [
+      780,
+      1688
+    ],
+    "sha256": "ff280be8463da4598050588ba10378897fe09b33bb726fd2e4938242c02cfaa6"
+  },
+  {
+    "id": "C-reading-M",
+    "scene": "C-reading",
+    "viewport": [
+      390,
+      844
+    ],
+    "contentHeight": 844,
+    "scale": 2,
+    "filename": "V1-ui-page-01C-adoption-confirm-state-reading.png",
+    "pixels": [
+      780,
+      1688
+    ],
+    "sha256": "ea548d3347c96cfd72f7cd0691c87033379e6b517db84c95c0046c9a5c038b17"
+  },
+  {
+    "id": "C-confirmed-M",
+    "scene": "C-confirmed",
+    "viewport": [
+      390,
+      844
+    ],
+    "contentHeight": 844,
+    "scale": 2,
+    "filename": "V1-ui-page-01C-adoption-confirm-state-confirmed.png",
+    "pixels": [
+      780,
+      1688
+    ],
+    "sha256": "2653506a570865f93a5966a8d712fff3bae6922ff34ef13e112e9bffc8292c83"
+  },
+  {
+    "id": "A-empty-S",
+    "scene": "A-empty",
+    "viewport": [
+      360,
+      800
+    ],
+    "contentHeight": 1078,
+    "scale": 2,
+    "filename": "V1-ui-page-01A-cat-selection-S.png",
+    "pixels": [
+      720,
+      2156
+    ],
+    "sha256": "85df36210117e0dac5c74f1aeecd935793d1eac8b7b9dd135b4e55e850e52a4c"
+  },
+  {
+    "id": "A-selected-S",
+    "scene": "A-selected",
+    "viewport": [
+      360,
+      800
+    ],
+    "contentHeight": 1078,
+    "scale": 2,
+    "filename": "V1-ui-page-01A-cat-selection-state-selected-S.png",
+    "pixels": [
+      720,
+      2156
+    ],
+    "sha256": "36d206b6e4282e99a306bb99edc02e9f403ee6d947152f43fb44199b9fd7b5e8"
+  },
+  {
+    "id": "A-image-error-S",
+    "scene": "A-image-error",
+    "viewport": [
+      360,
+      800
+    ],
+    "contentHeight": 1078,
+    "scale": 2,
+    "filename": "V1-ui-page-01A-cat-selection-state-image-error-S.png",
+    "pixels": [
+      720,
+      2156
+    ],
+    "sha256": "4e99b0c3a6ad2880da21132fd6b28eca4bb8cfe6c8b150b3bfa2061a92d020a6"
+  },
+  {
+    "id": "A-selected-L",
+    "scene": "A-selected",
+    "viewport": [
+      430,
+      932
+    ],
+    "contentHeight": 1085,
+    "scale": 2,
+    "filename": "V1-ui-page-01A-cat-selection-state-selected-L.png",
+    "pixels": [
+      860,
+      2170
+    ],
+    "sha256": "3b3f9853a2132c4268a6183c1ee439607c28f9d83ae50c48a46178f3caba921a"
+  },
+  {
+    "id": "A-selected-D",
+    "scene": "A-selected",
+    "viewport": [
+      1280,
+      900
+    ],
+    "contentHeight": 1222,
+    "scale": 1,
+    "filename": "V1-ui-page-01A-cat-selection-state-selected-D.png",
+    "pixels": [
+      1280,
+      1222
+    ],
+    "sha256": "cf2af48ca200b9f8a125e213f7da5b6dace57557a3e756e247ccccfd3c6df2f6"
+  },
+  {
+    "id": "C-ready-S",
+    "scene": "C-ready",
+    "viewport": [
+      360,
+      800
+    ],
+    "contentHeight": 800,
+    "scale": 2,
+    "filename": "V1-ui-page-01C-adoption-confirm-S.png",
+    "pixels": [
+      720,
+      1600
+    ],
+    "sha256": "c784a75f63015ba55617ed0671ecf44a9e98b44f4fd0727dfdc18b2219b1a364"
+  },
+  {
+    "id": "C-error-S",
+    "scene": "C-error",
+    "viewport": [
+      360,
+      800
+    ],
+    "contentHeight": 800,
+    "scale": 2,
+    "filename": "V1-ui-page-01C-adoption-confirm-state-error-S.png",
+    "pixels": [
+      720,
+      1600
+    ],
+    "sha256": "89c5cae64f532a79454fda2a6752370c8b65d681133de5eb2c9f645fd3368b8a"
+  },
+  {
+    "id": "C-unknown-S",
+    "scene": "C-unknown",
+    "viewport": [
+      360,
+      800
+    ],
+    "contentHeight": 800,
+    "scale": 2,
+    "filename": "V1-ui-page-01C-adoption-confirm-state-unknown-S.png",
+    "pixels": [
+      720,
+      1600
+    ],
+    "sha256": "b53d39470ff7e84ebc6edf7f5b2f9883a00c51510a0a7d8aeb92fb969be1fc71"
+  },
+  {
+    "id": "C-ready-D",
+    "scene": "C-ready",
+    "viewport": [
+      1280,
+      900
+    ],
+    "contentHeight": 900,
+    "scale": 1,
+    "filename": "V1-ui-page-01C-adoption-confirm-D.png",
+    "pixels": [
+      1280,
+      900
+    ],
+    "sha256": "9760d9eb0ad6ebd174684371f05d66b854ccf45bf7e70421943e70abb66c4528"
+  },
+  {
+    "id": "B-filled-D",
+    "scene": "B-filled",
+    "viewport": [
+      1280,
+      900
+    ],
+    "contentHeight": 900,
+    "scale": 1,
+    "filename": "V1-ui-page-01B-cat-naming-D.png",
+    "pixels": [
+      1280,
+      900
+    ],
+    "sha256": "586e6029c1e9dea50ce7c29707202f0964ec51c887d4be224b2ead0327b19570"
+  },
+  {
+    "id": "B-filled-short",
+    "scene": "B-filled",
+    "viewport": [
+      390,
+      500
+    ],
+    "contentHeight": 500,
+    "scale": 2,
+    "filename": "V1-ui-page-01B-cat-naming-short.png",
+    "pixels": [
+      780,
+      1000
+    ],
+    "sha256": "b40afdc68db97b2fffb7ffbc3df33edc03ed1621ac43f7d0bc3257bcce861cd6"
+  },
+  {
+    "id": "C-ready-L",
+    "scene": "C-ready",
+    "viewport": [
+      430,
+      932
+    ],
+    "contentHeight": 932,
+    "scale": 2,
+    "filename": "V1-ui-page-01C-adoption-confirm-L.png",
+    "pixels": [
+      860,
+      1864
+    ],
+    "sha256": "005cd810bbd06923c597daca84fb7b4ccfba8bc272197ef402528aa931d69079"
+  }
+]

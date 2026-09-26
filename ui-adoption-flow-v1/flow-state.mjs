@@ -57,11 +57,13 @@ function confirmedState(state, cat) {
 
 /**
  * Events:
- * SELECT_CAT {catId}; SET_NAME {value}; NEXT; BACK; BEGIN_SUBMIT;
+ * SELECT_CAT {catId}; SET_NAME {value}; NEXT; BACK; REVIEW_CHOICE; BEGIN_SUBMIT;
  * RESOLVE_SUBMIT {status: 'CONFIRMED'|'UNKNOWN'|'ERROR', confirmedCat?};
  * BEGIN_READ; RESOLVE_READ {status?: 'ERROR', confirmedCat?: {catId, name}|null}.
  *
- * Only A selects a cat; only B edits a name. ERROR means a definite failure.
+ * Only A selects a cat; only B edits a name. REVIEW_CHOICE returns editable C
+ * directly to A with the current selection and draft. BACK keeps C -> B -> A.
+ * ERROR means a definite failure.
  * An uncertain result must be UNKNOWN and can only resolve through a read.
  * A confirmed submission without an explicit record uses the locked draft.
  * Missing/invalid read results keep UNKNOWN unless ERROR explicitly confirms
@@ -100,6 +102,13 @@ export function transition(state, event = {}) {
     case 'BACK':
       if (isEditable(state) && (state.step === 'B' || state.step === 'C')) {
         next.step = state.step === 'C' ? 'B' : 'A';
+        next.adoptionStatus = 'UNCONFIRMED';
+      }
+      break;
+
+    case 'REVIEW_CHOICE':
+      if (isEditable(state) && state.step === 'C') {
+        next.step = 'A';
         next.adoptionStatus = 'UNCONFIRMED';
       }
       break;

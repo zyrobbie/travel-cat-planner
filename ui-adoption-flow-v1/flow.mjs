@@ -1,5 +1,6 @@
-import {initialState,transition,countName,validateName,canContinue} from './flow-state.mjs';
-import {cats,scenarios} from './scenarios.mjs';
+import {initialState,transition,countName,validateName,canContinue} from './flow-state.mjs?v=page-stage-01';
+import {cats,scenarios} from './scenarios.mjs?v=page-stage-01';
+import {choice,updateChoiceGroup} from '../ui-components-v1/cat-selection-card.mjs';
 
 const root=document.getElementById('flow');
 const params=new URLSearchParams(location.search);
@@ -11,7 +12,7 @@ let state=initialState();
 let touched=false,composing=false,reading=false,handedOff=false;
 let failed=new Set(),fixtureFailed=new Set(),requestNumber=0;
 let storedResult=null;
-const STORAGE_KEY='cat-letters-ui-adoption-flow-v1:tab-demo';
+const STORAGE_KEY='cat-letters-ui-adoption-flow-v1:page-stage-01';
 let recoveryBlocked=false;
 const simulatedOutcome=['ERROR','UNKNOWN'].includes(params.get('outcome'))?params.get('outcome'):'CONFIRMED';
 let nextOutcome=simulatedOutcome;
@@ -58,7 +59,8 @@ function top(showBack=false){return `<header class="flow-top ${showBack?'has-bac
 function imageMarkup(cat){return failed.has(cat.id)?`<div class="image-failure" role="status"><strong>${cat.name}</strong>图片暂时没加载出来</div>`:`<img src="assets/${cat.file}" alt="${cat.name}猫完整全身像" data-cat-image="${cat.id}" draggable="false">`;}
 function catPreview(cat){return `<div class="single-cat" aria-label="已选${cat.name}猫">${imageMarkup(cat)}${failed.has(cat.id)?`<button class="text-button retry-image" data-retry="${cat.id}">重新加载</button>`:''}</div>`;}
 function chooseView(){
-  return `${top()}<h1 class="flow-heading" tabindex="-1">选一只你喜欢的小猫吧</h1><p class="flow-intro">以后，它会一直是陪你生活和旅行的那一只。</p><fieldset class="adoption-cats"><legend class="visually-hidden">选择小猫外观</legend>${cats.map(cat=>`<div class="cat-tile ${failed.has(cat.id)?'has-failure':''}"><label class="choice-card"><input type="radio" name="selected-cat" value="${cat.id}" aria-label="选择${cat.name}猫" ${state.selectedCatId===cat.id?'checked':''}><span class="cat-visual">${imageMarkup(cat)}</span><h3>${cat.name}</h3><span class="choice-control"><span class="radio-ring">${icon('check')}</span><span class="choice-word">${state.selectedCatId===cat.id?'已选择':'未选择'}</span></span></label>${failed.has(cat.id)?`<button class="text-button retry-image" data-retry="${cat.id}">重新加载</button>`:''}</div>`).join('')}</fieldset><footer class="flow-footer"><p class="local-note">当前为本机测试体验。</p><button class="primary" data-action="next" ${canContinue(state)?'':'disabled'}>继续${icon('arrow')}</button></footer>`;
+  const cards=cats.map((cat,i)=>`<div class="cat-tile ${failed.has(cat.id)?'has-failure':''}">${choice(i,state.selectedCatId===cat.id,'selected-cat')}${failed.has(cat.id)?`<div class="card-image-failure"><div class="image-failure" role="status"><strong>${cat.name}</strong>图片暂时没加载出来</div><button class="text-button" data-retry="${cat.id}">重新加载</button></div>`:''}</div>`).join('');
+  return `${top()}<h1 class="flow-heading" tabindex="-1">选一只你喜欢的小猫吧</h1><p class="flow-intro">以后，它会一直是陪你生活和旅行的那一只。</p><fieldset class="four-cats adoption-cats"><legend class="visually-hidden">选择小猫外观</legend>${cards}</fieldset><footer class="flow-footer"><p class="local-note">当前为本机测试体验。</p><button class="primary" data-action="next" ${canContinue(state)?'':'disabled'}>继续${icon('arrow')}</button></footer>`;
 }
 function nameView(){
   const error=(touched||countName(state.catNameDraft)>12)?validateName(state.catNameDraft):'';
@@ -79,9 +81,9 @@ function confirmView(){
     buttons=`<button class="primary" data-action="continue" ${handedOff?'disabled':''}>继续和它生活${icon('arrow')}</button>`;
   }else{
     if(status==='ERROR')feedback='<p class="outcome-message" role="alert">好像没有保存成功，再试一次吧。</p>';
-    buttons=`<button class="secondary" data-action="back">再看看</button><button class="primary" data-action="confirm">${status==='ERROR'?'再试一次':'确认领养'}</button>`;
+    buttons=`<button class="secondary" data-action="review-choice">再看看</button><button class="primary" data-action="confirm">${status==='ERROR'?'再试一次':'确认领养'}</button>`;
   }
-  return `${top(!locked)}<h1 class="flow-heading" tabindex="-1">${status==='CONFIRMED'?'确认领养':'确认领养'}</h1>${catPreview(currentCat())}<h2 class="cat-name">${escapeText(state.confirmedCat?.name??state.catNameDraft.trim())}</h2><p class="cat-welcome">以后，就和它一起生活啦。</p><div class="inline-notice adoption-rule">${RULE}</div>${feedback}<div class="confirm-actions ${locked?'one':''}" ${status==='SUBMITTING'||reading?'aria-busy="true"':''}>${buttons}</div><p class="local-note">当前为本机测试体验；这里演示正式版的领养规则。</p>${handedOff?'<p class="handoff-note" role="status">初遇与领养流程已完成。后续体验页面将在下一批设计中衔接。</p>':''}`;
+  return `${top(!locked)}<h1 class="flow-heading" tabindex="-1">确认领养</h1>${catPreview(currentCat())}<h2 class="cat-name">${escapeText(state.confirmedCat?.name??state.catNameDraft.trim())}</h2><p class="cat-welcome">以后，就和它一起生活啦。</p><div class="inline-notice adoption-rule">${RULE}</div>${feedback}<div class="confirm-actions ${locked?'one':''}" ${status==='SUBMITTING'||reading?'aria-busy="true"':''}>${buttons}</div><p class="local-note">当前为本机测试体验；这里演示正式版的领养规则。</p>${handedOff?'<p class="handoff-note" role="status">初遇与领养流程已完成。后续体验页面将在下一批设计中衔接。</p>':''}`;
 }
 function attachImageErrors(){
   root.querySelectorAll('img[data-cat-image]').forEach(img=>{
@@ -134,9 +136,10 @@ function readResult(){
 }
 root.addEventListener('change',e=>{
   if(e.target.matches('input[name=selected-cat]')){
-    state=transition(state,{type:'SELECT_CAT',catId:e.target.value});
+    state=transition(state,{type:'SELECT_CAT',catId:e.target.dataset.catId});
     persist();
-    root.querySelectorAll('input[name=selected-cat]').forEach(input=>{input.checked=input.value===state.selectedCatId;input.closest('label').querySelector('.choice-word').textContent=input.checked?'已选择':'未选择';});
+    root.querySelectorAll('input[name=selected-cat]').forEach(input=>{input.checked=input.dataset.catId===state.selectedCatId;});
+    updateChoiceGroup(root,'selected-cat');
     root.querySelector('[data-action=next]').disabled=!canContinue(state);
   }
 });
@@ -153,6 +156,7 @@ root.addEventListener('click',e=>{
   if(action==='recover'){restore();render();return;}
   if(action==='next')dispatch({type:'NEXT'},true);
   if(action==='back'){touched=false;dispatch({type:'BACK'},true);}
+  if(action==='review-choice'){touched=false;dispatch({type:'REVIEW_CHOICE'},true);}
   if(action==='confirm')submit();
   if(action==='read')readResult();
   if(action==='continue'&&state.adoptionStatus==='CONFIRMED'){handedOff=true;render();}
