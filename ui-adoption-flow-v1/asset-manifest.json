@@ -1,0 +1,160 @@
+{
+  "version": "1.0",
+  "prepared_at": "2026-09-26T00:59:16+08:00",
+  "scope": "UI-01A–C independent design review preview with approved component baseline and four original full-body cat assets.",
+  "source_images_modified": false,
+  "approved_component_baseline": {
+    "repository": "https://github.com/zyrobbie/travel-cat-planner",
+    "commit": "6bcf546c797ee2f633a9c3e6865f303901966f0b",
+    "selection_authority": "User-designated approved commit",
+    "files": [
+      {
+        "file": "shared/approved-components.css",
+        "source_repository": "https://github.com/zyrobbie/travel-cat-planner",
+        "source_commit": "6bcf546c797ee2f633a9c3e6865f303901966f0b",
+        "source_path": "ui-components-v1/styles.css",
+        "source_url": "https://github.com/zyrobbie/travel-cat-planner/blob/6bcf546c797ee2f633a9c3e6865f303901966f0b/ui-components-v1/styles.css",
+        "git_blob": "6d98af39772f0dbad29334e1e354318d2bf1b882",
+        "bytes": 13938,
+        "sha256": "6a39aafeab7cc51a5bd986fc0b1f204c8d4c50ec54259e37b53e0b349f8b05d2",
+        "byte_identical_to_commit": true,
+        "usage": "Load before page-scoped adaptation stylesheet; original bytes unchanged."
+      },
+      {
+        "file": "shared/approved-components.js",
+        "source_repository": "https://github.com/zyrobbie/travel-cat-planner",
+        "source_commit": "6bcf546c797ee2f633a9c3e6865f303901966f0b",
+        "source_path": "ui-components-v1/components.js",
+        "source_url": "https://github.com/zyrobbie/travel-cat-planner/blob/6bcf546c797ee2f633a9c3e6865f303901966f0b/ui-components-v1/components.js",
+        "git_blob": "0b87987882387e443208c37117f086f46636226c",
+        "bytes": 21677,
+        "sha256": "f8c79e841ee26d98d013401c1204f05db01d88aaad8e84a27428a482df5bd77f",
+        "byte_identical_to_commit": true,
+        "usage": "Reference source only. Do not load in the adoption prototype; it owns its own review canvas and event handlers."
+      },
+      {
+        "file": "shared/tokens.json",
+        "source_repository": "https://github.com/zyrobbie/travel-cat-planner",
+        "source_commit": "6bcf546c797ee2f633a9c3e6865f303901966f0b",
+        "source_path": "ui-components-v1/tokens.json",
+        "source_url": "https://github.com/zyrobbie/travel-cat-planner/blob/6bcf546c797ee2f633a9c3e6865f303901966f0b/ui-components-v1/tokens.json",
+        "git_blob": "f67e65f0097c93828a3ea2bfa775054218ea9a53",
+        "bytes": 1584,
+        "sha256": "68571b8abbd118d57bb193756aed604b37a531113ca124783460b19a4ff88067",
+        "byte_identical_to_commit": true,
+        "usage": "Original token source. Retain existing metadata text; selected approved commit is the authority for this task."
+      }
+    ]
+  },
+  "assets": [
+    {
+      "file": "assets/V1-cat-fullbody-cat-01.png",
+      "filename": "V1-cat-fullbody-cat-01.png",
+      "character_id": "cat-01",
+      "role": "橘白",
+      "source": "User-provided approved Desktop asset; exact filename retained. Local path recorded only in work audit.",
+      "bytes": 1131937,
+      "sha256": "15f2bcc911f109e5b98f0d9cbea4231657661df7622f022deb7bfe39b3fa0392",
+      "dimensions": {
+        "width": 1122,
+        "height": 1402
+      },
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "byte_identical_to_source": true,
+      "matches_2026_09_22_approved_final": true,
+      "usage": [
+        "UI-01A selection card",
+        "UI-01B selected cat preview",
+        "UI-01C confirmation cat"
+      ],
+      "display_policy": "Equal-ratio contain; preserve transparent background and complete original canvas; no crop, redraw, recolor or body-proportion change."
+    },
+    {
+      "file": "assets/V1-cat-fullbody-cat-02.png",
+      "filename": "V1-cat-fullbody-cat-02.png",
+      "character_id": "cat-02",
+      "role": "狸花",
+      "source": "User-provided approved Desktop asset; exact filename retained. Local path recorded only in work audit.",
+      "bytes": 895625,
+      "sha256": "51fc3f3170b619f7dd59eee96dc7786ed474c23abae2386525681256bd550606",
+      "dimensions": {
+        "width": 1122,
+        "height": 1402
+      },
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "byte_identical_to_source": true,
+      "matches_2026_09_22_approved_final": true,
+      "usage": [
+        "UI-01A selection card",
+        "UI-01B selected cat preview",
+        "UI-01C confirmation cat"
+      ],
+      "display_policy": "Equal-ratio contain; preserve transparent background and complete original canvas; no crop, redraw, recolor or body-proportion change."
+    },
+    {
+      "file": "assets/V1-cat-fullbody-cat-03.png",
+      "filename": "V1-cat-fullbody-cat-03.png",
+      "character_id": "cat-03",
+      "role": "奶油白",
+      "source": "User-provided approved Desktop asset; exact filename retained. Local path recorded only in work audit.",
+      "bytes": 752846,
+      "sha256": "fb38b8aae55d47349740acfcb169dd69ceddec8197b7c5fe405240a02e5c5baa",
+      "dimensions": {
+        "width": 1122,
+        "height": 1402
+      },
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "byte_identical_to_source": true,
+      "matches_2026_09_22_approved_final": true,
+      "usage": [
+        "UI-01A selection card",
+        "UI-01B selected cat preview",
+        "UI-01C confirmation cat"
+      ],
+      "display_policy": "Equal-ratio contain; preserve transparent background and complete original canvas; no crop, redraw, recolor or body-proportion change."
+    },
+    {
+      "file": "assets/V1-cat-fullbody-cat-04.png",
+      "filename": "V1-cat-fullbody-cat-04.png",
+      "character_id": "cat-04",
+      "role": "三花",
+      "source": "User-provided approved Desktop asset; exact filename retained. Local path recorded only in work audit.",
+      "bytes": 965476,
+      "sha256": "5bc3e3454e0a4acfd6699293d66e020e0686a57d8611a927fb0243f65fb984c9",
+      "dimensions": {
+        "width": 1122,
+        "height": 1402
+      },
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "byte_identical_to_source": true,
+      "matches_2026_09_22_approved_final": true,
+      "usage": [
+        "UI-01A selection card",
+        "UI-01B selected cat preview",
+        "UI-01C confirmation cat"
+      ],
+      "display_policy": "Equal-ratio contain; preserve transparent background and complete original canvas; no crop, redraw, recolor or body-proportion change."
+    }
+  ],
+  "excluded_from_page_assets": [
+    "00_cat_character_board.png (internal identity reference only)",
+    "avatars, expressions, stickers and scene images (not needed for this three-page flow)"
+  ],
+  "adaptation_policy": "Preserve shared source bytes. Add minimal page-scoped layout and input adaptations after approved-components.css. Do not load approved-components.js in the live adoption prototype."
+}

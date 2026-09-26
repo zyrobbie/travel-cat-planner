@@ -15,5 +15,6 @@ for (const file of ['index.html', 'doc.html', 'decisions.html', 'style.css', 'do
   cpSync(resolve(root, file), resolve(output, file));
 }
 cpSync(resolve(root, 'ui-components-v1'), resolve(output, 'ui-components-v1'), { recursive: true, dereference: false });
+cpSync(resolve(root, 'ui-adoption-flow-v1'), resolve(output, 'ui-adoption-flow-v1'), { recursive: true, dereference: false });
 writeFileSync(resolve(output, '.nojekyll'), '');
-console.log('GitHub Pages artifact ready: dist/github-pages (static app + planning archive + UI review preview).');
+console.log('GitHub Pages artifact ready: dist/github-pages (static app + planning archive + UI review previews).');
