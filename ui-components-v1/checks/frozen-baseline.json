@@ -1,0 +1,22 @@
+{
+  "hashes": {
+    "styles.css": "a4d4269d3c0978a5b584b7e4ec6b56d72e1af07fd64dceac4babcdaf02662c90",
+    "tokens.json": "68571b8abbd118d57bb193756aed604b37a531113ca124783460b19a4ff88067",
+    "cat-selection-card.mjs": "a191fb4ea462da675d25abb89d4b1f954763aaaf6ac68eefabb514809f9f4dcf",
+    "index.html": "94475958e1bc4a64c5629b6bd9c990ccd2d04661b6138a9039e0b57235251541",
+    "assets/V1-cat-avatar-cat-01.png": "da2d107d519cc1369a0730002c38f113bb48aae4c2d4c54ec0e7eff19a112628",
+    "assets/V1-cat-avatar-cat-02.png": "d1f23de7ea7cb771de2e5607a7c04f53b929bf47d2f1da8e08e978c3f774a96d",
+    "assets/V1-cat-avatar-cat-03.png": "f8f0c91510e57290c2747e36f9487c384d9bd6e8eb6ab2c7731d057893b56d5f",
+    "assets/V1-cat-avatar-cat-04.png": "216117894faab55ab99f0442e5073f22f206c2787b3f818a0e99c29561076cbc",
+    "assets/V1-cat-fullbody-cat-01.png": "15f2bcc911f109e5b98f0d9cbea4231657661df7622f022deb7bfe39b3fa0392",
+    "assets/V1-cat-fullbody-cat-02.png": "51fc3f3170b619f7dd59eee96dc7786ed474c23abae2386525681256bd550606",
+    "assets/V1-cat-fullbody-cat-03.png": "fb38b8aae55d47349740acfcb169dd69ceddec8197b7c5fe405240a02e5c5baa",
+    "assets/V1-cat-fullbody-cat-04.png": "5bc3e3454e0a4acfd6699293d66e020e0686a57d8611a927fb0243f65fb984c9",
+    "assets/V1-home-window-cat-01.png": "5c06438a4e6ac1829579db8d299b20a072db821caea1156a5ab3fc423e45b7b8",
+    "assets/V1-postcard-firefly-cat-02.png": "730a8b1b6e0d253bdab9099c0781911fdafd4e0bae66322d7bb85b37e51a4a7e",
+    "assets/V1-postcard-lighthouse-cat-03.png": "f6216e28b31ca86d1a8328d82e853492ab3043c006b4e341fdea74a1d3aa73fa",
+    "assets/V1-postcard-rhine-cat-01.png": "2055a575cd0a5a45c6cfedde0e9e66d4f8d6ef88c6daf000976f561ebccd4693",
+    "assets/V1-travel-path-cat-04.png": "215e9e98594b84859dd10ef63fa3de7950e6b35e954fce9b4d77f8a31f9cd34b"
+  },
+  "componentsBeforeSha256": "d3bcc7dc9d487b9b45fc5d7b786f83ed11fad6bcb2ec07425100c2e6b66853b2"
+}

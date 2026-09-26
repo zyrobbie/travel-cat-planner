@@ -1,0 +1,33 @@
+/* Opt-in E3 additions only. Approved normal component styles stay in styles.css. */
+.composer--e3 .reply-meta{display:flex;align-items:center;flex-wrap:wrap;gap:4px 16px;margin-top:10px;overflow-wrap:anywhere}
+.composer--e3 .reply-meta [data-slot="reply-count"]{white-space:nowrap}
+.composer--e3 .draft-retry{font-size:13px;line-height:1.6}
+.composer--e3 .card-actions{justify-content:flex-end}
+.composer--e3 .reply-system-notice{overflow-wrap:anywhere}
+.composer--e3 .reply-system-notice strong{font-weight:500}
+.composer--e3 .reply-system-notice p{margin-top:4px}
+.composer--e3 [hidden]{display:none!important}
+/* Explicit text-only 200% review mode; no transform, zoom, fixed height or clipping. */
+:is([data-text-scale="200"],.components-text-200) .note-card .sender-name{font-size:30px}
+:is([data-text-scale="200"],.components-text-200) :is(.note-card,.composer--e3) .meta{font-size:26px;line-height:1.6}
+:is([data-text-scale="200"],.components-text-200) .note-card .story-title{font-size:44px}
+:is([data-text-scale="200"],.components-text-200) .note-card .body-copy{font-size:32px}
+:is([data-text-scale="200"],.components-text-200) .composer--e3 label{font-size:44px}
+:is([data-text-scale="200"],.components-text-200) .composer--e3 textarea{font-size:32px}
+:is([data-text-scale="200"],.components-text-200) .composer--e3 :is(.helper,.inline-notice,.draft-retry){font-size:26px}
+:is([data-text-scale="200"],.components-text-200) :is(.note-card,.composer--e3) :is(.primary,.secondary,.text-button){font-size:30px;line-height:1.5;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+:is([data-text-scale="200"],.components-text-200) :is(.note-card,.composer--e3) .card-actions{flex-wrap:wrap}
+/* E3-only home additions use the existing paper, button and color tokens. */
+.daily-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:8px 0;border-top:1px solid var(--line);background:var(--bg)}
+.daily-nav button{display:flex;justify-content:center;align-items:center;gap:8px;min-width:0;min-height:48px;padding:10px 12px;border:1px solid transparent;border-radius:10px;background:transparent;font:500 15px/22px var(--sans);color:var(--muted)}
+.daily-nav button[aria-current="page"]{background:var(--soft);color:var(--accent);border-color:var(--line)}
+.daily-unread-dot{display:inline-block;flex-shrink:0;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.new-letter-entry{border-radius:16px;padding:24px}
+.new-letter-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 12px}
+.new-letter-heading h2{font:500 16px/1.75 var(--sans);overflow-wrap:anywhere}
+.new-letter-status{display:inline-flex;align-items:center;gap:6px}
+.new-letter-entry .card-actions{margin-top:20px}
+:is([data-text-scale="200"],.components-text-200) .daily-nav button{font-size:30px;line-height:1.5;overflow-wrap:anywhere}
+:is([data-text-scale="200"],.components-text-200) .new-letter-heading h2{font-size:32px}
+:is([data-text-scale="200"],.components-text-200) .new-letter-entry .meta{font-size:26px;line-height:1.6}
+:is([data-text-scale="200"],.components-text-200) .new-letter-entry .primary{font-size:30px;line-height:1.5;max-width:100%;white-space:normal;overflow-wrap:anywhere}

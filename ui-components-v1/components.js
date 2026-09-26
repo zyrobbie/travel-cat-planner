@@ -1,21 +1,15 @@
 import {cats,choice,updateChoiceGroup} from './cat-selection-card.mjs';
+import {daily,composer,icon,resetComposerIds} from './daily-components.mjs';
 
 (() => {
   'use strict';
   const root=document.getElementById('canvas');
   const A='assets/';
-  let serial=0;
-  const icons={arrow:'<path d="M5 12h14m-5-5 5 5-5 5"/>',check:'<path d="m5 12 4 4L19 6"/>',mic:'<rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8"/>',pin:'<path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2"/>',leaf:'<path d="M5 19C1 7 12 4 20 4c0 10-5 15-13 13M5 21 16 9"/>'};
-  const icon=n=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[n]}</svg>`;
   const image=(name,alt,cls)=>`<img class="${cls}" src="${A+name}" alt="${alt}" draggable="false">`;
   const heading=(title,desc)=>`<div class="section-heading"><h2>${title}</h2><p>${desc}</p></div>`;
   const specimen=(label,html,note='',number='')=>`<section class="specimen"><div class="specimen-label">${number?`<span class="index">${number}</span>`:''}<b>${label}</b></div><div class="sample">${html}</div>${note?`<p class="specimen-note">${note}</p>`:''}</section>`;
   const usage=(a,b)=>`<aside class="usage"><div><h3>使用说明</h3><p>${a}</p></div><div><h3>状态与内容规则</h3><p>${b}</p></div></aside>`;
   const moreLink=(text)=>`<button class="text-button" data-action="expand" aria-expanded="false" data-label="${text}">${text}${icon('arrow')}</button>`;
-  function daily(variant='default') {
-    const alt=variant==='content',active=variant==='active';
-    return `<article class="paper note-card" aria-label="日常需求卡${alt?'内容变化':''}"><header class="sender">${image(`V1-cat-avatar-cat-${alt?'03':'01'}.png`,alt?'奶油白猫头像':'橘白猫头像','avatar')}<div><div class="sender-name">${alt?'小白':'小橘'}</div><time class="meta">${alt?'昨天 16:40':'今天 09:20'}</time></div></header><h3 class="story-title">${alt?'可以陪我听一会儿雨吗？':'阳光会在这里等我吗？'}</h3><p class="body-copy">${alt?'雨落在窗台上，一下，一下。\n我听着听着，就忘记刚才想去哪里了。\n你那边也下雨了吗？':'窗边的小光点，刚才还在我的爪子旁边。\n我一眨眼，它就跑远了。\n明天它还会来吗？'}</p><div class="card-actions"><button class="primary ${active?'is-pressed is-focus':''}" data-action="reply" data-recipient="${alt?'小白':'小橘'}">给它回信${icon('arrow')}</button></div></article>`;
-  }
   const travels=[
     {file:'V1-postcard-rhine-cat-01.png',place:'德国 · 莱茵河谷',title:'河流把阳光带去了哪里',body:'我在石墩上坐了很久。水面一闪一闪的，好像把天空揉碎了。也想让你看看。',extra:'有一艘小船慢慢经过。我没有追它，只看着它拐过河弯。\n如果你也在这里，我想把旁边的位置留给你。',date:'2026.09.23'},
     {file:'V1-postcard-firefly-cat-02.png',place:'日本 · 辰野',title:'今晚，星星飞得好低',body:'我伸长爪子，还是没碰到那一点光。它绕过我的耳朵，又飞回了树影里。',extra:'后来我把爪子放下来，安静地看了一会儿。原来，不用抓住，也能看很久。',date:'2026.09.21'},
@@ -23,12 +17,6 @@ import {cats,choice,updateChoiceGroup} from './cat-selection-card.mjs';
   ];
   function postcard(i=0,expanded=false) {
     const d=travels[i];return `<article class="paper postcard" aria-label="旅行明信片"><div>${image(d.file,d.place+'完整场景，小猫与风景同框','scene')}</div><div class="postcard-content"><div class="location">${icon('pin')}${d.place}</div><h3 class="story-title">${d.title}</h3><p class="body-copy">${d.body}</p><div class="expanded-copy" ${expanded?'':'hidden'}>${d.extra}</div><footer class="postcard-bottom"><time class="meta">${d.date}</time><button class="text-button" data-action="expand" aria-expanded="${expanded}" data-label="读读这张明信片">${expanded?'收起全文':'读读这张明信片'}${icon('arrow')}</button></footer></div></article>`;
-  }
-  function composer(state='empty',name='小橘') {
-    const id=`reply-${++serial}`, filled=['filled','error','sending'].includes(state);
-    if(state==='success')return `<section class="paper composer" aria-label="回信成功状态"><div class="success-panel">${icon('check')}<h3>回信已收好</h3><p>你写下的话，留在了这一刻。</p></div><button class="text-button" data-action="reset-reply">再看看这封信${icon('arrow')}</button></section>`;
-    if(state==='voice')return `<section class="paper composer"><label>说给${name}听</label><div class="voice-state">${icon('mic')}<span>轻轻说，我在听。</span><span class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div><p class="helper">说完后，可以先看看文字。</p><div class="card-actions"><button class="secondary" data-action="reset-reply">改用文字</button><button class="primary" data-action="voice-end">说好了${icon('check')}</button></div></section>`;
-    return `<form class="paper composer ${state==='error'?'is-error':''}" data-name="${name}" ${state==='sending'?'aria-busy="true"':''}><label for="${id}">写给${name}</label><textarea id="${id}" aria-describedby="${id}-help" placeholder="把想说的话，慢慢写下来…" ${state==='sending'?'readonly':''}>${filled?'明天我们再一起等它吧。就算它晚一点来，我也会陪着你。':''}</textarea><p class="helper ${state==='error'?'error-copy':''}" id="${id}-help">${state==='error'?'这次没寄出去，写好的话还在。':'一句话也可以。'}</p><div class="card-actions"><button type="button" class="secondary" data-action="voice">${icon('mic')}用语音说</button><button type="submit" class="primary" ${(!filled||state==='sending')?'disabled':''}>${state==='sending'?'正在寄出…':state==='error'?'再寄一次':`寄给${name}`}${state==='sending'?'':icon('arrow')}</button></div><div class="reply-feedback" aria-live="polite"></div></form>`;
   }
   function growth(variant='default') {
     const alt=variant==='content',expanded=variant==='expanded';return `<article class="paper journal" aria-label="成长记录卡"><div class="journal-date">${icon('leaf')}<time>${alt?'9月21日 · 晴':'9月23日 · 晴'}</time></div><h3 class="story-title">${alt?'今天，走了比昨天远一点的路':'原来，光也会回来'}</h3>${image(alt?'V1-travel-path-cat-04.png':'V1-home-window-cat-01.png',alt?'三花猫走在乡间小路上，完整场景':'小橘在窗边追光，完整场景','scene')}<p class="body-copy">${alt?'路边开着小白花。我停下来闻了闻，再继续往前走。':'今天，小橘又在窗边等到了那个光点。我们一起记住了这个小小的发现。'}</p><div class="expanded-copy" ${expanded?'':'hidden'}><div class="journal-note">${alt?'你说：“慢慢走，我会等你的消息。”':'你说：“明天我们再一起等它吧。”'}</div><p style="margin-top:12px">${alt?'于是，它轻轻晃了晃尾巴。':'它歪了歪头，又把爪子放在阳光里。'}</p></div><button class="text-button" data-action="expand" aria-expanded="${expanded}" data-label="翻开这一页">${expanded?'合上这一页':'翻开这一页'}${icon('arrow')}</button></article>`;
@@ -52,7 +40,7 @@ import {cats,choice,updateChoiceGroup} from './cat-selection-card.mjs';
   const isolated=['daily','postcard','choice','reply','growth'].includes(mobileView);
   if(isolated)document.body.classList.add('isolated');
   function mobileSample(view){const samples={daily:()=>daily(),postcard:()=>postcard(),reply:()=>composer('filled'),growth:()=>growth(),choice:()=>`<div class="four-cats" role="group" aria-label="选择一只想认识的小猫">${cats.map((_,i)=>choice(i,i===1,'all-cats')).join('')}</div><p class="selection-note" aria-live="polite" id="selection-message">你选择了狸花。还可以继续看看。</p>`};const names={daily:'日常需求卡',postcard:'旅行明信片',choice:'猫咪选择卡',reply:'回复输入',growth:'成长记录'};return `<div class="mobile-caption">${names[view]||'组件预览'} · 移动尺寸</div>${samples[view]?samples[view]():daily()}<p class="mobile-foot">有猫来信 · 组件设计提案<br>交互仅供演示，不发送或保存内容。</p>`;}
-  function render(view,focus=false){if(!views[view])view='overview';serial=0;root.innerHTML=isolated?mobileSample(view):views[view]();root.dataset.view=view;root.querySelectorAll('textarea').forEach(grow);document.querySelectorAll('.review-nav [data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===view)));if(location.hash!=='#'+view)history.replaceState(null,'','#'+view);if(focus){root.focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});}}
+  function render(view,focus=false){if(!views[view])view='overview';resetComposerIds();root.innerHTML=isolated?mobileSample(view):views[view]();root.dataset.view=view;root.querySelectorAll('textarea').forEach(grow);document.querySelectorAll('.review-nav [data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===view)));if(location.hash!=='#'+view)history.replaceState(null,'','#'+view);if(focus){root.focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});}}
   document.addEventListener('click',e=>{
     const nav=e.target.closest('button[data-view]');if(nav){render(nav.dataset.view,true);return;}
     const b=e.target.closest('[data-action]');if(!b)return;
