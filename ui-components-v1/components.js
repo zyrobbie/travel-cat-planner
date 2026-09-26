@@ -1,14 +1,10 @@
+import {cats,choice,updateChoiceGroup} from './cat-selection-card.mjs';
+
 (() => {
   'use strict';
   const root=document.getElementById('canvas');
   const A='assets/';
   let serial=0;
-  const cats=[
-    {id:'01',name:'橘白',line:'喜欢晒太阳，也喜欢挨着你。'},
-    {id:'02',name:'狸花',line:'耳朵总是先听见一点新鲜事。'},
-    {id:'03',name:'奶油白',line:'轻轻靠过来，陪你慢一点。'},
-    {id:'04',name:'三花',line:'发现一点小事，就想告诉你。'}
-  ];
   const icons={arrow:'<path d="M5 12h14m-5-5 5 5-5 5"/>',check:'<path d="m5 12 4 4L19 6"/>',mic:'<rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8"/>',pin:'<path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2"/>',leaf:'<path d="M5 19C1 7 12 4 20 4c0 10-5 15-13 13M5 21 16 9"/>'};
   const icon=n=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[n]}</svg>`;
   const image=(name,alt,cls)=>`<img class="${cls}" src="${A+name}" alt="${alt}" draggable="false">`;
@@ -27,9 +23,6 @@
   ];
   function postcard(i=0,expanded=false) {
     const d=travels[i];return `<article class="paper postcard" aria-label="旅行明信片"><div>${image(d.file,d.place+'完整场景，小猫与风景同框','scene')}</div><div class="postcard-content"><div class="location">${icon('pin')}${d.place}</div><h3 class="story-title">${d.title}</h3><p class="body-copy">${d.body}</p><div class="expanded-copy" ${expanded?'':'hidden'}>${d.extra}</div><footer class="postcard-bottom"><time class="meta">${d.date}</time><button class="text-button" data-action="expand" aria-expanded="${expanded}" data-label="读读这张明信片">${expanded?'收起全文':'读读这张明信片'}${icon('arrow')}</button></footer></div></article>`;
-  }
-  function choice(i=1,selected=false,group='preview') {
-    const d=cats[i];return `<label class="choice-card"><input type="radio" name="${group}" value="${d.name}" ${selected?'checked':''} aria-label="选择${d.name}猫">${image(`V1-cat-fullbody-cat-${d.id}.png`,d.name+'猫完整全身像','fullbody')}<h3>${d.name}</h3><p>${d.line}</p><span class="choice-control"><span class="radio-ring">${icon('check')}</span><span class="choice-word">${selected?'已选择':'想认识它'}</span></span></label>`;
   }
   function composer(state='empty',name='小橘') {
     const id=`reply-${++serial}`, filled=['filled','error','sending'].includes(state);
@@ -71,7 +64,7 @@
     if(action==='voice-end'){b.closest('.composer').outerHTML=composer('empty');}
   });
   document.addEventListener('input',e=>{if(e.target.matches('.composer textarea')){grow(e.target);const f=e.target.closest('form');f.querySelector('[type=submit]').disabled=!e.target.value.trim();}});
-  document.addEventListener('change',e=>{if(e.target.matches('.choice-card input')){const group=e.target.name;root.querySelectorAll('.choice-card input').forEach(input=>{if(input.name===group)input.closest('.choice-card').querySelector('.choice-word').textContent=input.checked?'已选择':'想认识它';});if(group==='all-cats')document.getElementById('selection-message').textContent=`你选择了${e.target.value}。还可以继续看看，确认领养会在下一步进行。`;}});
+  document.addEventListener('change',e=>{if(e.target.matches('.choice-card input')){const group=e.target.name;updateChoiceGroup(root,group);if(group==='all-cats')document.getElementById('selection-message').textContent=`你选择了${e.target.value}。还可以继续看看，确认领养会在下一步进行。`;}});
   document.addEventListener('submit',e=>{if(!e.target.matches('.composer'))return;e.preventDefault();const f=e.target;if(!f.querySelector('textarea').value.trim())return;const text=f.querySelector('textarea').value;const section=document.createElement('section');section.innerHTML=composer('success');const result=section.firstElementChild;result.dataset.replyValue=text;result.dataset.replyName=f.dataset.name;f.replaceWith(result);});
   window.addEventListener('hashchange',()=>render(location.hash.slice(1)));
   render(isolated?mobileView:(location.hash.slice(1)||'overview'));

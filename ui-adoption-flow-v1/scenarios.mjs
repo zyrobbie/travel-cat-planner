@@ -25,3 +25,25 @@ export const scenarios = [
   {id:'C-confirmed',page:'C',label:'已确认恢复 · 无改选入口',cat:'cat-01',name:'小咪',status:'CONFIRMED'}
 ];
 export const viewportSpecs = [{id:'M',width:390,height:844},{id:'S',width:360,height:800},{id:'L',width:430,height:932},{id:'D',width:1280,height:900}];
+
+const designNames = {
+  "A-empty": "V1-ui-page-01A-cat-selection",
+  "A-selected": "V1-ui-page-01A-cat-selection-state-selected",
+  "A-other": "V1-ui-page-01A-cat-selection-state-selected-cat04",
+  "A-image-error": "V1-ui-page-01A-cat-selection-state-image-error",
+  "B-empty": "V1-ui-page-01B-cat-naming-state-empty",
+  "B-focus": "V1-ui-page-01B-cat-naming-state-focus",
+  "B-filled": "V1-ui-page-01B-cat-naming",
+  "B-boundary": "V1-ui-page-01B-cat-naming-state-12-characters",
+  "B-too-long": "V1-ui-page-01B-cat-naming-state-error",
+  "B-empty-error": "V1-ui-page-01B-cat-naming-state-empty-error",
+  "B-keyboard": "V1-ui-page-01B-cat-naming-state-keyboard",
+  "B-restored": "V1-ui-page-01B-cat-naming-state-draft-restored",
+  "C-ready": "V1-ui-page-01C-adoption-confirm",
+  "C-submitting": "V1-ui-page-01C-adoption-confirm-state-submitting",
+  "C-error": "V1-ui-page-01C-adoption-confirm-state-error",
+  "C-unknown": "V1-ui-page-01C-adoption-confirm-state-unknown",
+  "C-reading": "V1-ui-page-01C-adoption-confirm-state-reading",
+  "C-confirmed": "V1-ui-page-01C-adoption-confirm-state-confirmed"
+};
+export const designFilename=(id,size="M")=>`${designNames[id]}${size==="M"?"":"-"+size}.png`;
