@@ -1,0 +1,50 @@
+[
+  {
+    "file": "V1-home-window-cat-01.png",
+    "sha256": "5c06438a4e6ac1829579db8d299b20a072db821caea1156a5ab3fc423e45b7b8"
+  },
+  {
+    "file": "V1-travel-path-cat-01.png",
+    "sha256": "9d7dabf0a9a22ea36e22a0f9c832501caca75c8f0f5dff0dc165bfd06cd0d1b1"
+  },
+  {
+    "file": "V1-cat-avatar-cat-01.png",
+    "sha256": "da2d107d519cc1369a0730002c38f113bb48aae4c2d4c54ec0e7eff19a112628"
+  },
+  {
+    "file": "V1-home-window-cat-02.png",
+    "sha256": "1673e11a4172a1b0b3d9ec6b2e0a723fc53e09ce20f92e424a2ba948c3f21dc2"
+  },
+  {
+    "file": "V1-travel-path-cat-02.png",
+    "sha256": "aae22f61c3a34dc76afdca8d4b4cd5399e299e31b9375832a1a4149121bdaff6"
+  },
+  {
+    "file": "V1-cat-avatar-cat-02.png",
+    "sha256": "d1f23de7ea7cb771de2e5607a7c04f53b929bf47d2f1da8e08e978c3f774a96d"
+  },
+  {
+    "file": "V1-home-window-cat-03-V1.png",
+    "sha256": "60c368c3c56090b85c8c99a1d16792fdb45d64efd602e06992d850ccdc75a829"
+  },
+  {
+    "file": "V1-travel-path-cat-03.png",
+    "sha256": "cdfe97b4f597029c268f19feeb37397996d1e6c9aea91dd519ecc81fafd90b90"
+  },
+  {
+    "file": "V1-cat-avatar-cat-03.png",
+    "sha256": "f8f0c91510e57290c2747e36f9487c384d9bd6e8eb6ab2c7731d057893b56d5f"
+  },
+  {
+    "file": "V1-home-window-cat-04.png",
+    "sha256": "7e80bf27002d9283eb19c7253146e04d52db8e16a8060eb43e9924a2e17e160b"
+  },
+  {
+    "file": "V1-travel-path-cat-04.png",
+    "sha256": "215e9e98594b84859dd10ef63fa3de7950e6b35e954fce9b4d77f8a31f9cd34b"
+  },
+  {
+    "file": "V1-cat-avatar-cat-04.png",
+    "sha256": "216117894faab55ab99f0442e5073f22f206c2787b3f818a0e99c29561076cbc"
+  }
+]

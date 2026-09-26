@@ -1,0 +1,78 @@
+{
+  "daily": [
+    [
+      "default",
+      "<article class=\"paper note-card\" aria-label=\"日常需求卡\"><header class=\"sender\"><img class=\"avatar\" src=\"assets/V1-cat-avatar-cat-01.png\" alt=\"橘白猫头像\" draggable=\"false\"><div><div class=\"sender-name\">小橘</div><time class=\"meta\">今天 09:20</time></div></header><h3 class=\"story-title\">阳光会在这里等我吗？</h3><p class=\"body-copy\">窗边的小光点，刚才还在我的爪子旁边。\n我一眨眼，它就跑远了。\n明天它还会来吗？</p><div class=\"card-actions\"><button class=\"primary \" data-action=\"reply\" data-recipient=\"小橘\">给它回信<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-5-5 5 5-5 5\"/></svg></button></div></article>"
+    ],
+    [
+      "active",
+      "<article class=\"paper note-card\" aria-label=\"日常需求卡\"><header class=\"sender\"><img class=\"avatar\" src=\"assets/V1-cat-avatar-cat-01.png\" alt=\"橘白猫头像\" draggable=\"false\"><div><div class=\"sender-name\">小橘</div><time class=\"meta\">今天 09:20</time></div></header><h3 class=\"story-title\">阳光会在这里等我吗？</h3><p class=\"body-copy\">窗边的小光点，刚才还在我的爪子旁边。\n我一眨眼，它就跑远了。\n明天它还会来吗？</p><div class=\"card-actions\"><button class=\"primary is-pressed is-focus\" data-action=\"reply\" data-recipient=\"小橘\">给它回信<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-5-5 5 5-5 5\"/></svg></button></div></article>"
+    ],
+    [
+      "content",
+      "<article class=\"paper note-card\" aria-label=\"日常需求卡内容变化\"><header class=\"sender\"><img class=\"avatar\" src=\"assets/V1-cat-avatar-cat-03.png\" alt=\"奶油白猫头像\" draggable=\"false\"><div><div class=\"sender-name\">小白</div><time class=\"meta\">昨天 16:40</time></div></header><h3 class=\"story-title\">可以陪我听一会儿雨吗？</h3><p class=\"body-copy\">雨落在窗台上，一下，一下。\n我听着听着，就忘记刚才想去哪里了。\n你那边也下雨了吗？</p><div class=\"card-actions\"><button class=\"primary \" data-action=\"reply\" data-recipient=\"小白\">给它回信<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-5-5 5 5-5 5\"/></svg></button></div></article>"
+    ]
+  ],
+  "composer": [
+    [
+      "empty",
+      "小橘",
+      "<form class=\"paper composer \" data-name=\"小橘\" ><label for=\"reply-1\">写给小橘</label><textarea id=\"reply-1\" aria-describedby=\"reply-1-help\" placeholder=\"把想说的话，慢慢写下来…\" ></textarea><p class=\"helper \" id=\"reply-1-help\">一句话也可以。</p><div class=\"card-actions\"><button type=\"button\" class=\"secondary\" data-action=\"voice\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"9\" y=\"3\" width=\"6\" height=\"12\" rx=\"3\"/><path d=\"M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8\"/></svg>用语音说</button><button type=\"submit\" class=\"primary\" disabled>寄给小橘<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-5-5 5 5-5 5\"/></svg></button></div><div class=\"reply-feedback\" aria-live=\"polite\"></div></form>"
+    ],
+    [
+      "empty",
+      "小白",
+      "<form class=\"paper composer \" data-name=\"小白\" ><label for=\"reply-1\">写给小白</label><textarea id=\"reply-1\" aria-describedby=\"reply-1-help\" placeholder=\"把想说的话，慢慢写下来…\" ></textarea><p class=\"helper \" id=\"reply-1-help\">一句话也可以。</p><div class=\"card-actions\"><button type=\"button\" class=\"secondary\" data-action=\"voice\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"9\" y=\"3\" width=\"6\" height=\"12\" rx=\"3\"/><path d=\"M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8\"/></svg>用语音说</button><button type=\"submit\" class=\"primary\" disabled>寄给小白<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-5-5 5 5-5 5\"/></svg></button></div><div class=\"reply-feedback\" aria-live=\"polite\"></div></form>"
+    ],
+    [
+      "filled",
+      "小橘",
+      "<form class=\"paper composer \" data-name=\"小橘\" ><label for=\"reply-1\">写给小橘</label><textarea id=\"reply-1\" aria-describedby=\"reply-1-help\" placeholder=\"把想说的话，慢慢写下来…\" >明天我们再一起等它吧。就算它晚一点来，我也会陪着你。</textarea><p class=\"helper \" id=\"reply-1-help\">一句话也可以。</p><div class=\"card-actions\"><button type=\"button\" class=\"secondary\" data-action=\"voice\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"9\" y=\"3\" width=\"6\" height=\"12\" rx=\"3\"/><path d=\"M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8\"/></svg>用语音说</button><button type=\"submit\" class=\"primary\" >寄给小橘<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-5-5 5 5-5 5\"/></svg></button></div><div class=\"reply-feedback\" aria-live=\"polite\"></div></form>"
+    ],
+    [
+      "filled",
+      "小白",
+      "<form class=\"paper composer \" data-name=\"小白\" ><label for=\"reply-1\">写给小白</label><textarea id=\"reply-1\" aria-describedby=\"reply-1-help\" placeholder=\"把想说的话，慢慢写下来…\" >明天我们再一起等它吧。就算它晚一点来，我也会陪着你。</textarea><p class=\"helper \" id=\"reply-1-help\">一句话也可以。</p><div class=\"card-actions\"><button type=\"button\" class=\"secondary\" data-action=\"voice\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"9\" y=\"3\" width=\"6\" height=\"12\" rx=\"3\"/><path d=\"M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8\"/></svg>用语音说</button><button type=\"submit\" class=\"primary\" >寄给小白<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-5-5 5 5-5 5\"/></svg></button></div><div class=\"reply-feedback\" aria-live=\"polite\"></div></form>"
+    ],
+    [
+      "error",
+      "小橘",
+      "<form class=\"paper composer is-error\" data-name=\"小橘\" ><label for=\"reply-1\">写给小橘</label><textarea id=\"reply-1\" aria-describedby=\"reply-1-help\" placeholder=\"把想说的话，慢慢写下来…\" >明天我们再一起等它吧。就算它晚一点来，我也会陪着你。</textarea><p class=\"helper error-copy\" id=\"reply-1-help\">这次没寄出去，写好的话还在。</p><div class=\"card-actions\"><button type=\"button\" class=\"secondary\" data-action=\"voice\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"9\" y=\"3\" width=\"6\" height=\"12\" rx=\"3\"/><path d=\"M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8\"/></svg>用语音说</button><button type=\"submit\" class=\"primary\" >再寄一次<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-5-5 5 5-5 5\"/></svg></button></div><div class=\"reply-feedback\" aria-live=\"polite\"></div></form>"
+    ],
+    [
+      "error",
+      "小白",
+      "<form class=\"paper composer is-error\" data-name=\"小白\" ><label for=\"reply-1\">写给小白</label><textarea id=\"reply-1\" aria-describedby=\"reply-1-help\" placeholder=\"把想说的话，慢慢写下来…\" >明天我们再一起等它吧。就算它晚一点来，我也会陪着你。</textarea><p class=\"helper error-copy\" id=\"reply-1-help\">这次没寄出去，写好的话还在。</p><div class=\"card-actions\"><button type=\"button\" class=\"secondary\" data-action=\"voice\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"9\" y=\"3\" width=\"6\" height=\"12\" rx=\"3\"/><path d=\"M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8\"/></svg>用语音说</button><button type=\"submit\" class=\"primary\" >再寄一次<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-5-5 5 5-5 5\"/></svg></button></div><div class=\"reply-feedback\" aria-live=\"polite\"></div></form>"
+    ],
+    [
+      "sending",
+      "小橘",
+      "<form class=\"paper composer \" data-name=\"小橘\" aria-busy=\"true\"><label for=\"reply-1\">写给小橘</label><textarea id=\"reply-1\" aria-describedby=\"reply-1-help\" placeholder=\"把想说的话，慢慢写下来…\" readonly>明天我们再一起等它吧。就算它晚一点来，我也会陪着你。</textarea><p class=\"helper \" id=\"reply-1-help\">一句话也可以。</p><div class=\"card-actions\"><button type=\"button\" class=\"secondary\" data-action=\"voice\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"9\" y=\"3\" width=\"6\" height=\"12\" rx=\"3\"/><path d=\"M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8\"/></svg>用语音说</button><button type=\"submit\" class=\"primary\" disabled>正在寄出…</button></div><div class=\"reply-feedback\" aria-live=\"polite\"></div></form>"
+    ],
+    [
+      "sending",
+      "小白",
+      "<form class=\"paper composer \" data-name=\"小白\" aria-busy=\"true\"><label for=\"reply-1\">写给小白</label><textarea id=\"reply-1\" aria-describedby=\"reply-1-help\" placeholder=\"把想说的话，慢慢写下来…\" readonly>明天我们再一起等它吧。就算它晚一点来，我也会陪着你。</textarea><p class=\"helper \" id=\"reply-1-help\">一句话也可以。</p><div class=\"card-actions\"><button type=\"button\" class=\"secondary\" data-action=\"voice\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"9\" y=\"3\" width=\"6\" height=\"12\" rx=\"3\"/><path d=\"M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8\"/></svg>用语音说</button><button type=\"submit\" class=\"primary\" disabled>正在寄出…</button></div><div class=\"reply-feedback\" aria-live=\"polite\"></div></form>"
+    ],
+    [
+      "success",
+      "小橘",
+      "<section class=\"paper composer\" aria-label=\"回信成功状态\"><div class=\"success-panel\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"/></svg><h3>回信已收好</h3><p>你写下的话，留在了这一刻。</p></div><button class=\"text-button\" data-action=\"reset-reply\">再看看这封信<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-5-5 5 5-5 5\"/></svg></button></section>"
+    ],
+    [
+      "success",
+      "小白",
+      "<section class=\"paper composer\" aria-label=\"回信成功状态\"><div class=\"success-panel\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"/></svg><h3>回信已收好</h3><p>你写下的话，留在了这一刻。</p></div><button class=\"text-button\" data-action=\"reset-reply\">再看看这封信<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-5-5 5 5-5 5\"/></svg></button></section>"
+    ],
+    [
+      "voice",
+      "小橘",
+      "<section class=\"paper composer\"><label>说给小橘听</label><div class=\"voice-state\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"9\" y=\"3\" width=\"6\" height=\"12\" rx=\"3\"/><path d=\"M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8\"/></svg><span>轻轻说，我在听。</span><span class=\"wave\" aria-hidden=\"true\"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div><p class=\"helper\">说完后，可以先看看文字。</p><div class=\"card-actions\"><button class=\"secondary\" data-action=\"reset-reply\">改用文字</button><button class=\"primary\" data-action=\"voice-end\">说好了<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"/></svg></button></div></section>"
+    ],
+    [
+      "voice",
+      "小白",
+      "<section class=\"paper composer\"><label>说给小白听</label><div class=\"voice-state\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"9\" y=\"3\" width=\"6\" height=\"12\" rx=\"3\"/><path d=\"M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8\"/></svg><span>轻轻说，我在听。</span><span class=\"wave\" aria-hidden=\"true\"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div><p class=\"helper\">说完后，可以先看看文字。</p><div class=\"card-actions\"><button class=\"secondary\" data-action=\"reset-reply\">改用文字</button><button class=\"primary\" data-action=\"voice-end\">说好了<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"/></svg></button></div></section>"
+    ]
+  ]
+}

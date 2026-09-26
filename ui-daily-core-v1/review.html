@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>有猫来信 · 日常核心体验审阅</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./review.css">
+</head>
+<body>
+  <header class="review-heading">
+    <div><p class="eyebrow">有猫来信 · 第二批</p><h1>日常核心体验审阅</h1></div>
+    <p class="review-boundary">这是 GitHub Pages 本机体验预览，无真实云端同步、录音或自动理解回应。明信片详情、来信盒与历史回应管理（I / J / K）在后续批次。</p>
+  </header>
+  <main class="review-layout">
+    <details class="review-tools" id="review-tools" open>
+      <summary><span>审阅工具</span><span id="tool-summary">40 个场景</span></summary>
+      <div class="tool-content">
+        <section class="tool-section" aria-labelledby="mode-heading">
+          <h2 id="mode-heading">预览方式</h2>
+          <div class="segmented" role="group" aria-label="预览方式">
+            <button type="button" id="mode-scenario" aria-pressed="true">场景审阅</button>
+            <button type="button" id="mode-live" aria-pressed="false">连续体验</button>
+          </div>
+          <p class="tool-note" id="mode-note">场景数据相互隔离，不改连续体验的本机数据。</p>
+          <label class="field-label" for="cat-select">参考小猫</label>
+          <select id="cat-select">
+            <option value="cat-01">橘白 · cat-01</option>
+            <option value="cat-02">狸花 · cat-02</option>
+            <option value="cat-03">奶油白 · cat-03</option>
+            <option value="cat-04">三花 · cat-04</option>
+          </select>
+          <p class="tool-note" id="cat-note">只替换当前审阅场景的参考猫。</p>
+        </section>
+        <section class="tool-section" aria-labelledby="scenario-heading">
+          <h2 id="scenario-heading">场景 <span class="count" id="scenario-count">40</span></h2>
+          <div id="scenario-list" class="scenario-list"></div>
+        </section>
+        <section class="tool-section" aria-labelledby="simulation-heading">
+          <h2 id="simulation-heading">手动模拟事件</h2>
+          <p class="tool-note">以下操作由审阅者触发，并非自动后台事件。故障只影响下一次对应操作；未发生对应操作时，不会立刻显示失败。</p>
+          <div class="simulation-buttons" id="simulation-actions"></div>
+          <p class="simulation-feedback" id="simulation-feedback" role="status">先在右侧体验，再按需要模拟状态变化。</p>
+        </section>
+      </div>
+    </details>
+    <section class="preview-area" aria-labelledby="preview-heading">
+      <header class="preview-heading">
+        <div class="preview-title-row"><h2 id="preview-heading">正在准备预览…</h2><a id="open-preview" href="./index.html?scenario=E-new-letter-M&amp;cat=cat-01" target="_blank" rel="noopener noreferrer">新窗口打开<span aria-hidden="true"> ↗</span></a></div>
+        <p id="scenario-note" class="preview-note"></p>
+        <div class="viewport-tools">
+          <div class="size-buttons" role="group" aria-label="预览视口尺寸">
+            <button type="button" data-size="S" aria-pressed="false">S <span>360</span></button>
+            <button type="button" data-size="M" aria-pressed="true">M <span>390</span></button>
+            <button type="button" data-size="L" aria-pressed="false">L <span>430</span></button>
+            <button type="button" data-size="D" aria-pressed="false">D <span>1280</span></button>
+          </div>
+          <button type="button" id="fit-toggle" aria-pressed="true">适配容器</button>
+          <button type="button" id="reload-preview">重新载入</button>
+        </div>
+        <p id="viewport-caption" class="viewport-caption">390 × 844 CSS px</p>
+      </header>
+      <div class="preview-stage" id="preview-stage">
+        <div class="frame-mount" id="frame-mount"><iframe id="preview" title="日常核心体验产品预览" src="about:blank"></iframe></div>
+      </div>
+      <footer class="preview-state" aria-label="预览当前状态">
+        <div class="state-heading"><h3>当前状态</h3><span id="connection-status">等待预览就绪</span></div>
+        <dl id="state-summary"><div><dt>预览</dt><dd>正在加载…</dd></div></dl>
+        <p>此区及左侧工具仅供团队审阅，不属于产品页面。长页面在预览框内滚动。</p>
+      </footer>
+    </section>
+  </main>
+  <noscript><p class="noscript-notice">请启用 JavaScript 后使用审阅工具。也可直接打开 <a href="./index.html">连续体验</a>。</p></noscript>
+  <script type="module" src="./review.mjs"></script>
+</body>
+</html>
