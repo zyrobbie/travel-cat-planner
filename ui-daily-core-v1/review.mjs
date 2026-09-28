@@ -1,4 +1,4 @@
-import {SCENARIOS} from './scenarios.mjs';
+import {SCENARIOS} from './scenarios.mjs?v=g2r-fixes-20260928';
 import {PREVIEW_IDENTITY_KEY} from '../ui-adoption-flow-v1/preview-identity.mjs';
 
 const $=id=>document.getElementById(id);
@@ -43,7 +43,7 @@ function scenarioButtons(){
   $('scenario-count').textContent=String(SCENARIOS.length);
   for(const [action,label,note] of actions){const button=document.createElement('button');button.type='button';button.dataset.simulate=action;button.textContent=label;button.title=note;button.disabled=true;$('simulation-actions').append(button);}
 }
-function previewUrl(){const url=new URL('./index.html',location.href);if(mode==='scenario'){url.searchParams.set('scenario',scenario.id);url.searchParams.set('cat',cat);}return url.href;}
+function previewUrl(){const url=new URL('./index.html',location.href);url.searchParams.set('v','g2r-fixes-20260928');if(mode==='scenario'){url.searchParams.set('scenario',scenario.id);url.searchParams.set('cat',cat);}return url.href;}
 function updateControls(){
   const live=mode==='live';
   $('mode-scenario').setAttribute('aria-pressed',String(!live));$('mode-live').setAttribute('aria-pressed',String(live));

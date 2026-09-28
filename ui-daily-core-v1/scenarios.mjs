@@ -25,7 +25,7 @@ export const SCENARIOS = Object.freeze([
   scene('E', 'new-letter', '在家 · 一封新需求卡', '首页展示不标已读；点击看看来信进入 G。'),
   scene('E', 'returned-postcard', '回家后 · 旅行信仍未读', '由 TRIP 转回 HOME，原明信片入口仍保留；可打开最小明信片阅读页。'),
   scene('E', 'loading', '在家 · 首次加载', '仅静态加载示意，不使用进度百分比或自动创建新猫。'),
-  scene('E', 'image-error', '在家 · 图片失败', '保留猫名、生活文字和 3:2 图位，提供原图重试。'),
+  scene('E', 'image-error', '在家 · 图片失败', '保留猫名、在家状态和 3:2 图位，提供图片重试。'),
   scene('E', 'read-error', '在家 · 本机读取失败', '一次隔离读取失败；重试恢复既有猫和数据。'),
   scene('E', 'draft-and-new-letter', '在家 · 旧草稿与新信并存', '旧稿实际写入内存存储，新信优先展示且不覆盖原草稿。'),
   scene('E', 'new-letter', '在家首页 · 紧凑手机', '360×800，完整主图、新信入口与导航。', { size: 'S', responsiveMain: true }),
@@ -41,7 +41,7 @@ export const SCENARIOS = Object.freeze([
   scene('F', 'postcard-arrived', '旅行首页 · 大屏手机', '430×932，明信片到达不结束旅行。', { size: 'L', responsiveMain: true }),
   scene('F', 'postcard-arrived', '旅行首页 · 桌面', '1440×900，全幅场景与居中主体。', { size: 'D', responsiveMain: true }),
 
-  scene('G', 'empty', '需求卡 · 空回应 / 小提示折叠', '完整原信；空回应不可送出；这次先不回清楚可见。', { main: true }),
+  scene('G', 'empty', '需求卡 · 先读后写', '完整原信；初始无输入和提示入口，卡底左跳过、右回信。', { main: true }),
   scene('G', 'short-reply', '回应 · 正常短文', '短回应可以正常送出，不要求最低字数。'),
   scene('G', 'long-reply', '回应 · 长文', '自然扩展或滚动，不缩小正文；末行与操作可达。'),
   scene('G', '2000-characters', '回应 · 2000 字边界', '恰好 2000 个字素，内容完整且仍可提交。'),
@@ -58,7 +58,7 @@ export const SCENARIOS = Object.freeze([
   scene('G', 'keyboard', '回应 · 紧凑手机键盘展开', '360×800 的审阅键盘示意，不代表真机输入法测试。', { size: 'S' }),
   scene('G', 'focus', '回应 · 聚焦', '补充稿：真实焦点外轮廓，空白仍不可送出。'),
   scene('G', 'overlong', '回应 · 2001 字超长', '补充稿：原文不静默截断，提交不可用。'),
-  scene('G', 'empty', '需求卡 · 紧凑手机常规态', '补充稿：360×800，完整原信、文字输入和跳过入口。', { size: 'S', responsiveMain: true }),
+  scene('G', 'empty', '需求卡 · 紧凑手机初读态', '补充稿：360×800，完整原信和卡底两项操作；输入须主动展开。', { size: 'S', responsiveMain: true }),
   scene('G', 'keyboard', '回应 · 主稿键盘展开', '补充稿：390×844 的审阅键盘示意。'),
 
   scene('H', 'home', '送出去啦 · 回到在家的小猫', '先实际保存回应和收据，再显示 H；返回 E。', { main: true, catState: 'HOME' }),
@@ -105,7 +105,7 @@ export function buildScenario(id, { catId = 'cat-01', catName = '小咪' } = {})
   const failFixtures = {};
   const store = createDailyStore({ storage: storageAdapter, failFixtures });
   const ui = { loading: false, imageError: false, tipsOpen: false, draftRestored: false,
-    keyboard: false, freezeState: false, focus: false, reading: false };
+    keyboard: false, freezeState: false, focus: false, reading: false, replyExpanded: false };
   const hasNeed = ['G', 'H'].includes(definition.page) || definition.page === 'F' && variant === 'old-need'
     || definition.page === 'E' && ['new-letter', 'draft-and-new-letter'].includes(variant);
   let state = initialState({ catId, appearanceId: catId, catName,
@@ -179,6 +179,7 @@ export function buildScenario(id, { catId = 'cat-01', catName = '小咪' } = {})
     }
     ui.imageError = variant === 'image-error';
   } else if (definition.page === 'G') {
+    ui.replyExpanded = variant !== 'empty';
     const empty = ['empty', 'focus', 'tips-open'].includes(variant);
     const text = variant === 'long-reply' ? LONG_REPLY
       : variant === '2000-characters' ? exactLengthReply(2000)

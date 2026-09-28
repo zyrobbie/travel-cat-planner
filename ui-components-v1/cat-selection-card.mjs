@@ -9,10 +9,10 @@ export const cats=[
 
 const icons={check:'<path d="m5 12 4 4L19 6"/>'};
 const icon=n=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[n]}</svg>`;
-const image=(name,alt,cls,catId)=>`<img class="${cls}" src="${new URL(name,A).href}" alt="${alt}" draggable="false" data-cat-image="${catId}">`;
+const image=(name,alt,cls,catId,sources)=>`<img class="${cls}" src="${sources?.src??new URL(name,A).href}"${sources?` srcset="${sources.srcset}" sizes="${sources.sizes}" decoding="async" fetchpriority="${sources.priority??'auto'}"`:''} alt="${alt}" draggable="false" data-cat-image="${catId}">`;
 
-export function choice(i=1,selected=false,group='preview') {
-  const d=cats[i];return `<label class="choice-card"><input type="radio" name="${group}" value="${d.name}" ${selected?'checked':''} aria-label="选择${d.name}猫" data-cat-id="cat-${d.id}">${image(`V1-cat-fullbody-cat-${d.id}.png`,d.name+'猫完整全身像','fullbody',`cat-${d.id}`)}<h3>${d.name}</h3><p>${d.line}</p><span class="choice-control"><span class="radio-ring">${icon('check')}</span><span class="choice-word">${selected?'已选择':'想认识它'}</span></span></label>`;
+export function choice(i=1,selected=false,group='preview',sources=null) {
+  const d=cats[i];return `<label class="choice-card"><input type="radio" name="${group}" value="${d.name}" ${selected?'checked':''} aria-label="选择${d.name}猫" data-cat-id="cat-${d.id}">${image(`V1-cat-fullbody-cat-${d.id}.png`,d.name+'猫完整全身像','fullbody',`cat-${d.id}`,sources)}<h3>${d.name}</h3><p>${d.line}</p><span class="choice-control"><span class="radio-ring">${icon('check')}</span><span class="choice-word">${selected?'已选择':'想认识它'}</span></span></label>`;
 }
 
 export function updateChoiceGroup(root,group) {

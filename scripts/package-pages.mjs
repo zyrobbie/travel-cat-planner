@@ -23,6 +23,7 @@ for (const name of ['ui-components-v1', 'ui-adoption-flow-v1', 'ui-daily-core-v1
     filter: path => {
       const parts = path.slice(source.length + 1).split(sep);
       return !parts.some(part => sourceOnly.has(part))
+        && !(name !== 'ui-components-v1' && parts[0] === 'assets' && path.endsWith('.png'))
         && basename(path) !== 'export.html' && !path.endsWith('.log');
     },
   });

@@ -1,6 +1,7 @@
 import {initialState,transition,countName,validateName,canContinue} from './flow-state.mjs?v=page-stage-01';
 import {cats,scenarios} from './scenarios.mjs?v=page-stage-01';
-import {choice,updateChoiceGroup} from '../ui-components-v1/cat-selection-card.mjs';
+import {choice,updateChoiceGroup} from '../ui-components-v1/cat-selection-card.mjs?v=g2r-image-fix-01';
+import {catImageSources} from './runtime-images.mjs';
 import {readPreviewIdentity,confirmPreviewIdentity} from './preview-identity.mjs';
 
 const root=document.getElementById('flow');
@@ -12,6 +13,7 @@ const icon=n=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 let state=initialState();
 let touched=false,composing=false,reading=false,handedOff=false;
 let failed=new Set(),fixtureFailed=new Set(),requestNumber=0;
+const imageRetries=new Map();
 let storedResult=null;
 const STORAGE_KEY='cat-letters-e3-g2r:adoption-session-v1';
 const LEGACY_SESSION_KEY='cat-letters-ui-adoption-flow-v1:page-stage-01';
@@ -73,10 +75,10 @@ if(scene?.keyboard){
 const isLocked=()=>['SUBMITTING','UNKNOWN','CONFIRMED'].includes(state.adoptionStatus);
 const currentCat=()=>cats.find(c=>c.id===(state.confirmedCat?.catId??state.selectedCatId));
 function top(showBack=false){return `<header class="flow-top ${showBack?'has-back':''}">${showBack?`<button class="text-button back-button" data-action="back">${icon('arrow')}返回</button>`:''}<div class="brand">有猫来信</div></header>`;}
-function imageMarkup(cat){return failed.has(cat.id)?`<div class="image-failure" role="status"><strong>${cat.name}</strong>图片暂时没加载出来</div>`:`<img src="assets/${cat.file}" alt="${cat.name}猫完整全身像" data-cat-image="${cat.id}" draggable="false">`;}
+function imageMarkup(cat){const source=catImageSources(cat.id,imageRetries.get(cat.id)||0);return failed.has(cat.id)?`<div class="image-failure" role="status"><strong>${cat.name}</strong>图片暂时没加载出来</div>`:`<img src="${source.src}" srcset="${source.srcset}" sizes="${source.sizes}" decoding="async" fetchpriority="high" width="1122" height="1402" alt="${cat.name}猫完整全身像" data-cat-image="${cat.id}" draggable="false"><span class="image-loading" role="status">小猫正在出现…</span>`;}
 function catPreview(cat){return `<div class="single-cat" aria-label="已选${cat.name}猫">${imageMarkup(cat)}${failed.has(cat.id)?`<button class="text-button retry-image" data-retry="${cat.id}">重新加载</button>`:''}</div>`;}
 function chooseView(){
-  const cards=cats.map((cat,i)=>`<div class="cat-tile ${failed.has(cat.id)?'has-failure':''}">${choice(i,state.selectedCatId===cat.id,'selected-cat')}${failed.has(cat.id)?`<div class="card-image-failure"><div class="image-failure" role="status"><strong>${cat.name}</strong>图片暂时没加载出来</div><button class="text-button" data-retry="${cat.id}">重新加载</button></div>`:''}</div>`).join('');
+  const cards=cats.map((cat,i)=>`<div class="cat-tile ${failed.has(cat.id)?'has-failure':''}">${choice(i,state.selectedCatId===cat.id,'selected-cat',{...catImageSources(cat.id,imageRetries.get(cat.id)||0),priority:i<2?'high':'auto'})}${failed.has(cat.id)?`<div class="card-image-failure"><div class="image-failure" role="status"><strong>${cat.name}</strong>图片暂时没加载出来</div><button class="text-button" data-retry="${cat.id}">重新加载</button></div>`:'<span class="image-loading" role="status">小猫正在出现…</span>'}</div>`).join('');
   return `${top()}<h1 class="flow-heading" tabindex="-1">选一只你喜欢的小猫吧</h1><p class="flow-intro">以后，它会一直是陪你生活和旅行的那一只。</p><fieldset class="four-cats adoption-cats"><legend class="visually-hidden">选择小猫外观</legend>${cards}</fieldset><footer class="flow-footer"><p class="local-note">当前为本机测试体验。</p><button class="primary" data-action="next" ${canContinue(state)?'':'disabled'}>继续${icon('arrow')}</button></footer>`;
 }
 function nameView(){
@@ -104,9 +106,11 @@ function confirmView(){
 }
 function attachImageErrors(){
   root.querySelectorAll('img[data-cat-image]').forEach(img=>{
-    const fail=()=>{if(!failed.has(img.dataset.catImage)){failed.add(img.dataset.catImage);render();}};
-    img.addEventListener('error',fail,{once:true});
-    if(img.complete&&img.naturalWidth===0)fail();
+    const container=img.closest('.cat-tile,.single-cat');
+    const fail=()=>{if(!img.isConnected||failed.has(img.dataset.catImage))return;failed.add(img.dataset.catImage);render();};
+    const timer=setTimeout(fail,8000);
+    const decoded=typeof img.decode==='function'?img.decode():new Promise((resolve,reject)=>{if(img.complete)return img.naturalWidth?resolve():reject();img.addEventListener('load',resolve,{once:true});img.addEventListener('error',reject,{once:true});});
+    decoded.then(()=>{clearTimeout(timer);if(img.isConnected)container.classList.add('is-ready');},()=>{clearTimeout(timer);fail();});
   });
 }
 function render(focusHeading=false){
@@ -190,7 +194,7 @@ root.addEventListener('focusout',e=>{if(e.target.id==='cat-name'){touched=true;u
 root.addEventListener('submit',e=>{e.preventDefault();if(composing)return;touched=true;updateName();if(canContinue(state))dispatch({type:'NEXT'},true);});
 root.addEventListener('click',e=>{
   const retry=e.target.closest('[data-retry]');
-  if(retry){fixtureFailed.delete(retry.dataset.retry);failed.delete(retry.dataset.retry);render();return;}
+  if(retry){fixtureFailed.delete(retry.dataset.retry);failed.delete(retry.dataset.retry);imageRetries.set(retry.dataset.retry,(imageRetries.get(retry.dataset.retry)||0)+1);render();return;}
   const button=e.target.closest('[data-action]');if(!button||button.disabled)return;
   const action=button.dataset.action;
   if(action==='recover'){restore();render();return;}
@@ -201,7 +205,7 @@ root.addEventListener('click',e=>{
   if(action==='read')readResult();
   if(action==='continue'&&state.adoptionStatus==='CONFIRMED'){
     if(scene){handedOff=true;render();}
-    else location.assign(new URL('../ui-daily-core-v1/index.html',location.href));
+    else {const next=new URL('../ui-daily-core-v1/index.html',location.href);next.searchParams.set('v','g2r-fixes-20260928');location.assign(next);}
   }
 });
 function syncKeyboard(){

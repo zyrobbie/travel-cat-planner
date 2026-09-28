@@ -13,6 +13,10 @@ html{font-size:16px;scroll-padding-bottom:32px}
 .flow-intro{font-size:.9375rem;line-height:1.8;color:var(--muted);margin-top:10px;text-wrap:pretty;max-width:30em}
 .adoption-cats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:24px 0 0;border:0;padding:0;min-width:0}
 .cat-tile{min-width:0;position:relative}
+.cat-tile:not(.is-ready) .fullbody,.single-cat:not(.is-ready) img{visibility:hidden}
+.image-loading{position:absolute;z-index:1;left:50%;top:105px;transform:translate(-50%,-50%);white-space:nowrap;color:var(--muted);font-size:12px;pointer-events:none}
+.cat-tile.is-ready .image-loading,.single-cat.is-ready .image-loading{display:none}
+.single-cat .image-loading{top:50%}
 .image-failure{color:var(--muted);font-size:.8125rem;line-height:1.7;text-align:center;padding:8px;max-width:100%}
 .image-failure strong{display:block;font-weight:500;color:var(--ink);margin-bottom:8px}
 .retry-image{position:absolute;bottom:76px;left:50%;transform:translateX(-50%);min-height:44px;min-width:92px;font-size:.8125rem;white-space:nowrap;z-index:1;background:var(--paper)}
