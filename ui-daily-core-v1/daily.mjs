@@ -2,7 +2,7 @@ import {needCard,replyInput,updateReplyInputState,focusReply,icon,escapeHtml as 
 import {catImageSources} from '../ui-adoption-flow-v1/runtime-images.mjs';
 import {initialState,transition,currentLetter,getHomeEntry,inboxLetters,LETTER_FIXTURES,canSubmit} from './daily-state.mjs';
 import {createDailyStore,STORAGE_KEY} from './storage.mjs';
-import {buildScenario,SCENARIOS} from './scenarios.mjs?v=g2r-fixes-20260928';
+import {buildScenario,SCENARIOS} from './scenarios.mjs?v=compact-fluid-20260928';
 import {readPreviewIdentity} from '../ui-adoption-flow-v1/preview-identity.mjs';
 const params=new URLSearchParams(location.search), app=document.querySelector('#app');
 const scenarioId=params.get('scenario'), requestedCat=params.get('cat');
@@ -16,7 +16,7 @@ if(invalidScenario){
   app.innerHTML='<section class="daily-page entry-page"><span class="wordmark">有猫来信 · 审阅</span><div class="entry-message"><h1>找不到这个审阅场景</h1><p>场景参数不正确，本机连续体验记录没有被打开或修改。</p><a class="primary" href="./review.html">返回场景审阅</a></div></section>';
 }else if(!fixture&&(!identityResult.ok||!identityResult.identity)){
   document.documentElement.dataset.page='WELCOME';
-  app.innerHTML=`<section class="daily-page entry-page"><span class="wordmark">有猫来信</span><div class="entry-message"><h1>${identityResult.ok?'先和小猫见面吧':'暂时无法读取本机领养记录'}</h1><p>${identityResult.ok?'选定小猫后，就能一起回家。':'请保留当前浏览器数据，稍后重新读取；已有记录不会因此清空。'}</p><a class="primary" href="../ui-adoption-flow-v1/index.html?v=g2r-fixes-20260928">${identityResult.ok?'去选小猫':'重新读取'}</a></div></section>`;
+  app.innerHTML=`<section class="daily-page entry-page"><span class="wordmark">有猫来信</span><div class="entry-message"><h1>${identityResult.ok?'先和小猫见面吧':'暂时无法读取本机领养记录'}</h1><p>${identityResult.ok?'选定小猫后，就能一起回家。':'请保留当前浏览器数据，稍后重新读取；已有记录不会因此清空。'}</p><a class="primary" href="../ui-adoption-flow-v1/index.html?v=compact-fluid-20260928">${identityResult.ok?'去选小猫':'重新读取'}</a></div></section>`;
   if(parent!==window)parent.postMessage({type:'daily-state',state:{page:'WELCOME',catState:null,newLetterId:null,letters:[]}},location.origin);
 }else{
 const liveIdentity=identityResult.identity;

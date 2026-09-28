@@ -79,7 +79,18 @@ function imageMarkup(cat){const source=catImageSources(cat.id,imageRetries.get(c
 function catPreview(cat){return `<div class="single-cat" aria-label="已选${cat.name}猫">${imageMarkup(cat)}${failed.has(cat.id)?`<button class="text-button retry-image" data-retry="${cat.id}">重新加载</button>`:''}</div>`;}
 function chooseView(){
   const cards=cats.map((cat,i)=>`<div class="cat-tile ${failed.has(cat.id)?'has-failure':''}">${choice(i,state.selectedCatId===cat.id,'selected-cat',{...catImageSources(cat.id,imageRetries.get(cat.id)||0),priority:i<2?'high':'auto'})}${failed.has(cat.id)?`<div class="card-image-failure"><div class="image-failure" role="status"><strong>${cat.name}</strong>图片暂时没加载出来</div><button class="text-button" data-retry="${cat.id}">重新加载</button></div>`:'<span class="image-loading" role="status">小猫正在出现…</span>'}</div>`).join('');
-  return `${top()}<h1 class="flow-heading" tabindex="-1">选一只你喜欢的小猫吧</h1><p class="flow-intro">以后，它会一直是陪你生活和旅行的那一只。</p><fieldset class="four-cats adoption-cats"><legend class="visually-hidden">选择小猫外观</legend>${cards}</fieldset><footer class="flow-footer"><p class="local-note">当前为本机测试体验。</p><button class="primary" data-action="next" ${canContinue(state)?'':'disabled'}>继续${icon('arrow')}</button></footer>`;
+  return `${top()}<h1 class="flow-heading" tabindex="-1">选一只你喜欢的小猫吧</h1><p class="flow-intro">以后，它会一直是陪你生活和旅行的那一只。</p><fieldset class="four-cats adoption-cats"><legend class="visually-hidden">选择小猫外观</legend>${cards}</fieldset><footer class="flow-footer"><button class="primary" data-action="next" ${canContinue(state)?'':'disabled'}>继续${icon('arrow')}</button><p class="local-note">当前为本机测试体验。</p></footer>`;
+}
+function formatCompactDescriptions(){
+  root.querySelectorAll('.adoption-cats .choice-card p').forEach(p=>{
+    const text=p.textContent,comma=text.indexOf('，');
+    const isTabby=p.closest('.choice-card').querySelector('input')?.dataset.catId==='cat-02';
+    const cut=comma>=0?comma+1:isTabby?text.indexOf('一点'):-1;
+    if(cut<0)return;
+    const first=document.createElement('span'),second=document.createElement('span');
+    first.textContent=text.slice(0,cut);second.textContent=text.slice(cut);
+    p.replaceChildren(first,second);
+  });
 }
 function nameView(){
   const error=(touched||countName(state.catNameDraft)>12)?validateName(state.catNameDraft):'';
@@ -122,6 +133,7 @@ function render(focusHeading=false){
   root.className=`flow-page ${state.step==='A'?'choose-page':state.step==='B'?'name-page centered':'confirm-page centered'}`;
   root.dataset.step=state.step;root.dataset.status=state.adoptionStatus;
   root.innerHTML=state.step==='A'?chooseView():state.step==='B'?nameView():confirmView();
+  if(state.step==='A')formatCompactDescriptions();
   history.replaceState(null,'',`${location.pathname}${location.search}#UI-01${state.step}`);
   attachImageErrors();
   persist();
@@ -205,7 +217,7 @@ root.addEventListener('click',e=>{
   if(action==='read')readResult();
   if(action==='continue'&&state.adoptionStatus==='CONFIRMED'){
     if(scene){handedOff=true;render();}
-    else {const next=new URL('../ui-daily-core-v1/index.html',location.href);next.searchParams.set('v','g2r-fixes-20260928');location.assign(next);}
+    else {const next=new URL('../ui-daily-core-v1/index.html',location.href);next.searchParams.set('v','compact-fluid-20260928');location.assign(next);}
   }
 });
 function syncKeyboard(){

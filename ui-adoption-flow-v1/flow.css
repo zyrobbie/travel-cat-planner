@@ -66,3 +66,29 @@ html{font-size:16px;scroll-padding-bottom:32px}
 .card-image-failure button{pointer-events:auto;min-width:92px;justify-content:center;font-size:13px}
 .card-image-failure .image-failure{padding:8px 2px 0}
 @media(min-width:651px){.card-image-failure{top:20px;left:16px;right:16px;height:214px}}
+
+/* Approved compact selection layout; the shared component's default showcase is untouched. */
+.choose-page{max-width:430px;padding:12px 16px 16px}
+.choose-page .flow-top{min-height:28px;margin-bottom:6px}
+.choose-page .brand{font-size:20px;line-height:28px}
+.choose-page .flow-heading{font-size:28px;line-height:1.4}
+.choose-page .flow-intro{font-size:14px;line-height:22px;margin-top:4px;text-align:left}
+.choose-page .adoption-cats{max-width:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;margin:12px 0 0}
+.choose-page .choice-card{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:152px 6px 28px 4px 42px;height:250px;min-width:0;padding:8px 10px;text-align:left;align-content:start}
+.choose-page .choice-card .fullbody{grid-column:1/-1;grid-row:1;width:100%;height:152px;margin:0;object-fit:contain}
+.choose-page .choice-card h3{grid-column:1;grid-row:3;min-width:0;font:600 20px/28px var(--story);white-space:nowrap}
+.choose-page .choice-card .choice-control{grid-column:2;grid-row:3;display:inline-flex;justify-content:flex-end;gap:4px;min-height:0;font-size:12px;line-height:20px;white-space:nowrap}
+.choose-page .choice-card .radio-ring{width:14px;height:14px;flex:0 0 14px}
+.choose-page .choice-card .radio-ring svg{width:12px;height:12px}
+.choose-page .choice-card p{grid-column:1/-1;grid-row:5;max-width:none;min-height:0;margin:0;color:var(--muted);font-size:14px;line-height:21px;text-align:left;text-wrap:initial}
+.choose-page .choice-card p span{display:block}
+.choose-page .image-loading{top:85px}
+.choose-page .card-image-failure{top:8px;left:10px;right:10px;height:152px}
+.choose-page .flow-footer{max-width:none;margin:12px 0 0}
+.choose-page .flow-footer .primary{min-height:46px;margin-top:0}
+.choose-page .flow-footer .local-note{margin-top:8px}
+@media(max-width:374px){.choose-page .choice-card{grid-template-rows:148px 6px 28px 4px 42px;height:246px}.choose-page .choice-card .fullbody{height:148px}.choose-page .card-image-failure{height:148px}}
+.large-type .choose-page .choice-card{height:auto;grid-template-rows:minmax(152px,auto) 6px auto 4px auto;min-height:250px}
+.large-type .choose-page .choice-card h3{font-size:28px;line-height:1.4;white-space:normal}
+.large-type .choose-page .choice-card p{font-size:24px;line-height:1.4}
+.large-type .choose-page .choice-card .choice-control{white-space:normal}
