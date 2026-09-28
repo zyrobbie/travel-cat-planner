@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {initialState,transition as t,homePage,getHomeEntry,currentLetter,inboxLetters,LETTER_FIXTURES,validateSnapshot} from '../daily-state.mjs';
 import {createDailyStore,STORAGE_KEY} from '../storage.mjs';
+import {SCENARIOS,buildScenario} from '../scenarios.mjs';
 
 const adopted={catId:'cat-02',appearanceId:'cat-02',catName:'团团',initialLetter:null};
 const fresh=initialState(adopted);
@@ -51,4 +52,11 @@ assert.equal(oldNeed.page,'G');assert.equal(oldNeed.newLetterId,null);assert.equ
 oldNeed=t(oldNeed,{type:'EDIT',value:'尚未送出的草稿'});
 assert.equal(t(oldNeed,{type:'RETURN_FROM_LETTER'}).page,'F');
 assert.equal(oldNeed.letters['need-01'].draft,'尚未送出的草稿');
-console.log('PASS G2R model: six combinations, trip delivery rule, read/release, inbox return and independent draft');
+for(const scenario of SCENARIOS)assert.equal(buildScenario(scenario.id).state.page,scenario.page,scenario.id);
+const resumed=buildScenario('G-draft-restored-M');
+assert.equal(resumed.ui.draftRestored,true);
+assert.equal(resumed.ui.replyExpanded,true);
+assert.equal(resumed.state.currentLetterId,'need-01');
+assert.ok(resumed.state.letters['need-01'].draft.length>0);
+assert.equal(createDailyStore({storage:resumed.storageAdapter}).load(resumed.state).state.page,'E');
+console.log('PASS G2R model: six combinations, trip delivery rule, read/release, inbox return, independent draft and 41 review fixtures');

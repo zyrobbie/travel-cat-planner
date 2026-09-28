@@ -6,7 +6,7 @@
   <meta name="color-scheme" content="light">
   <title>有猫来信 · 日常核心体验审阅</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="./review.css">
+  <link rel="stylesheet" href="./review.css?v=compact-fluid-20260928">
 </head>
 <body>
   <header class="review-heading">
@@ -24,7 +24,7 @@
             <button type="button" id="mode-live" aria-pressed="false">连续体验</button>
           </div>
           <p class="tool-note" id="mode-note">场景数据相互隔离，不改连续体验的本机数据。</p>
-          <a class="tool-note" href="../ui-adoption-flow-v1/index.html?v=g2r-fixes-20260928" target="_blank" rel="noopener noreferrer">从选猫开始连续体验 ↗</a>
+          <a class="tool-note" href="../ui-adoption-flow-v1/index.html?v=compact-fluid-20260928" target="_blank" rel="noopener noreferrer">从选猫开始连续体验 ↗</a>
           <button type="button" class="reset-preview" id="reset-preview">重置两批预览测试数据</button>
           <p class="tool-note">重置仅清除这两批 Pages 预览的新身份与日常记录；正式 /app/ 数据和旧版预览记录不受影响。</p>
           <label class="field-label" for="cat-select">参考小猫</label>
@@ -59,6 +59,7 @@
             <button type="button" data-size="L" aria-pressed="false">L <span>430</span></button>
             <button type="button" data-size="D" aria-pressed="false">D <span>1440</span></button>
           </div>
+          <button type="button" id="fixed-toggle" aria-pressed="false" hidden>固定视口模拟</button>
           <button type="button" id="fit-toggle" aria-pressed="true">适配容器</button>
           <button type="button" id="reload-preview">重新载入</button>
         </div>
@@ -66,15 +67,16 @@
       </header>
       <div class="preview-stage" id="preview-stage">
         <div class="frame-mount" id="frame-mount"><iframe id="preview" title="日常核心体验产品预览" src="about:blank"></iframe></div>
+        <div class="preview-error" id="preview-error" role="alert" hidden><strong>预览暂时没能显示。</strong><p>可以重新载入，现有测试记录不会清除。</p><button type="button" id="retry-preview">重新载入预览</button></div>
       </div>
       <footer class="preview-state" aria-label="预览当前状态">
         <div class="state-heading"><h3>当前状态</h3><span id="connection-status">等待预览就绪</span></div>
         <dl id="state-summary"><div><dt>预览</dt><dd>正在加载…</dd></div></dl>
-        <p>此区及左侧工具仅供团队审阅，不属于产品页面。长页面在预览框内滚动。</p>
+        <p>此区及左侧工具仅供团队审阅，不属于产品页面。手机默认随内容延展；固定视口模拟可单独选择。</p>
       </footer>
     </section>
   </main>
   <noscript><p class="noscript-notice">请启用 JavaScript 后使用审阅工具。也可直接打开 <a href="./index.html">连续体验</a>。</p></noscript>
-  <script type="module" src="./review.mjs?v=g2r-fixes-20260928"></script>
+  <script type="module" src="./review.mjs?v=compact-fluid-20260928"></script>
 </body>
 </html>

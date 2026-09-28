@@ -193,7 +193,11 @@ export function buildScenario(id, { catId = 'cat-01', catName = '小咪' } = {})
       saveDraft();
       const restored = store.load(state);
       if (!restored.ok) throw new Error(`Cannot restore ${id}`);
-      state = restored.state; ui.draftRestored = true;
+      // A real refresh returns to HOME. The reviewer explicitly resumes the
+      // same saved letter, instead of weakening the production restore rule.
+      state = restored.state;
+      dispatch({ type: 'OPEN_NEED', letterId: 'need-01' });
+      ui.replyExpanded = true; ui.draftRestored = true;
     } else if (variant === 'new-letter') {
       saveDraft();
       dispatch({ type: 'NEW_LETTER', letter: LETTER_FIXTURES['need-02'] });
