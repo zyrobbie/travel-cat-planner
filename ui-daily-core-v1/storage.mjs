@@ -11,7 +11,7 @@ const failed = (error, extra = {}) => ({ ok: false, error, ...extra });
  * Fail fixtures: readError/writeError/draftError/sendError/checkError/safetyBlocked.
  * true = persistent failure; a positive integer = fail that many times.
  */
-export function createDailyStore({ storage, key = STORAGE_KEY, failFixtures = {} } = {}) {
+export function createDailyStore({ storage, key = STORAGE_KEY, failFixtures = {}, initialOptions = {} } = {}) {
   let adapter = storage;
   if (!adapter) {
     try { adapter = globalThis.localStorage; } catch { adapter = null; }
@@ -81,7 +81,7 @@ export function createDailyStore({ storage, key = STORAGE_KEY, failFixtures = {}
       // Missing data is only a fresh visit when no current experience exists.
       // In particular, never replace an already-sent screen with a new letter.
       if (!envelope && fallbackState) throw new Error('MISSING_SNAPSHOT');
-      const state = envelope ? restoreSnapshot(envelope.state) : initialState();
+      const state = envelope ? restoreSnapshot(envelope.state) : initialState(initialOptions);
       // Restoration may legitimately change page or transient save/submit flags.
       // Give that change its own revision so same-revision conflict checks do
       // not confuse it with a second tab silently overwriting a stored snapshot.
@@ -89,7 +89,7 @@ export function createDailyStore({ storage, key = STORAGE_KEY, failFixtures = {}
       return { ok: true, state,
         fresh: !envelope, recovered: !!envelope };
     } catch (error) {
-      const fallback = fallbackState ? clone(fallbackState) : initialState();
+      const fallback = fallbackState ? clone(fallbackState) : initialState(initialOptions);
       const sent = currentLetter(fallback)?.replySubmitState === 'SUCCESS';
       return failed(error.message || 'READ_ERROR', {
         state: transition(fallback, { type: sent ? 'REFRESH_ERROR' : 'LOAD_ERROR' })

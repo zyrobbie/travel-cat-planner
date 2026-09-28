@@ -6,3 +6,29 @@ html{scroll-behavior:smooth}body{min-width:280px}button,a,summary{-webkit-tap-hi
 html[data-text-scale="200"] .tip-box p,html[data-text-scale="200"] .tip-box summary{font-size:28px}
 
 html[data-text-scale="200"] .success-panel .story-title,html[data-text-scale="200"] .error-block h2{font-size:44px}html[data-text-scale="200"] .success-content .inline-notice{font-size:26px}html[data-text-scale="200"] .error-block p,html[data-text-scale="200"] .neutral-loading{font-size:30px}html[data-text-scale="200"] .scene-fallback p{font-size:28px}
+
+/* G2R page shells keep the approved 3:2 room intact at every viewport. */
+@media(max-width:699px){.daily-page{padding-left:16px;padding-right:16px}}
+.home-scene{position:relative;isolation:isolate}
+.home-heading{flex-wrap:wrap}.home-heading h1{min-width:0;overflow-wrap:anywhere;text-wrap:balance}.home-heading .cat-status{flex-shrink:0;white-space:nowrap}
+.home-scene .home-room{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.home-scene .home-cat{position:absolute;left:22.5%;top:89%;height:auto;max-width:none;object-fit:contain}
+.home-scene .home-cat.cat-01{width:16.50%;transform:translate(-57.93%,-89.02%)}
+.home-scene .home-cat.cat-02{width:15.89%;transform:translate(-62.39%,-88.02%)}
+.home-scene .home-cat.cat-03{width:17.68%;transform:translate(-57.93%,-86.02%)}
+.home-scene .home-cat.cat-04{width:17.06%;transform:translate(-51.69%,-87.16%)}
+.home-cat-shadow{position:absolute;left:22.5%;top:89%;height:1.2%;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(ellipse,rgba(106,82,56,.14),rgba(106,82,56,.06) 45%,transparent 72%)}
+.home-cat-shadow.cat-01{width:7.6%}.home-cat-shadow.cat-02{width:6.3%}.home-cat-shadow.cat-03{width:6.9%}.home-cat-shadow.cat-04{width:7.5%}
+.home-cat-failure{position:absolute;left:4%;bottom:4%;max-width:44%;border-radius:8px;background:rgba(255,252,246,.91);padding:8px 10px;text-align:left;color:var(--muted)}
+.home-cat-failure p{font-size:13px;line-height:1.5}.home-cat-failure .secondary{font-size:12px;padding:4px 8px;min-height:36px;margin-top:4px}
+.home-content{padding-bottom:24px}
+html[data-text-scale="200"] .new-letter-heading h2{flex-basis:100%;text-wrap:balance}
+.draft-entry{display:flex;margin:12px auto 24px;color:var(--accent);text-align:center}
+.new-letter-date{margin:8px 0 0}
+.event-scene{margin:0 0 18px}
+.letter-date{font-size:14px;color:var(--muted);margin:-18px 0 20px}
+.postcard-page{padding-bottom:32px}.postcard-scene{margin-bottom:18px}.postcard-letter{padding:24px}.postcard-letter h2,.sent-reply h2{font:500 21px/1.5 var(--story);margin:0 0 18px}.postcard-letter p,.sent-reply p{white-space:pre-line;font-size:16px;line-height:1.85;overflow-wrap:anywhere;text-wrap:pretty}.keep-letter{display:block;margin:24px auto 0;min-height:48px}
+.postcard-letter .postcard-place{font-size:14px;color:var(--blue);margin:0 0 10px}
+.sent-reply{margin-top:20px;padding:24px}.sent-reply p{margin:0}
+.inbox-list{list-style:none;padding:0;margin:0 0 24px;display:grid;gap:12px}.inbox-list li{margin:0}.inbox-item{width:100%;text-align:left;display:grid;gap:8px;padding:20px 22px;color:var(--ink);font:inherit;min-height:112px}.inbox-item strong{font:500 18px/1.5 var(--story)}.inbox-kind{font-size:14px;color:var(--muted)}
+.entry-message{margin:auto 0;text-align:center;padding:80px 0}.entry-message h1{font:500 24px/1.5 var(--story);margin-bottom:14px}.entry-message p{color:var(--muted);line-height:1.8;margin-bottom:24px}.entry-message .primary{display:inline-flex;align-items:center;justify-content:center;min-height:48px;text-decoration:none;padding:0 22px}

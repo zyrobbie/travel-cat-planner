@@ -341,14 +341,17 @@ test('durable receipt protects against a later stale snapshot attempting to rewr
 test('two tabs with equal revision and different text cannot silently overwrite each other', () => {
   const storage = memoryStorage(); const a = createDailyStore({ storage }); const b = createDailyStore({ storage });
   a.persist(editor('共同起点'));
-  const aState = t(a.load().state, { type: 'EDIT', value: 'A 标签写下的文字' });
-  const bState = t(b.load().state, { type: 'EDIT', value: 'B 标签仍在内存中的文字' });
-  assert.equal(aState.revision, bState.revision);
+  assert.equal(a.load().state.page, 'E', 'cold restore returns home with a saved draft');
+  const opened = t(a.load().state, { type: 'OPEN_NEED', letterId: 'need-01' });
+  assert.equal(a.persist(opened).ok, true);
+  const aState = t(opened, { type: 'EDIT', value: 'A 标签写下的文字' });
+  const bEdited = t(opened, { type: 'EDIT', value: 'B 标签仍在内存中的文字' });
+  assert.equal(aState.revision, bEdited.revision);
   assert.equal(a.persist(aState).ok, true);
-  const conflict = b.persist(bState);
+  const conflict = b.persist(bEdited);
   assert.equal(conflict.ok, false); assert.equal(conflict.conflict, true); assert.equal(conflict.stale, true);
   assert.equal(currentLetter(a.load().state).draft, 'A 标签写下的文字');
-  assert.equal(currentLetter(bState).draft, 'B 标签仍在内存中的文字');
+  assert.equal(currentLetter(bEdited).draft, 'B 标签仍在内存中的文字');
   assert.equal(a.persist(a.load().state).ok, true, 'An unchanged snapshot is safe to persist');
 });
 

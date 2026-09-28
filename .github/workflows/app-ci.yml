@@ -37,6 +37,12 @@ jobs:
       - run: npm ci
       - run: npm run db:migrate
       - run: npm test
+      - run: |
+          node ui-adoption-flow-v1/checks/flow-state.test.mjs
+          node ui-adoption-flow-v1/checks/preview-identity.test.mjs
+          node ui-daily-core-v1/checks/daily-state.test.mjs
+          node ui-daily-core-v1/checks/g2r-state.test.mjs
+          node ui-components-v1/checks/daily-components.test.mjs
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: node scripts/start-local.mjs

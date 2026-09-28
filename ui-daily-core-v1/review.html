@@ -11,11 +11,11 @@
 <body>
   <header class="review-heading">
     <div><p class="eyebrow">有猫来信 · 第二批</p><h1>日常核心体验审阅</h1></div>
-    <p class="review-boundary">这是 GitHub Pages 本机体验预览，无真实云端同步、录音或自动理解回应。明信片详情、来信盒与历史回应管理（I / J / K）在后续批次。</p>
+    <p class="review-boundary">这是 GitHub Pages 本机体验预览，无真实云端同步、录音或自动理解回应。本轮新演示使用已批准的追光需求与河谷旅行图文；旧听雨信保留文字、画面暂不可用。正式六卡插画另轮确认，本次不计为六卡图文验收。明信片和来信盒可作最小阅读衔接，完整第三批仍待设计。</p>
   </header>
   <main class="review-layout">
     <details class="review-tools" id="review-tools" open>
-      <summary><span>审阅工具</span><span id="tool-summary">40 个场景</span></summary>
+      <summary><span>审阅工具</span><span id="tool-summary">41 个场景</span></summary>
       <div class="tool-content">
         <section class="tool-section" aria-labelledby="mode-heading">
           <h2 id="mode-heading">预览方式</h2>
@@ -24,6 +24,9 @@
             <button type="button" id="mode-live" aria-pressed="false">连续体验</button>
           </div>
           <p class="tool-note" id="mode-note">场景数据相互隔离，不改连续体验的本机数据。</p>
+          <a class="tool-note" href="../ui-adoption-flow-v1/index.html" target="_blank" rel="noopener noreferrer">从选猫开始连续体验 ↗</a>
+          <button type="button" class="reset-preview" id="reset-preview">重置两批预览测试数据</button>
+          <p class="tool-note">重置仅清除这两批 Pages 预览的新身份与日常记录；正式 /app/ 数据和旧版预览记录不受影响。</p>
           <label class="field-label" for="cat-select">参考小猫</label>
           <select id="cat-select">
             <option value="cat-01">橘白 · cat-01</option>
@@ -34,7 +37,7 @@
           <p class="tool-note" id="cat-note">只替换当前审阅场景的参考猫。</p>
         </section>
         <section class="tool-section" aria-labelledby="scenario-heading">
-          <h2 id="scenario-heading">场景 <span class="count" id="scenario-count">40</span></h2>
+          <h2 id="scenario-heading">场景 <span class="count" id="scenario-count">41</span></h2>
           <div id="scenario-list" class="scenario-list"></div>
         </section>
         <section class="tool-section" aria-labelledby="simulation-heading">
@@ -54,7 +57,7 @@
             <button type="button" data-size="S" aria-pressed="false">S <span>360</span></button>
             <button type="button" data-size="M" aria-pressed="true">M <span>390</span></button>
             <button type="button" data-size="L" aria-pressed="false">L <span>430</span></button>
-            <button type="button" data-size="D" aria-pressed="false">D <span>1280</span></button>
+            <button type="button" data-size="D" aria-pressed="false">D <span>1440</span></button>
           </div>
           <button type="button" id="fit-toggle" aria-pressed="true">适配容器</button>
           <button type="button" id="reload-preview">重新载入</button>
