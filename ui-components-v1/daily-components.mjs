@@ -24,8 +24,9 @@ export function needCard(options = {}) {
   const avatarAlt = escapeHtml(options.avatarAlt ?? `${identity}头像`);
   const attrs = e3 ? ' data-component="need-card" data-mode="e3"' : '';
   const imageAttrs = e3 ? ` data-slot="need-avatar" data-cat-image="${catId}"` : '';
-  const action = e3 ? `data-action="focus-reply" data-reply-target="${escapeHtml(options.replyTargetId ?? 'daily-reply')}"` : 'data-action="reply"';
-  return `<article class="paper note-card" aria-label="日常需求卡${alt?'内容变化':''}"${attrs}><header class="sender"><img class="avatar" src="${avatar}" alt="${avatarAlt}" draggable="false"${imageAttrs}><div><div class="sender-name">${name}</div><time class="meta">${time}</time></div></header><h3 class="story-title">${title}</h3><p class="body-copy">${body}</p>${options.replyAction===false?'':`<div class="card-actions"><button class="primary ${active?'is-pressed is-focus':''}" ${action} data-recipient="${name}"${e3?' type="button"':''}>给它回信${icon('arrow')}</button></div>`}</article>`;
+  const action = e3 ? `data-action="${options.replyActionType==='expand-reply'?'expand-reply':'focus-reply'}" data-reply-target="${escapeHtml(options.replyTargetId ?? 'daily-reply')}"` : 'data-action="reply"';
+  const skip = e3&&options.skipAction?'<button type="button" class="text-button" data-action="skip">这次先不回</button>':'';
+  return `<article class="paper note-card" aria-label="日常需求卡${alt?'内容变化':''}"${attrs}><header class="sender"><img class="avatar" src="${avatar}" alt="${avatarAlt}" draggable="false"${imageAttrs}><div><div class="sender-name">${name}</div><time class="meta">${time}</time></div></header><h3 class="story-title">${title}</h3><p class="body-copy">${body}</p>${options.replyAction===false?'':`<div class="card-actions${skip?' need-read-actions':''}">${skip}<button class="primary ${active?'is-pressed is-focus':''}" ${action} data-recipient="${name}"${e3?' type="button"':''}>给它回信${icon('arrow')}</button></div>`}</article>`;
 }
 export function daily(variant = 'default') { return needCard({variant}); }
 
