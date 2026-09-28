@@ -1,17 +1,18 @@
 import {SCENARIOS} from './scenarios.mjs';
+import {PREVIEW_IDENTITY_KEY} from '../ui-adoption-flow-v1/preview-identity.mjs';
 
 const $=id=>document.getElementById(id);
 const iframe=$('preview');
 const stage=$('preview-stage');
 const mount=$('frame-mount');
-const sizes={S:[360,800],M:[390,844],L:[430,932],D:[1280,900]};
+const sizes={S:[360,800],M:[390,844],L:[430,932],D:[1440,900]};
 const groups=[['E','在家首页'],['G','需求卡与回应'],['H','发送成功'],['F','旅行首页']];
 const actions=[
   ['arrive-need','一封需求卡到达','模拟一封需求卡到达；不自动打开，也不代替用户已读。'],
-  ['arrive-postcard','一封明信片到达','模拟明信片到达；完整详情属于第三批。'],
+  ['arrive-postcard','一封明信片到达','模拟明信片到达；可打开最小阅读页。'],
   ['trip','小猫出发旅行','模拟独立出发；与是否回应无关。'],
   ['home','小猫回家','模拟回家；已有未读信仍保留。'],
-  ['read-postcard','标记明信片已读','仅模拟明信片已读；不会结束旅行。'],
+  ['read-postcard','模拟明信片读后状态','只改变本次审阅的已读状态；不会结束旅行。'],
   ['old-draft','打开既有旧草稿','尝试打开已经读过的需求卡；没有对应旧卡时不改变页面。'],
   ['send-error','下一次发送失败','故障已设为下次发送使用；请在回复框点击“送出去”。'],
   ['save-error','下一次保存失败','故障已设为下次保存使用；请在回复框继续输入。'],
@@ -28,7 +29,7 @@ let connected=false;
 let loadTimer;
 
 function sizeKey(){return Object.keys(sizes).find(key=>sizes[key][0]===width&&sizes[key][1]===height)||'M';}
-function setConnected(value){connected=value;document.querySelectorAll('[data-simulate]').forEach(button=>{button.disabled=!value;});}
+function setConnected(value){connected=value;document.querySelectorAll('[data-simulate]').forEach(button=>{button.disabled=!value||mode!=='scenario';});}
 function scenarioButtons(){
   const list=$('scenario-list');
   for(const [page,label] of groups){
@@ -46,13 +47,14 @@ function previewUrl(){const url=new URL('./index.html',location.href);if(mode===
 function updateControls(){
   const live=mode==='live';
   $('mode-scenario').setAttribute('aria-pressed',String(!live));$('mode-live').setAttribute('aria-pressed',String(live));
-  $('mode-note').textContent=live?'连续体验使用当前浏览器保存的演示数据；手动事件会改变这份本机数据。':'场景数据相互隔离，不改连续体验的本机数据。';
+  $('mode-note').textContent=live?'连续体验使用当前浏览器保存的预览数据；手动模拟在此模式不可用。':'场景数据相互隔离；手动模拟只作用于当前场景，不改连续体验的本机数据。';
+  setConnected(connected);
   $('cat-select').disabled=live;
   $('cat-note').textContent=live?'连续体验保持本机小猫，不通过审阅工具换猫。':'只替换当前审阅场景的参考猫。';
   $('scenario-list').setAttribute('aria-disabled',String(live));
   document.querySelectorAll('[data-scenario]').forEach(button=>{button.disabled=live;const selected=!live&&button.dataset.scenario===scenario.id;button.setAttribute('aria-current',String(selected));});
   $('tool-summary').textContent=live?'连续体验':`${SCENARIOS.length} 个场景`;
-  $('preview-heading').textContent=live?'连续体验 · 本机保存':`${scenario.page} / ${scenario.label}`;
+  $('preview-heading').textContent=live?'连续体验 · 本机保存':`初始样例 ${scenario.page} / ${scenario.label}`;
   $('scenario-note').textContent=live?'从当前保存的位置继续；这份预览不会伪造云端同步或后台事件。':scenario.note;
   $('open-preview').href=previewUrl();
   iframe.title=live?'有猫来信连续体验产品预览':`${scenario.page} ${scenario.label}产品预览`;
@@ -77,7 +79,7 @@ function loadPreview(){
 function setMode(next){if(mode===next)return;mode=next;loadPreview();}
 function selectScenario(id){const selected=SCENARIOS.find(item=>item.id===id);if(!selected)return;scenario=selected;width=selected.width;height=selected.height;loadPreview();if(matchMedia('(max-width:760px)').matches)$('review-tools').open=false;}
 function describeState(state){
-  const names={E:'在家首页',F:'旅行首页',G:'需求卡与回应',H:'发送成功'};
+  const names={WELCOME:'待领养',ERROR:'身份读取异常',E:'在家首页',F:'旅行中同一个家',G:'需求卡与回应',H:'发送成功',I:'明信片阅读',J:'来信盒'};
   const draftNames={IDLE:'未触发保存',SAVING:'保存中',SAVED:'已保存',ERROR:'保存失败'};
   const submitNames={IDLE:'尚未发送',SUBMITTING:'发送中',SUCCESS:'已送出',ERROR:'发送失败',UNKNOWN:'结果待确认'};
   const letters=Array.isArray(state.letters)?state.letters:[];
@@ -94,7 +96,19 @@ $('scenario-list').addEventListener('click',event=>{const button=event.target.cl
 document.querySelectorAll('[data-size]').forEach(button=>button.addEventListener('click',()=>{[width,height]=sizes[button.dataset.size];updateControls();resizePreview();}));
 $('fit-toggle').addEventListener('click',()=>{fit=!fit;updateControls();resizePreview();});
 $('reload-preview').addEventListener('click',loadPreview);
-$('simulation-actions').addEventListener('click',event=>{const button=event.target.closest('[data-simulate]');if(!button||!connected)return;const definition=actions.find(item=>item[0]===button.dataset.simulate);if(!definition)return;iframe.contentWindow.postMessage({type:'daily-review-action',action:definition[0]},location.origin);$('simulation-feedback').textContent=`已发出手动模拟指令：${definition[2]}`;});
+$('reset-preview').addEventListener('click',()=>{
+  if(!confirm('只清除本机的两批新版 Pages 预览测试数据，并重新从选猫开始？正式 /app/ 存档和旧版预览记录不会被清除。'))return;
+  try{
+    localStorage.removeItem(PREVIEW_IDENTITY_KEY);
+    localStorage.removeItem('cat-letters-e3-g2r:daily-v1');
+    sessionStorage.setItem('cat-letters-e3-g2r:adoption-session-v1',JSON.stringify({version:1,state:{step:'A',selectedCatId:null,catNameDraft:'',adoptionStatus:'UNCONFIRMED',confirmedCat:null},storedResult:null}));
+    loadPreview();
+    $('simulation-feedback').textContent='两批新版预览测试数据已重置。可以从选猫开始。';
+  }catch{
+    $('simulation-feedback').textContent='暂时没能重置测试数据；原记录仍需保留，请稍后再试。';
+  }
+});
+$('simulation-actions').addEventListener('click',event=>{const button=event.target.closest('[data-simulate]');if(!button||!connected||mode!=='scenario')return;const definition=actions.find(item=>item[0]===button.dataset.simulate);if(!definition)return;iframe.contentWindow.postMessage({type:'daily-review-action',action:definition[0]},location.origin);$('simulation-feedback').textContent=`已发出手动模拟指令：${definition[2]}`;});
 window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==iframe.contentWindow||event.data?.type!=='daily-state'||!event.data.state||typeof event.data.state!=='object')return;clearTimeout(loadTimer);setConnected(true);$('connection-status').textContent=mode==='scenario'?'场景已就绪 · 隔离数据':'连续体验已就绪 · 本机保存';describeState(event.data.state);});
 iframe.addEventListener('load',()=>{resizePreview();if(connected)return;$('connection-status').textContent='页面已载入，等待产品状态…';});
 const mobile=matchMedia('(max-width:760px)');

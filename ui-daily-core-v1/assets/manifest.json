@@ -1,5 +1,9 @@
 [
   {
+    "file": "V1-home-main-empty.png",
+    "sha256": "4f99972645ae32574d6a03250b2262cdb45ace5b9c54b4996ad2b240d3530728"
+  },
+  {
     "file": "V1-home-window-cat-01.png",
     "sha256": "5c06438a4e6ac1829579db8d299b20a072db821caea1156a5ab3fc423e45b7b8"
   },
@@ -46,5 +50,21 @@
   {
     "file": "V1-cat-avatar-cat-04.png",
     "sha256": "216117894faab55ab99f0442e5073f22f206c2787b3f818a0e99c29561076cbc"
+  },
+  {
+    "file": "V1-postcard-rhine-cat-01.png",
+    "sha256": "2055a575cd0a5a45c6cfedde0e9e66d4f8d6ef88c6daf000976f561ebccd4693"
+  },
+  {
+    "file": "V1-postcard-rhine-cat-02.png",
+    "sha256": "38c9b2dfeab8be3eb5a8af86218de67670b3be2d63e9d340194dc325853f0f4b"
+  },
+  {
+    "file": "V1-postcard-rhine-cat-03.png",
+    "sha256": "c71c9ea316f440cdc1058fd60929af4fffce4604bab253dd352855ad377decff"
+  },
+  {
+    "file": "V1-postcard-rhine-cat-04.png",
+    "sha256": "56d8a5268974eb505806fba8326feceed413d908788004bf1decef9f2396071d"
   }
 ]

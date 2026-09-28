@@ -25,7 +25,7 @@ export function needCard(options = {}) {
   const attrs = e3 ? ' data-component="need-card" data-mode="e3"' : '';
   const imageAttrs = e3 ? ` data-slot="need-avatar" data-cat-image="${catId}"` : '';
   const action = e3 ? `data-action="focus-reply" data-reply-target="${escapeHtml(options.replyTargetId ?? 'daily-reply')}"` : 'data-action="reply"';
-  return `<article class="paper note-card" aria-label="日常需求卡${alt?'内容变化':''}"${attrs}><header class="sender"><img class="avatar" src="${avatar}" alt="${avatarAlt}" draggable="false"${imageAttrs}><div><div class="sender-name">${name}</div><time class="meta">${time}</time></div></header><h3 class="story-title">${title}</h3><p class="body-copy">${body}</p><div class="card-actions"><button class="primary ${active?'is-pressed is-focus':''}" ${action} data-recipient="${name}"${e3?' type="button"':''}>给它回信${icon('arrow')}</button></div></article>`;
+  return `<article class="paper note-card" aria-label="日常需求卡${alt?'内容变化':''}"${attrs}><header class="sender"><img class="avatar" src="${avatar}" alt="${avatarAlt}" draggable="false"${imageAttrs}><div><div class="sender-name">${name}</div><time class="meta">${time}</time></div></header><h3 class="story-title">${title}</h3><p class="body-copy">${body}</p>${options.replyAction===false?'':`<div class="card-actions"><button class="primary ${active?'is-pressed is-focus':''}" ${action} data-recipient="${name}"${e3?' type="button"':''}>给它回信${icon('arrow')}</button></div>`}</article>`;
 }
 export function daily(variant = 'default') { return needCard({variant}); }
 
@@ -121,9 +121,9 @@ export function homeNavigation({active='cat',unread=false} = {}) {
 }
 
 /** One quiet unread entry, never a task card or the complete need-card body. */
-export function newLetterEntry({type='NEED_CARD',unread=true} = {}) {
+export function newLetterEntry({type='NEED_CARD',unread=true,title:customTitle,date} = {}) {
   const postcard = type === 'POSTCARD';
-  const title = postcard ? '远方来了一封信！' : '今天有一封来信';
+  const title = customTitle ?? (postcard ? '远方来了一封信！' : '今天有一封来信');
   const cta = postcard ? '打开看看' : '看看来信';
-  return `<section class="paper new-letter-entry" data-component="new-letter-entry" data-letter-type="${postcard?'POSTCARD':'NEED_CARD'}" aria-label="${unread?'新来信':'来信'}"><div class="new-letter-heading"><h2>${title}</h2>${unread?'<span class="meta new-letter-status"><span class="daily-unread-dot" aria-hidden="true"></span>未读</span>':''}</div><div class="card-actions"><button type="button" class="primary" data-action="open-letter">${cta}${icon('arrow')}</button></div></section>`;
+  return `<section class="paper new-letter-entry" data-component="new-letter-entry" data-letter-type="${postcard?'POSTCARD':'NEED_CARD'}" aria-label="${unread?'新来信':'来信'}"><div class="new-letter-heading"><h2>${escapeHtml(title)}</h2>${unread?'<span class="meta new-letter-status"><span class="daily-unread-dot" aria-hidden="true"></span>未读</span>':''}</div>${date?`<p class="meta new-letter-date">收到：${escapeHtml(date)}</p>`:''}<div class="card-actions"><button type="button" class="primary" data-action="open-letter">${cta}${icon('arrow')}</button></div></section>`;
 }

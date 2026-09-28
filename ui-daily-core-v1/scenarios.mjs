@@ -3,7 +3,7 @@ import { createDailyStore } from './storage.mjs';
 
 // These are review fixtures, never a source of live user data. Each factory call
 // receives a new in-memory Storage object and performs no browser/global writes.
-const SIZES = Object.freeze({ M: [390, 844], S: [360, 800], L: [430, 932], D: [1280, 900] });
+const SIZES = Object.freeze({ M: [390, 844], S: [360, 800], L: [430, 932], D: [1440, 900] });
 const BASE = Object.freeze({
   E: 'V1-ui-page-01E-home', F: 'V1-ui-page-01F-travel-home',
   G: 'V1-ui-page-01G-need-card-reply', H: 'V1-ui-page-01H-reply-sent',
@@ -18,27 +18,28 @@ function scene(page, variant, label, note, { size = 'M', main = false, responsiv
     ...(catState ? { catState } : {}) });
 }
 
-// 40 exports: E 10 / F 7 / G 19 / H 4. E-returned-postcard-M also
+// Isolated review states. E-returned-postcard-M also
 // covers the F -> E transition; the same picture is not counted twice.
 export const SCENARIOS = Object.freeze([
   scene('E', 'empty', '在家 · 今天没有新来信', 'HOME、正常生活、历史入口与两项导航。', { main: true }),
   scene('E', 'new-letter', '在家 · 一封新需求卡', '首页展示不标已读；点击看看来信进入 G。'),
-  scene('E', 'returned-postcard', '回家后 · 旅行信仍未读', '由 TRIP 转回 HOME，原明信片入口仍保留；详情留第三批。'),
+  scene('E', 'returned-postcard', '回家后 · 旅行信仍未读', '由 TRIP 转回 HOME，原明信片入口仍保留；可打开最小明信片阅读页。'),
   scene('E', 'loading', '在家 · 首次加载', '仅静态加载示意，不使用进度百分比或自动创建新猫。'),
   scene('E', 'image-error', '在家 · 图片失败', '保留猫名、生活文字和 3:2 图位，提供原图重试。'),
   scene('E', 'read-error', '在家 · 本机读取失败', '一次隔离读取失败；重试恢复既有猫和数据。'),
   scene('E', 'draft-and-new-letter', '在家 · 旧草稿与新信并存', '旧稿实际写入内存存储，新信优先展示且不覆盖原草稿。'),
   scene('E', 'new-letter', '在家首页 · 紧凑手机', '360×800，完整主图、新信入口与导航。', { size: 'S', responsiveMain: true }),
   scene('E', 'new-letter', '在家首页 · 大屏手机', '430×932，保留 3:2 全幅主图。', { size: 'L', responsiveMain: true }),
-  scene('E', 'new-letter', '在家首页 · 桌面', '1280×900，主体居中且最大宽度 620。', { size: 'D', responsiveMain: true }),
+  scene('E', 'new-letter', '在家首页 · 桌面', '1440×900，主体居中且最大宽度 620。', { size: 'D', responsiveMain: true }),
 
   scene('F', 'empty', '旅行中 · 暂无新信', '旅行独立发生，无倒计时、地图、进度或解锁条件。', { main: true }),
   scene('F', 'postcard-arrived', '旅行中 · 明信片到达', 'TRIP 与未读明信片独立；只有一个新信入口。'),
+  scene('F', 'old-need', '旅行中 · 出门前的需求仍未读', '先在家收到演示需求，再出发；旧信保留且不会新投递需求。'),
   scene('F', 'postcard-read', '信已读 · 仍在旅行', '仅审阅模型场景；不会把第三批边界说明当成读信。'),
-  scene('F', 'image-error', '旅行中 · 图片失败', '原猫的 3:2 旅行图位与轻文案保留。'),
+  scene('F', 'image-error', '旅行中 · 图片失败', '同一个家的 3:2 空房图位与轻文案保留。'),
   scene('F', 'postcard-arrived', '旅行首页 · 紧凑手机', '360×800，明信片入口与两项导航完整。', { size: 'S', responsiveMain: true }),
   scene('F', 'postcard-arrived', '旅行首页 · 大屏手机', '430×932，明信片到达不结束旅行。', { size: 'L', responsiveMain: true }),
-  scene('F', 'postcard-arrived', '旅行首页 · 桌面', '1280×900，全幅场景与居中主体。', { size: 'D', responsiveMain: true }),
+  scene('F', 'postcard-arrived', '旅行首页 · 桌面', '1440×900，全幅场景与居中主体。', { size: 'D', responsiveMain: true }),
 
   scene('G', 'empty', '需求卡 · 空回应 / 小提示折叠', '完整原信；空回应不可送出；这次先不回清楚可见。', { main: true }),
   scene('G', 'short-reply', '回应 · 正常短文', '短回应可以正常送出，不要求最低字数。'),
@@ -105,10 +106,10 @@ export function buildScenario(id, { catId = 'cat-01', catName = '小咪' } = {})
   const store = createDailyStore({ storage: storageAdapter, failFixtures });
   const ui = { loading: false, imageError: false, tipsOpen: false, draftRestored: false,
     keyboard: false, freezeState: false, focus: false, reading: false };
-  const hasNeed = ['G', 'H'].includes(definition.page)
+  const hasNeed = ['G', 'H'].includes(definition.page) || definition.page === 'F' && variant === 'old-need'
     || definition.page === 'E' && ['new-letter', 'draft-and-new-letter'].includes(variant);
   let state = initialState({ catId, appearanceId: catId, catName,
-    catState: definition.page === 'F' || definition.catState === 'TRIP' ? 'TRIP' : 'HOME',
+    catState: definition.page === 'F' && variant !== 'old-need' || definition.catState === 'TRIP' ? 'TRIP' : 'HOME',
     initialLetter: hasNeed ? LETTER_FIXTURES['need-01'] : null });
 
   const dispatch = event => { state = transition(state, event); };
@@ -137,7 +138,9 @@ export function buildScenario(id, { catId = 'cat-01', catName = '小咪' } = {})
     applyResult(store.saveDraft(state), fail ? 'SAVE_ERROR' : 'SAVE_SUCCESS');
   }
   function submit(fixture) {
+    persist();
     dispatch({ type: 'BEGIN_SUBMIT' });
+    persist();
     if (fixture) failFixtures[fixture] = 1;
     const expected = { sendError: 'SEND_ERROR', checkError: 'CHECK_ERROR', safetyBlocked: 'SAFETY_BLOCKED' }[fixture] || 'SEND_SUCCESS';
     applyResult(store.commitReply(state), expected);
@@ -155,7 +158,7 @@ export function buildScenario(id, { catId = 'cat-01', catName = '小咪' } = {})
   if (definition.page === 'E') {
     if (variant === 'returned-postcard') {
       dispatch({ type: 'CAT_TRIP' });
-      dispatch({ type: 'NEW_LETTER', letter: LETTER_FIXTURES['postcard-01'] });
+      dispatch({ type: 'NEW_LETTER', letter: LETTER_FIXTURES['postcard-rhine-demo'] });
       dispatch({ type: 'CAT_HOME' });
     } else if (variant === 'draft-and-new-letter') {
       openEditor(SHORT_REPLY); saveDraft();
@@ -169,9 +172,10 @@ export function buildScenario(id, { catId = 'cat-01', catName = '小咪' } = {})
     ui.freezeState = ui.loading;
     ui.imageError = variant === 'image-error';
   } else if (definition.page === 'F') {
+    if (variant === 'old-need')dispatch({ type: 'CAT_TRIP' });
     if (['postcard-arrived', 'postcard-read'].includes(variant)) {
-      dispatch({ type: 'NEW_LETTER', letter: LETTER_FIXTURES['postcard-01'] });
-      if (variant === 'postcard-read') dispatch({ type: 'POSTCARD_READ', letterId: 'postcard-01' });
+      dispatch({ type: 'NEW_LETTER', letter: LETTER_FIXTURES['postcard-rhine-demo'] });
+      if (variant === 'postcard-read') dispatch({ type: 'POSTCARD_READ', letterId: 'postcard-rhine-demo' });
     }
     ui.imageError = variant === 'image-error';
   } else if (definition.page === 'G') {

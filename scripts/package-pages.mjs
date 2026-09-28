@@ -1,5 +1,5 @@
 import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { basename, resolve, sep } from 'node:path';
 
 // Publish the built static app, planning pages, and the independent UI review preview.
 const root = process.cwd();
@@ -14,8 +14,18 @@ cpSync(app, resolve(output, 'app'), { recursive: true, dereference: false });
 for (const file of ['index.html', 'doc.html', 'decisions.html', 'style.css', 'docs/idea.md', 'docs/manual.md']) {
   cpSync(resolve(root, file), resolve(output, file));
 }
-cpSync(resolve(root, 'ui-components-v1'), resolve(output, 'ui-components-v1'), { recursive: true, dereference: false });
-cpSync(resolve(root, 'ui-adoption-flow-v1'), resolve(output, 'ui-adoption-flow-v1'), { recursive: true, dereference: false });
-cpSync(resolve(root, 'ui-daily-core-v1'), resolve(output, 'ui-daily-core-v1'), { recursive: true, dereference: false });
+const sourceOnly = new Set(['checks', 'references', 'screens', 'work', 'logs']);
+for (const name of ['ui-components-v1', 'ui-adoption-flow-v1', 'ui-daily-core-v1']) {
+  const source = resolve(root, name);
+  cpSync(source, resolve(output, name), {
+    recursive: true,
+    dereference: false,
+    filter: path => {
+      const parts = path.slice(source.length + 1).split(sep);
+      return !parts.some(part => sourceOnly.has(part))
+        && basename(path) !== 'export.html' && !path.endsWith('.log');
+    },
+  });
+}
 writeFileSync(resolve(output, '.nojekyll'), '');
 console.log('GitHub Pages artifact ready: dist/github-pages (static app + planning archive + UI review previews).');

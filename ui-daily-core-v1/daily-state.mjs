@@ -8,7 +8,10 @@ const validId = value => typeof value === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9_-]
 export const LETTER_FIXTURES = Object.freeze({
   'need-01': Object.freeze({ id: 'need-01', type: 'NEED_CARD', date: '2026-09-26', title: '阳光会在这里等我吗？', data: {} }),
   'need-02': Object.freeze({ id: 'need-02', type: 'NEED_CARD', date: '2026-09-27', title: '可以陪我听一会儿雨吗？', data: {} }),
-  'postcard-01': Object.freeze({ id: 'postcard-01', type: 'POSTCARD', date: '2026-09-28', title: '远方来了一封信！', data: {} }),
+  'postcard-01': Object.freeze({ id: 'postcard-01', type: 'POSTCARD', date: '2026-09-28', title: '山下面有一条亮亮的河',
+    data: { storyId: 'O-RHINE-01', sceneId: 'RHINE', body: '麻麻，今天走到山上啦！\n\n风把旁边的叶子吹得哗啦哗啦，我往下面一看——有一条好长好长的河，亮得像一条带子。\n\n河上还有小船慢慢走，我趴着看了好久，差点忘记肚子饿了喵~' } }),
+  'postcard-rhine-demo': Object.freeze({ id: 'postcard-rhine-demo', type: 'POSTCARD', date: '2026-09-28', title: '河流把阳光带去了哪里',
+    data: { storyId: 'UI-DEMO-RHINE-20260928', sceneId: 'RHINE', place: '德国 · 莱茵河谷', body: '我在石墩上坐了很久。水面一闪一闪的，好像把天空揉碎了。也想让你看看。\n\n有一艘小船慢慢经过。我没有追它，只看着它拐过河弯。\n如果你也在这里，我想把旁边的位置留给你。' } }),
 });
 
 function makeLetter(letter) {
@@ -30,7 +33,7 @@ export function initialState(options = {}) {
     schemaVersion: 1, revision: 0, operationSeq: 0,
     catId: validId(options.catId) ? options.catId : 'cat-01', appearanceId,
     catName: typeof options.catName === 'string' && options.catName.trim() ? options.catName.trim() : '小咪',
-    catState, page: catState === 'TRIP' ? 'F' : 'E',
+    catState, page: catState === 'TRIP' ? 'F' : 'E', returnPage: null,
     newLetterId: first?.id || null, letters: first ? { [first.id]: first } : {}, currentLetterId: null,
     draftSaveState: 'IDLE', replySubmitState: 'IDLE', checkState: 'IDLE',
     pendingSave: null, pendingSubmission: null, submissionRecoveryRequired: false,
@@ -40,6 +43,7 @@ export function initialState(options = {}) {
 
 export const currentLetter = state => has(state.letters, state.currentLetterId) ? state.letters[state.currentLetterId] : null;
 export const homePage = state => state.catState === 'TRIP' ? 'F' : 'E';
+export const inboxLetters = state => Object.values(state.letters).sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
 export function getHomeEntry(state) {
   // The home entry never prefers a draft over unread mail or opens an editor.
   return state.newLetterId && has(state.letters, state.newLetterId) ? state.letters[state.newLetterId] : null;
@@ -77,7 +81,8 @@ function matchesSubmission(letter, event) {
 }
 
 /**
- * OPEN_NEED {letterId}; NEW_LETTER {letter}; POSTCARD_READ {letterId};
+ * OPEN_NEED/OPEN_POSTCARD {letterId}; OPEN_INBOX; RETURN_FROM_LETTER;
+ * NEW_LETTER {letter}; POSTCARD_READ {letterId};
  * EDIT {value}; BEGIN_SAVE {letterId?}; SAVE_SUCCESS/SAVE_ERROR {letterId,revision,requestId};
  * BEGIN_SUBMIT; SEND_SUCCESS/SEND_ERROR/CHECK_ERROR/SAFETY_BLOCKED/SUBMIT_UNKNOWN
  *   {letterId,requestId,receiptId?,text?}; BACK_HOME/SKIP; CAT_TRIP/CAT_HOME;
@@ -91,20 +96,37 @@ export function transition(state, event = {}) {
   switch (event?.type) {
     case 'OPEN_NEED':
       if (!locked(next) && letter?.type === 'NEED_CARD') {
+        next.returnPage = next.page === 'J' ? 'J' : homePage(next);
         letter.readState = 'READ';
         if (next.newLetterId === id) next.newLetterId = null;
         next.currentLetterId = id;
-        next.page = letter.replySubmitState === 'SUCCESS' ? 'H' : 'G';
+        next.page = 'G';
         next.refreshError = false;
       }
       break;
+    case 'OPEN_POSTCARD':
+      if (!locked(next) && letter?.type === 'POSTCARD') {
+        next.returnPage = next.page === 'J' ? 'J' : homePage(next);
+        letter.readState = 'READ';
+        if (next.newLetterId === id) next.newLetterId = null;
+        next.currentLetterId = id;
+        next.page = 'I';
+      }
+      break;
+    case 'OPEN_INBOX':
+      if (!locked(next)) next.page = 'J';
+      break;
+    case 'RETURN_FROM_LETTER':
+      if (!locked(next)) next.page = next.returnPage === 'J' ? 'J' : homePage(next);
+      break;
     case 'BACK_HOME':
     case 'SKIP':
-      if (!locked(next)) { next.page = homePage(next); next.refreshError = false; }
+      if (!locked(next)) { next.page = homePage(next); next.returnPage = null; next.refreshError = false; }
       break;
     case 'NEW_LETTER': {
       const added = makeLetter(event.letter);
-      if (!next.newLetterId && added && !has(next.letters, added.id)) {
+      if (!next.newLetterId && added && !has(next.letters, added.id)
+        && !(next.catState === 'TRIP' && added.type === 'NEED_CARD')) {
         next.letters[added.id] = added;
         next.newLetterId = added.id;
       }
@@ -190,7 +212,7 @@ export function transition(state, event = {}) {
 export function validateSnapshot(state) {
   if (!state || state.schemaVersion !== 1 || !validId(state.catId) || !APPEARANCES.includes(state.appearanceId)
     || typeof state.catName !== 'string' || !state.catName.trim() || !['HOME', 'TRIP'].includes(state.catState)
-    || !['E', 'F', 'G', 'H'].includes(state.page) || !Number.isSafeInteger(state.revision) || state.revision < 0
+    || !['E', 'F', 'G', 'H', 'I', 'J'].includes(state.page) || !Number.isSafeInteger(state.revision) || state.revision < 0
     || !Number.isSafeInteger(state.operationSeq) || state.operationSeq < 0
     || !state.letters || typeof state.letters !== 'object' || Array.isArray(state.letters)) return false;
   const letters = Object.entries(state.letters);
@@ -212,6 +234,8 @@ export function validateSnapshot(state) {
     : unread.length !== 1 || unread[0][0] !== state.newLetterId)) return false;
   if (state.currentLetterId !== null && !has(state.letters, state.currentLetterId)) return false;
   if (['G', 'H'].includes(state.page) && currentLetter(state)?.type !== 'NEED_CARD') return false;
+  if (state.page === 'I' && currentLetter(state)?.type !== 'POSTCARD') return false;
+  if (state.returnPage !== undefined && state.returnPage !== null && !['E', 'F', 'J'].includes(state.returnPage)) return false;
   if (state.page === 'H' && currentLetter(state)?.replySubmitState !== 'SUCCESS') return false;
   return true;
 }
@@ -220,11 +244,13 @@ export function validateSnapshot(state) {
 export function restoreSnapshot(snapshot) {
   if (!validateSnapshot(snapshot)) throw new Error('INVALID_SNAPSHOT');
   const state = clone(snapshot);
+  state.returnPage ??= null;
   for (const letter of Object.values(state.letters)) {
     if (letter.draftSaveState === 'SAVING') { letter.draftSaveState = 'IDLE'; letter.pendingSave = null; }
   }
   state.submissionRecoveryRequired = Object.values(state.letters).some(letter => letter.replySubmitState === 'SUBMITTING');
-  if (state.page === 'G' && state.newLetterId && !state.submissionRecoveryRequired) state.page = homePage(state);
+  if (!state.submissionRecoveryRequired && (state.page === 'G' || state.page === 'J'
+    || state.page === 'I' && state.newLetterId)) state.page = homePage(state);
   state.loadError = false; state.refreshError = false;
   return sync(state);
 }

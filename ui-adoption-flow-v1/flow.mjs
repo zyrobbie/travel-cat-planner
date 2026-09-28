@@ -1,6 +1,7 @@
 import {initialState,transition,countName,validateName,canContinue} from './flow-state.mjs?v=page-stage-01';
 import {cats,scenarios} from './scenarios.mjs?v=page-stage-01';
 import {choice,updateChoiceGroup} from '../ui-components-v1/cat-selection-card.mjs';
+import {readPreviewIdentity,confirmPreviewIdentity} from './preview-identity.mjs';
 
 const root=document.getElementById('flow');
 const params=new URLSearchParams(location.search);
@@ -12,8 +13,10 @@ let state=initialState();
 let touched=false,composing=false,reading=false,handedOff=false;
 let failed=new Set(),fixtureFailed=new Set(),requestNumber=0;
 let storedResult=null;
-const STORAGE_KEY='cat-letters-ui-adoption-flow-v1:page-stage-01';
+const STORAGE_KEY='cat-letters-e3-g2r:adoption-session-v1';
+const LEGACY_SESSION_KEY='cat-letters-ui-adoption-flow-v1:page-stage-01';
 let recoveryBlocked=false;
+let identityNotice='';
 const simulatedOutcome=['ERROR','UNKNOWN'].includes(params.get('outcome'))?params.get('outcome'):'CONFIRMED';
 let nextOutcome=simulatedOutcome;
 if(scene){
@@ -24,11 +27,25 @@ if(scene){
   if(state.adoptionStatus==='CONFIRMED')state.confirmedCat={...storedResult};
 }else{
   restore();
+  const savedIdentity=readPreviewIdentity();
+  if(!savedIdentity.ok) recoveryBlocked=true;
+  else if(savedIdentity.identity){
+    const cat=savedIdentity.identity;
+    state={step:'C',selectedCatId:cat.catId,catNameDraft:cat.name,adoptionStatus:'CONFIRMED',confirmedCat:cat};
+    storedResult=cat;recoveryBlocked=false;
+  }else if(state.adoptionStatus==='CONFIRMED'){
+    // Preserve a confirmed session from the former independent preview.
+    const migrated=await confirmPreviewIdentity(state.confirmedCat);
+    if(!migrated.ok){
+      recoveryBlocked=true;
+      if(migrated.error==='LOCK_UNAVAILABLE')identityNotice='当前浏览器暂不支持可靠保存领养结果。原有记录仍保留，请换用支持此功能的浏览器。';
+    }
+  }
 }
 function validRecord(record){return !!record&&cats.some(c=>c.id===record.catId)&&typeof record.name==='string'&&!validateName(record.name);}
 function restore(){
   try{
-    const raw=sessionStorage.getItem(STORAGE_KEY);if(!raw)return;
+    const raw=sessionStorage.getItem(STORAGE_KEY)??sessionStorage.getItem(LEGACY_SESSION_KEY);if(!raw)return;
     const saved=JSON.parse(raw),s=saved.state;
     if(saved.version!==1||!s||!['A','B','C'].includes(s.step)||!['UNCONFIRMED','SUBMITTING','UNKNOWN','ERROR','CONFIRMED'].includes(s.adoptionStatus)||typeof s.catNameDraft!=='string')throw Error('Invalid demo snapshot');
     if(s.selectedCatId!==null&&!cats.some(c=>c.id===s.selectedCatId))throw Error('Invalid cat');
@@ -83,7 +100,7 @@ function confirmView(){
     if(status==='ERROR')feedback='<p class="outcome-message" role="alert">好像没有保存成功，再试一次吧。</p>';
     buttons=`<button class="secondary" data-action="review-choice">再看看</button><button class="primary" data-action="confirm">${status==='ERROR'?'再试一次':'确认领养'}</button>`;
   }
-  return `${top(!locked)}<h1 class="flow-heading" tabindex="-1">确认领养</h1>${catPreview(currentCat())}<h2 class="cat-name">${escapeText(state.confirmedCat?.name??state.catNameDraft.trim())}</h2><p class="cat-welcome">以后，就和它一起生活啦。</p><div class="inline-notice adoption-rule">${RULE}</div>${feedback}<div class="confirm-actions ${locked?'one':''}" ${status==='SUBMITTING'||reading?'aria-busy="true"':''}>${buttons}</div><p class="local-note">当前为本机测试体验；这里演示正式版的领养规则。</p>${handedOff?'<p class="handoff-note" role="status">初遇与领养流程已完成。后续体验页面将在下一批设计中衔接。</p>':''}`;
+  return `${top(!locked)}<h1 class="flow-heading" tabindex="-1">确认领养</h1>${catPreview(currentCat())}<h2 class="cat-name">${escapeText(state.confirmedCat?.name??state.catNameDraft.trim())}</h2><p class="cat-welcome">以后，就和它一起生活啦。</p><div class="inline-notice adoption-rule">${RULE}</div>${feedback}${identityNotice?`<p class="outcome-message" role="status">${escapeText(identityNotice)}</p>`:''}<div class="confirm-actions ${locked?'one':''}" ${status==='SUBMITTING'||reading?'aria-busy="true"':''}>${buttons}</div><p class="local-note">当前为本机测试体验；这里演示正式版的领养规则。</p>${handedOff?'<p class="handoff-note" role="status">这个审阅样例与连续体验的数据相互隔离。</p>':''}`;
 }
 function attachImageErrors(){
   root.querySelectorAll('img[data-cat-image]').forEach(img=>{
@@ -94,7 +111,7 @@ function attachImageErrors(){
 }
 function render(focusHeading=false){
   if(recoveryBlocked){
-    root.innerHTML=`${top()}<h1 class="flow-heading">正在确认你的小猫……</h1><p class="outcome-message" role="alert">暂时无法读取已保存的体验。已有信息会保留，请重新读取。</p><div class="confirm-actions one"><button class="primary" data-action="recover">重新读取</button></div>`;
+    root.innerHTML=`${top()}<h1 class="flow-heading">正在确认你的小猫……</h1><p class="outcome-message" role="alert">${escapeText(identityNotice||'暂时无法读取已保存的体验。已有信息会保留，请重新读取。')}</p><div class="confirm-actions one"><button class="primary" data-action="recover">重新读取</button></div>`;
     root.dataset.status='UNKNOWN';return;
   }
   if(state.step!=='A'&&!currentCat())state=initialState();
@@ -118,21 +135,44 @@ function updateName(){
   root.querySelector('#name-count').textContent=`${countName(input.value)} / 12`;
   root.querySelector('form .primary').disabled=!canContinue(state);
 }
-function submit(){
+async function submit(){
   const previous=state.adoptionStatus;
   state=transition(state,{type:'BEGIN_SUBMIT'});
   if(state.adoptionStatus!=='SUBMITTING'||!['UNCONFIRMED','ERROR'].includes(previous))return;
   const request=++requestNumber,cat={catId:state.selectedCatId,name:state.catNameDraft.trim()};
   const outcome=nextOutcome;nextOutcome='CONFIRMED';
-  storedResult=outcome==='ERROR'?{status:'ERROR'}:cat;
-  if(!persist()){storedResult=null;state=transition(state,{type:'RESOLVE_SUBMIT',status:'ERROR'});render();return;}
+  render();
+  if(outcome==='ERROR')storedResult={status:'ERROR'};
+  else if(scene)storedResult=cat;
+  else{
+    const result=await confirmPreviewIdentity(cat);
+    if(request!==requestNumber)return;
+    if(!result.ok){
+      if(result.error==='ALREADY_CONFIRMED'&&result.identity){
+        const saved=result.identity;
+        state={step:'C',selectedCatId:saved.catId,catNameDraft:saved.name,adoptionStatus:'CONFIRMED',confirmedCat:saved};
+        storedResult=saved;identityNotice='本机已有确认领养的小猫，已继续保留原来的它。';render();return;
+      }
+      identityNotice=result.error==='LOCK_UNAVAILABLE'?'当前浏览器暂不支持可靠保存领养结果。请换用支持此功能的浏览器；原有记录未被改动。':'';
+      storedResult=null;state=transition(state,{type:'RESOLVE_SUBMIT',status:'ERROR'});render();return;
+    }
+    storedResult=result.identity;
+  }
+  persist();
   render();
   setTimeout(()=>{if(request!==requestNumber)return;state=transition(state,{type:'RESOLVE_SUBMIT',status:outcome,...(outcome==='CONFIRMED'?{confirmedCat:storedResult}:{})});render();},900);
 }
 function readResult(){
   if(state.adoptionStatus!=='UNKNOWN'||reading)return;
   reading=true;state=transition(state,{type:'BEGIN_READ'});render();
-  setTimeout(()=>{reading=false;state=transition(state,{type:'RESOLVE_READ',confirmedCat:storedResult,status:storedResult?.status});render();},900);
+  setTimeout(async()=>{
+    reading=false;
+    let result=scene?{ok:true,identity:storedResult}:readPreviewIdentity();
+    if(!scene&&result.ok&&!result.identity&&validRecord(storedResult))result=await confirmPreviewIdentity(storedResult);
+    if(!result.ok&&result.error==='LOCK_UNAVAILABLE')identityNotice='当前浏览器暂不支持可靠保存领养结果。请换用支持此功能的浏览器；原有记录未被改动。';
+    state=transition(state,{type:'RESOLVE_READ',confirmedCat:result.ok?result.identity:null,status:result.ok&&result.identity?.status==='ERROR'?'ERROR':undefined});
+    render();
+  },900);
 }
 root.addEventListener('change',e=>{
   if(e.target.matches('input[name=selected-cat]')){
@@ -159,7 +199,10 @@ root.addEventListener('click',e=>{
   if(action==='review-choice'){touched=false;dispatch({type:'REVIEW_CHOICE'},true);}
   if(action==='confirm')submit();
   if(action==='read')readResult();
-  if(action==='continue'&&state.adoptionStatus==='CONFIRMED'){handedOff=true;render();}
+  if(action==='continue'&&state.adoptionStatus==='CONFIRMED'){
+    if(scene){handedOff=true;render();}
+    else location.assign(new URL('../ui-daily-core-v1/index.html',location.href));
+  }
 });
 function syncKeyboard(){
   if(scene?.keyboard)return;
