@@ -58,7 +58,7 @@ function isToday(date){
   return date===today;
 }
 function entryHeading(letter){
-  if(letter.type==='POSTCARD')return state.catState==='TRIP'?'远方寄来了一封信':'旅行时寄来的信，还没打开';
+  if(letter.type==='POSTCARD')return '旅行时寄来的信，还没打开';
   if(state.catState==='TRIP')return '出门前的来信，还没打开';
   return isToday(letter.date)?'今天有一封来信':'有一封来信，还没打开';
 }
