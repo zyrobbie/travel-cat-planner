@@ -1,5 +1,6 @@
 import { initialState, transition, LETTER_FIXTURES, validateSnapshot } from './daily-state.mjs';
 import { createDailyStore } from './storage.mjs';
+import {demandById,demandLetter} from './demand-catalog.mjs';
 
 // These are review fixtures, never a source of live user data. Each factory call
 // receives a new in-memory Storage object and performs no browser/global writes.
@@ -220,4 +221,20 @@ export function buildScenario(id, { catId = 'cat-01', catName = '小咪' } = {})
   // snapshot. The store preserves already-written success receipts atomically.
   persist();
   return { state, ui, failFixtures, storageAdapter };
+}
+
+/** One independent, read-only starting point for each demand and appearance. */
+export function buildDemandReview(id,{catId='cat-01',catName='小咪'}={}){
+  if(!demandById(id))throw new RangeError(`Unknown demand review: ${id}`);
+  if(!['cat-01','cat-02','cat-03','cat-04'].includes(catId))throw new RangeError(`Unknown appearance: ${catId}`);
+  const storageAdapter=isolatedMemory(),failFixtures={};
+  const store=createDailyStore({storage:storageAdapter,failFixtures});
+  let state=initialState({catId,appearanceId:catId,catName,initialLetter:demandLetter(id,'2026-10-02')});
+  state=transition(state,{type:'OPEN_NEED',letterId:id});
+  if(!validateSnapshot(state)||state.page!=='G')throw new Error(`Invalid demand review: ${id}`);
+  const saved=store.persist(state);
+  if(!saved.ok)throw new Error(`Cannot seed demand review: ${id}`);
+  return {state:saved.state,storageAdapter,failFixtures,
+    ui:{loading:false,imageError:false,tipsOpen:false,draftRestored:false,
+      keyboard:false,freezeState:false,focus:false,reading:false,replyExpanded:false}};
 }

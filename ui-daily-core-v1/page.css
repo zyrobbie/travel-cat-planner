@@ -16,6 +16,7 @@ html[data-text-scale="200"] .success-panel .story-title,html[data-text-scale="20
 .scene.is-ready .scene-loading{display:none}
 .need-read-actions{justify-content:space-between}
 .need-read-actions .text-button{font-size:15px}
+.detail-page .note-card .body-copy{text-wrap:balance}
 .avatar-fallback{display:grid;place-items:center;border-radius:50%;background:var(--soft);color:var(--muted);font-size:14px}
 .home-heading{flex-wrap:wrap}.home-heading h1{min-width:0;overflow-wrap:anywhere;text-wrap:balance}.home-heading .cat-status{flex-shrink:0;white-space:nowrap}
 .home-scene .home-room{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
