@@ -1,4 +1,5 @@
-import {SCENARIOS} from './scenarios.mjs?v=compact-fluid-20260928';
+import {SCENARIOS} from './scenarios.mjs?v=seven-demands-20261002';
+import {DEMAND_SEQUENCE} from './demand-catalog.mjs';
 import {PREVIEW_IDENTITY_KEY} from '../ui-adoption-flow-v1/preview-identity.mjs';
 
 const $=id=>document.getElementById(id);
@@ -26,13 +27,28 @@ let mode='scenario';
 let cat='cat-01';
 let width=scenario.width,height=scenario.height;
 let fit=true;
-let connected=false;
+let connected=false, childPage=null;
 let loadTimer;
 let fixedSimulation=false,frameHeight=360,loadingPreview=false;
 let childDocument=null,childObserver=null,childResizeFrame=0;
 
 function sizeKey(){return Object.keys(sizes).find(key=>sizes[key][0]===width&&sizes[key][1]===height)||'M';}
-function setConnected(value){connected=value;document.querySelectorAll('[data-simulate]').forEach(button=>{button.disabled=!value||mode!=='scenario';});}
+function setConnected(value){connected=value;document.querySelectorAll('[data-simulate]').forEach(button=>{button.disabled=!value||mode!=='scenario';});$('deliver-next-demand').disabled=!value||mode!=='live'||!['E','F','G','I','J'].includes(childPage);}
+function demandLinks(){
+  const labels=['橘白','狸花','奶油白','三花'];
+  for(const demand of DEMAND_SEQUENCE){
+    const group=document.createElement('div');group.className='demand-group';
+    const title=document.createElement('p');title.textContent=`${demand.eventId==='LIGHT'?'追光':demand.eventId} · ${demand.title}`;
+    const links=document.createElement('div');links.className='demand-links';
+    labels.forEach((label,index)=>{
+      const catId=`cat-0${index+1}`,url=new URL('./index.html',location.href);
+      url.searchParams.set('reviewDemand',demand.id);url.searchParams.set('cat',catId);
+      const link=document.createElement('a');link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';
+      link.textContent=label;link.setAttribute('aria-label',`${demand.title} · ${label} · 独立审阅`);links.append(link);
+    });
+    group.append(title,links);$('demand-list').append(group);
+  }
+}
 function scenarioButtons(){
   const list=$('scenario-list');
   for(const [page,label] of groups){
@@ -46,7 +62,7 @@ function scenarioButtons(){
   $('scenario-count').textContent=String(SCENARIOS.length);
   for(const [action,label,note] of actions){const button=document.createElement('button');button.type='button';button.dataset.simulate=action;button.textContent=label;button.title=note;button.disabled=true;$('simulation-actions').append(button);}
 }
-function previewUrl(){const url=new URL('./index.html',location.href);url.searchParams.set('v','compact-fluid-20260928');if(mode==='scenario'){url.searchParams.set('scenario',scenario.id);url.searchParams.set('cat',cat);}return url.href;}
+function previewUrl(){const url=new URL('./index.html',location.href);url.searchParams.set('v','seven-demands-20261002');if(mode==='scenario'){url.searchParams.set('scenario',scenario.id);url.searchParams.set('cat',cat);}return url.href;}
 function fluidMode(){return mobile.matches&&!fixedSimulation;}
 function disconnectChild(){
   childObserver?.disconnect();childObserver=null;
@@ -128,7 +144,7 @@ function showPreviewError(){
   clearTimeout(loadTimer);disconnectChild();mount.hidden=true;$('preview-error').hidden=false;
   $('connection-status').textContent='预览未能显示 · 可重新载入';
 }
-function waiting(){setConnected(false);$('connection-status').textContent='正在载入产品预览…';$('state-summary').replaceChildren();const pair=document.createElement('div'),term=document.createElement('dt'),value=document.createElement('dd');term.textContent='预览';value.textContent='等待状态';pair.append(term,value);$('state-summary').append(pair);}
+function waiting(){childPage=null;setConnected(false);$('connection-status').textContent='正在载入产品预览…';$('state-summary').replaceChildren();const pair=document.createElement('div'),term=document.createElement('dt'),value=document.createElement('dd');term.textContent='预览';value.textContent='等待状态';pair.append(term,value);$('state-summary').append(pair);}
 function loadPreview(){
   clearTimeout(loadTimer);waiting();updateControls();disconnectChild();frameHeight=360;loadingPreview=true;
   mount.hidden=false;$('preview-error').hidden=true;
@@ -147,7 +163,7 @@ function describeState(state){
   if(current)rows.push(['当前文字',`${Number.isFinite(current.draftLength)?current.draftLength:0} 字符`]);
   const fragment=document.createDocumentFragment();for(const [term,value] of rows){const item=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=term;dd.textContent=value;item.append(dt,dd);fragment.append(item);}$('state-summary').replaceChildren(fragment);
 }
-scenarioButtons();
+scenarioButtons();demandLinks();
 $('mode-scenario').addEventListener('click',()=>setMode('scenario'));
 $('mode-live').addEventListener('click',()=>setMode('live'));
 $('cat-select').addEventListener('change',event=>{if(mode!=='scenario')return;cat=event.target.value;loadPreview();});
@@ -170,7 +186,18 @@ $('reset-preview').addEventListener('click',()=>{
   }
 });
 $('simulation-actions').addEventListener('click',event=>{const button=event.target.closest('[data-simulate]');if(!button||!connected||mode!=='scenario')return;const definition=actions.find(item=>item[0]===button.dataset.simulate);if(!definition)return;iframe.contentWindow.postMessage({type:'daily-review-action',action:definition[0]},location.origin);$('simulation-feedback').textContent=`已发出手动模拟指令：${definition[2]}`;});
-window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==iframe.contentWindow||event.data?.type!=='daily-state'||!event.data.state||typeof event.data.state!=='object')return;clearTimeout(loadTimer);setConnected(true);mount.hidden=false;$('preview-error').hidden=true;$('connection-status').textContent=mode==='scenario'?'场景已就绪 · 隔离数据':'连续体验已就绪 · 本机保存';describeState(event.data.state);});
+$('deliver-next-demand').addEventListener('click',()=>{if(!connected||mode!=='live'||$('deliver-next-demand').disabled)return;iframe.contentWindow.postMessage({type:'daily-review-action',action:'deliver-next-demand'},location.origin);$('demand-feedback').textContent='正在投递下一组…';});
+window.addEventListener('message',event=>{
+  if(event.origin!==location.origin||event.source!==iframe.contentWindow)return;
+  if(event.data?.type==='demand-delivery-result'){
+    if(mode==='live')$('demand-feedback').textContent=event.data.message||'投递状态未知。';
+    return;
+  }
+  if(event.data?.type!=='daily-state'||!event.data.state||typeof event.data.state!=='object')return;
+  clearTimeout(loadTimer);childPage=event.data.state.page;setConnected(true);mount.hidden=false;$('preview-error').hidden=true;
+  $('connection-status').textContent=mode==='scenario'?'场景已就绪 · 隔离数据':'连续体验已就绪 · 本机保存';
+  describeState(event.data.state);
+});
 iframe.addEventListener('load',()=>{
   loadingPreview=false;resizePreview();
   let path='';try{path=iframe.contentWindow.location.pathname;}catch{}

@@ -2,16 +2,21 @@ import {needCard,replyInput,updateReplyInputState,focusReply,icon,escapeHtml as 
 import {catImageSources} from '../ui-adoption-flow-v1/runtime-images.mjs';
 import {initialState,transition,currentLetter,getHomeEntry,inboxLetters,LETTER_FIXTURES,canSubmit} from './daily-state.mjs';
 import {createDailyStore,STORAGE_KEY} from './storage.mjs';
-import {buildScenario,SCENARIOS} from './scenarios.mjs?v=compact-fluid-20260928';
+import {buildScenario,buildDemandReview,SCENARIOS} from './scenarios.mjs?v=seven-demands-20261002';
+import {demandById,demandImageStem,demandLetter,nextDemandForState} from './demand-catalog.mjs';
 import {readPreviewIdentity} from '../ui-adoption-flow-v1/preview-identity.mjs';
 const params=new URLSearchParams(location.search), app=document.querySelector('#app');
-const scenarioId=params.get('scenario'), requestedCat=params.get('cat');
-const invalidScenario=params.has('scenario')&&(!SCENARIOS.some(s=>s.id===scenarioId)
+const scenarioId=params.get('scenario'),reviewDemandId=params.get('reviewDemand'),requestedCat=params.get('cat');
+const reviewing=params.has('scenario')||params.has('reviewDemand');
+const invalidReview=reviewing&&(params.has('scenario')&&params.has('reviewDemand')
+  || params.has('scenario')&&!SCENARIOS.some(s=>s.id===scenarioId)
+  || params.has('reviewDemand')&&!demandById(reviewDemandId)
   || requestedCat!==null&&!/^cat-0[1-4]$/.test(requestedCat));
-const fixture=!invalidScenario&&scenarioId?buildScenario(scenarioId,{catId:params.get('cat')||'cat-01'}):null;
-const identityResult=fixture||invalidScenario?{ok:true,identity:null}:readPreviewIdentity();
+const fixture=invalidReview?null:scenarioId?buildScenario(scenarioId,{catId:requestedCat||'cat-01'})
+  :reviewDemandId?buildDemandReview(reviewDemandId,{catId:requestedCat||'cat-01'}):null;
+const identityResult=fixture||invalidReview?{ok:true,identity:null}:readPreviewIdentity();
 const LIVE_STORAGE_KEY='cat-letters-e3-g2r:daily-v1';
-if(invalidScenario){
+if(invalidReview){
   document.documentElement.dataset.page='INVALID_SCENARIO';
   app.innerHTML='<section class="daily-page entry-page"><span class="wordmark">有猫来信 · 审阅</span><div class="entry-message"><h1>找不到这个审阅场景</h1><p>场景参数不正确，本机连续体验记录没有被打开或修改。</p><a class="primary" href="./review.html">返回场景审阅</a></div></section>';
 }else if(!fixture&&(!identityResult.ok||!identityResult.identity)){
@@ -77,18 +82,25 @@ function backButton(){return `<button type="button" class="quiet-link back-butto
 function eventScene(letter){
   if(letter.id==='need-02')return '<div class="scene event-scene"><div class="scene-fallback"><p>这封信的画面暂不可用，文字仍可阅读。</p></div></div>';
   if(ui.imageError)return '<div class="scene event-scene"><div class="scene-fallback"><p>这封信的画面暂时没能加载。</p><button class="secondary" data-action="retry-image">再试一次</button></div></div>';
-  if(letter.id==='need-01')return `<div class="scene event-scene"><div class="scene-loading" role="status">正在展开来信画面…</div>${sceneImage(`need-window-${state.appearanceId}`,`${state.catName}在窗边追逐一小块光`)}</div>`;
+  const demand=demandById(letter.id);
+  if(demand){
+    const stem=demandImageStem(letter.id,state.appearanceId);
+    const alt=letter.id==='need-01'?`${state.catName}在窗边追逐一小块光`:`${state.catName}的${demand.title}来信画面`;
+    return `<div class="scene event-scene"><div class="scene-loading" role="status">正在展开来信画面…</div>${sceneImage(stem,alt)}</div>`;
+  }
   return '<div class="scene event-scene"><div class="scene-fallback"><p>这封信的画面暂不可用，文字仍可阅读。</p></div></div>';
 }
 function replyOptions(){const letter=currentLetter(state);return {mode:'e3',id:'daily-reply',name:state.catName,value:letter?.draft||'',maxLength:2000,draftState:ui.draftRestored?'restored':state.draftSaveState.toLowerCase(),submitState:state.replySubmitState.toLowerCase(),systemState:state.checkState==='CHECK_ERROR'?'check-error':state.checkState==='SAFETY'?'blocked':'none',composing:composing||externalChange||state.loadError};}
 function newMailNotice(){return state.newLetterId?'<aside class="new-mail-notice"><span>有一封新来信</span><button type="button" data-action="new-mail-home">回首页看看</button></aside>':'';}
 function detail(){
-  const l=currentLetter(state),body=bodyById[l.id]||l.data?.body;
+  const l=currentLetter(state),demand=demandById(l.id);
+  const body=l.data?.body||demand?.body||bodyById[l.id];
   if(!body)return `<section class="daily-page detail-page"><header class="detail-top">${backButton()}</header><h1 class="detail-title">一封来信</h1><div class="error-block"><h2>这封信的正文暂时无法读取</h2><p>信件记录仍在，可以返回后重试。</p></div></section>`;
+  const tip=l.data?.tip||demand?.tip||'可以说说你今天看见的一点小事，也可以只写一句话。\n这次不想回，也没关系。';
   const mustShow=state.replySubmitState==='SUBMITTING'||state.replySubmitState==='ERROR'||state.submissionRecoveryRequired||state.draftSaveState==='ERROR'||state.loadError||saveFailure||externalChange||state.checkState!=='IDLE';
   if(mustShow)ui.replyExpanded=true;
   const expanded=ui.replyExpanded||mustShow;
-  const response=l.replySubmitState==='SUCCESS'?`<section class="paper sent-reply"><h2>你送出的回应</h2><p>${e(l.submittedText)}</p></section>`:expanded?`<details class="tip-box"${ui.tipsOpen?' open':''}><summary>看看小提示</summary><p>可以说说你今天看见的一点小事，也可以只写一句话。<br>这次不想回，也没关系。</p></details><div data-slot="recovery">${recoveryNotice()}</div>${replyInput(replyOptions())}`:'';
+  const response=l.replySubmitState==='SUCCESS'?`<section class="paper sent-reply"><h2>你送出的回应</h2><p>${e(l.submittedText)}</p></section>`:expanded?`<details class="tip-box"${ui.tipsOpen?' open':''}><summary>看看小提示</summary><p>${e(tip).replace(/\n/g,'<br>')}</p></details><div data-slot="recovery">${recoveryNotice()}</div>${replyInput(replyOptions())}`:'';
   return `<section class="daily-page detail-page"><header class="detail-top">${backButton()}</header><h1 class="detail-title">一封来信</h1><p class="letter-date">收到：${e(dateText(l.date))}</p><div data-slot="new-mail">${newMailNotice()}</div>${eventScene(l)}${needCard({mode:'e3',catId:state.appearanceId,catName:state.catName,time:dateText(l.date),title:l.title,body,avatarUrl:`./assets/web/avatar-${state.appearanceId}-160.webp`,replyTargetId:'daily-reply',replyActionType:'expand-reply',skipAction:true,replyAction:l.replySubmitState!=='SUCCESS'})}${response}<div data-slot="page-storage-error"></div></section>`;
 }
 function postcardScene(l){
@@ -186,7 +198,22 @@ app.addEventListener('click',event=>{const b=event.target.closest('[data-action]
 });
 window.addEventListener('pagehide',()=>{if(!fixture&&!externalChange&&state.page==='G'&&state.replySubmitState!=='SUBMITTING'){const ta=app.querySelector('textarea');if(ta)state=transition(state,{type:'EDIT',value:ta.value});composing=false;saveDraft();}});
 window.addEventListener('storage',ev=>{if(!fixture&&ev.key===store.key){clearTimeout(saveTimer);clearTimeout(sendTimer);externalChange=true;patch();}});
-window.addEventListener('message',ev=>{if(!fixture||ev.origin!==location.origin||ev.source!==parent||ev.data?.type!=='daily-review-action')return;const action=ev.data.action;
+window.addEventListener('message',ev=>{if(ev.origin!==location.origin||ev.source!==parent||ev.data?.type!=='daily-review-action')return;const action=ev.data.action;
+ if(!fixture){
+  if(action!=='deliver-next-demand')return;
+  const report=(status,message,id)=>parent.postMessage({type:'demand-delivery-result',status,message,id},location.origin);
+  if(externalChange||saveFailure||state.loadError){report('blocked','本机记录尚未就绪，请先重新读取或保存。');return;}
+  if(state.newLetterId){report('blocked','先读完当前未读来信，再投递下一组。');return;}
+  if(state.catState==='TRIP'){report('blocked','小猫旅行中；先回家再接收新的需求卡。');return;}
+  if(state.page==='H'){report('blocked','先从送出成功页回到家。');return;}
+  const next=nextDemandForState(state);
+  if(!next){report('complete','七组需求卡都已进入这只小猫的来信记录。');return;}
+  const now=new Date(),date=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const delivered=apply({type:'NEW_LETTER',letter:demandLetter(next.id,date)},{paint:state.page!=='G',save:true});
+  report(delivered&&state.newLetterId===next.id?'delivered':'blocked',
+    delivered&&state.newLetterId===next.id?`已收到「${next.title}」；打开来信即可阅读。`:'暂时没能保存这封来信；原有记录仍在。',next.id);
+  return;
+ }
  if(action==='arrive-need')apply({type:'NEW_LETTER',letter:LETTER_FIXTURES['need-02']},{paint:state.page!=='G',save:true});
  if(action==='arrive-postcard')apply({type:'NEW_LETTER',letter:LETTER_FIXTURES['postcard-rhine-demo']},{paint:state.page!=='G',save:true});
  if(action==='trip'||action==='home')apply({type:action==='trip'?'CAT_TRIP':'CAT_HOME'},{paint:state.page!=='G',save:true});

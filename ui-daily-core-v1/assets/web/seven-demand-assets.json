@@ -1,0 +1,657 @@
+{
+  "schemaVersion": 1,
+  "scope": "seven demand contents x four appearances x two sizes",
+  "sourceRecords": {
+    "D-01..D-06": "outputs/E3-approved-assets/demand/approved-assets-2026-10-02.json",
+    "need-01": "outputs/E3-G2R-pages-2026-09-28/design/asset-manifest.json"
+  },
+  "runtimeBase": "this directory",
+  "assetCount": 28,
+  "fileCount": 56,
+  "assets": [
+    {
+      "contentId": "D-01",
+      "appearanceId": "cat-01",
+      "title": "阿橘",
+      "approvedSourceSha256": "24d02e4ab1c04714aa1ebe052a054855f8c9a4ce2ce1cd4a89c41c91849877b1",
+      "variants": [
+        {
+          "file": "demand-D01-cat-01-600.webp",
+          "sha256": "527ea107a602fd0f36da1cb5244cf2fb1122893363f4d2b233825969ba00e442",
+          "bytes": 40424,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D01-cat-01-1200.webp",
+          "sha256": "dc3f8b742fffd994ecb66fb259de10a304ab521ae15498f0820f547e516d1821",
+          "bytes": 103430,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "D-01",
+      "appearanceId": "cat-02",
+      "title": "阿橘",
+      "approvedSourceSha256": "c3c7b4c5c85184d9708e37d6cbd3a069c356c2e90e947dcd401713218bd4eb58",
+      "variants": [
+        {
+          "file": "demand-D01-cat-02-600.webp",
+          "sha256": "18a620a218131c7eb99e550cc3db909415158dc3798b968274022a269f8d0347",
+          "bytes": 42794,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D01-cat-02-1200.webp",
+          "sha256": "815356e8803e0964244a83b0265cd72c326137a6b1cf5ca6625fb56582e57f00",
+          "bytes": 107730,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "D-01",
+      "appearanceId": "cat-03",
+      "title": "阿橘",
+      "approvedSourceSha256": "28b97e3b126ea38240e6686edb987c7503c8e16985f3f52ad52a4b6ef8721b04",
+      "variants": [
+        {
+          "file": "demand-D01-cat-03-600.webp",
+          "sha256": "4757d27e0b74df590cd00eafd0a47a782167fac5655f99731ed59bb16c71e772",
+          "bytes": 38506,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D01-cat-03-1200.webp",
+          "sha256": "d22103423b31344ae29a8899a8f0a22aa4e47a185053d7f7e00bf2d3876fe98c",
+          "bytes": 95806,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "D-01",
+      "appearanceId": "cat-04",
+      "title": "阿橘",
+      "approvedSourceSha256": "f155684fea0cdff401690e95e5c0a7a20c21d1ada7c07d82e135a6b890c7e0a9",
+      "variants": [
+        {
+          "file": "demand-D01-cat-04-600.webp",
+          "sha256": "c2716ca806af36592819c70c5048f1a08097bbeffc6ef9956fe617b68ee0763d",
+          "bytes": 40456,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D01-cat-04-1200.webp",
+          "sha256": "d8260e77f7e9529c7a8db5386f546ec558b90a1fc424189660acdf107dba02c0",
+          "bytes": 105564,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "D-02",
+      "appearanceId": "cat-01",
+      "title": "小黑虫子",
+      "approvedSourceSha256": "a2c82a57a5b0f0813ceaa512a7bd7932c3e63cb32b90fa632d2797ec7051eacc",
+      "variants": [
+        {
+          "file": "demand-D02-cat-01-600.webp",
+          "sha256": "911d82a7ddca1f5b6259e10c463d0ff950812533dc8be2ca5bec7b0e8225d09c",
+          "bytes": 31872,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D02-cat-01-1200.webp",
+          "sha256": "b1b650597c6fbe3dd7f9496efa652e2cd8b5e553dd1189cbe27c6a0b386ca6a6",
+          "bytes": 79612,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "D-02",
+      "appearanceId": "cat-02",
+      "title": "小黑虫子",
+      "approvedSourceSha256": "88ea04c43952ef12b105b0299ce7de6ffb2322133364186a4c4ec0a9c73816ff",
+      "variants": [
+        {
+          "file": "demand-D02-cat-02-600.webp",
+          "sha256": "39ddd4e52fae5e76adce506173677595fa0a362d710f7e964d96abf8ed9fce50",
+          "bytes": 34706,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D02-cat-02-1200.webp",
+          "sha256": "81d7e21c274d45104e61e21a2304f1c73ecfbc3750958ba462b37004a393a0b8",
+          "bytes": 87242,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "D-02",
+      "appearanceId": "cat-03",
+      "title": "小黑虫子",
+      "approvedSourceSha256": "b2235260a94f89f06b5a5ed0462b2e2ee6293ec923ff5118d688b31b3045e685",
+      "variants": [
+        {
+          "file": "demand-D02-cat-03-600.webp",
+          "sha256": "0b3c10c2371c00402624d6d4acb91c2aaa03aa174153b6766a631773cc0dc35b",
+          "bytes": 28900,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D02-cat-03-1200.webp",
+          "sha256": "c4db6c2a5708d18690a943515c916ff2a961851d188cacc810cff067b52f491d",
+          "bytes": 70138,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "D-02",
+      "appearanceId": "cat-04",
+      "title": "小黑虫子",
+      "approvedSourceSha256": "8d89d646891415a1fe20e8c17198944c8ceed252c50c6a3dd14f2799ba06642c",
+      "variants": [
+        {
+          "file": "demand-D02-cat-04-600.webp",
+          "sha256": "d774879b135d475a64f6d2588bfe0001cdc67b99a5a9c73aac0aa6ada1328035",
+          "bytes": 32020,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D02-cat-04-1200.webp",
+          "sha256": "72dad962c96f1c4700f6595e338b9006e3e79f455381a00ba9ed12d94d50496c",
+          "bytes": 80800,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "D-03",
+      "appearanceId": "cat-01",
+      "title": "小礼物",
+      "approvedSourceSha256": "5e45fdea838e665ddb21ff3d95c3f39ebbfe524e172874798823d5efeeef7fb4",
+      "variants": [
+        {
+          "file": "demand-D03-cat-01-600.webp",
+          "sha256": "49fea18e467ef3ac5f8a530673eb5875875caf8419256f8e3f2f361cb2ad7c56",
+          "bytes": 37158,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D03-cat-01-1200.webp",
+          "sha256": "8f7f21feb7f65750624f2d3a08965525472a8e86f4f947cb5752bd243b704db3",
+          "bytes": 92162,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "D-03",
+      "appearanceId": "cat-02",
+      "title": "小礼物",
+      "approvedSourceSha256": "0a91a9ae73bca968336c271b9bcabc0581f30118c59d0674dedb38be421b5dbc",
+      "variants": [
+        {
+          "file": "demand-D03-cat-02-600.webp",
+          "sha256": "c247d1f78f581c52efce48a890e52735fcd8fe66dad14f7a6de6b4b1f42a4326",
+          "bytes": 37868,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D03-cat-02-1200.webp",
+          "sha256": "f969864de37c24c66541923bebe4b14959dbd6d4c3d63ad6b0dc292ef860727f",
+          "bytes": 90428,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "D-03",
+      "appearanceId": "cat-03",
+      "title": "小礼物",
+      "approvedSourceSha256": "4b4ada023e87e725c9d8efcd68b84928392f3bc75a9e1eaebcc24b971cdf95f4",
+      "variants": [
+        {
+          "file": "demand-D03-cat-03-600.webp",
+          "sha256": "9514b463689f8bede9612346c6ede7435277e1cdf93913aaef938c740d711cd3",
+          "bytes": 36260,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D03-cat-03-1200.webp",
+          "sha256": "87812946d0403dd8c84cef3b2cead5ad0ba981140f15d2cacf5a716c9f6485b0",
+          "bytes": 85824,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "D-03",
+      "appearanceId": "cat-04",
+      "title": "小礼物",
+      "approvedSourceSha256": "7fd46741357ed551878a87a6652ea0187ff4834fb44be2361d3dd6f5478efdc3",
+      "variants": [
+        {
+          "file": "demand-D03-cat-04-600.webp",
+          "sha256": "365eb944fb21695860a8824ab7ac3173c25fa95f14eb94668589cd5afe4198e6",
+          "bytes": 39008,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D03-cat-04-1200.webp",
+          "sha256": "c9d9e3cf70ff9284730e034ec3f64f2a9eccc6913c9781e108e424203717b936",
+          "bytes": 96538,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "D-04",
+      "appearanceId": "cat-01",
+      "title": "大橘",
+      "approvedSourceSha256": "675e7fedec9ecc1f7f21da9092b3d57b89d9b2df1fd11ca81606a24d2ec35060",
+      "variants": [
+        {
+          "file": "demand-D04-cat-01-600.webp",
+          "sha256": "051fe528642a68ca5b3b36f97d1b26f2a98ae31cd1b65b1e6d4abf367575de2f",
+          "bytes": 94270,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D04-cat-01-1200.webp",
+          "sha256": "b81b4320130cc3f5a1f500d74186a3f522d17669ffbc26cbf86bd48de55d024c",
+          "bytes": 250822,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "D-04",
+      "appearanceId": "cat-02",
+      "title": "大橘",
+      "approvedSourceSha256": "c709cb3188e49c7d532c47522ac0ffb71b3f298b9fb31ddd05510074084ea21e",
+      "variants": [
+        {
+          "file": "demand-D04-cat-02-600.webp",
+          "sha256": "5db6bea4861476960a4eae814d8f29a1b95ec0beaf444b9c2e56c592cd740da5",
+          "bytes": 96218,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D04-cat-02-1200.webp",
+          "sha256": "81a1d8f671fe17c8677a3fea83fbb636a8b8c8bd15ea891d2203cc0f8edf724d",
+          "bytes": 257814,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "D-04",
+      "appearanceId": "cat-03",
+      "title": "大橘",
+      "approvedSourceSha256": "b8da6c862f8056250e3ef0563b8a56b345c555c1f17e4efbeb6fb99f72296d93",
+      "variants": [
+        {
+          "file": "demand-D04-cat-03-600.webp",
+          "sha256": "93eae020ff6f77f2d8bf47bb2ec45ec80a341f5adadb6a852506f95624270b16",
+          "bytes": 94740,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D04-cat-03-1200.webp",
+          "sha256": "231b03683a96484b9722e5798e33be70d666be6a205664bd0de7e15fd62edac0",
+          "bytes": 248704,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "D-04",
+      "appearanceId": "cat-04",
+      "title": "大橘",
+      "approvedSourceSha256": "263b6ea0caa5ec637c78ba1134fbd676dddcb4085eff62837bc569d773351546",
+      "variants": [
+        {
+          "file": "demand-D04-cat-04-600.webp",
+          "sha256": "1d6655c43ef9b1047418d9066f93786f916f7db078d67dcc5e5bdf36facf206e",
+          "bytes": 88816,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D04-cat-04-1200.webp",
+          "sha256": "05a52a9b06f29255da7f8f17f6c26701a232b1ee5f797315638d800eaa9540f1",
+          "bytes": 212060,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "D-05",
+      "appearanceId": "cat-01",
+      "title": "追泡泡",
+      "approvedSourceSha256": "9b7217e682a97816090e73a96a6c344e2ac939b213d96a9a54337d29971270a4",
+      "variants": [
+        {
+          "file": "demand-D05-cat-01-600.webp",
+          "sha256": "f7bd5b22937bf140fc7bc53b93177c7aca5d6df620b5583ea4e14192c495f974",
+          "bytes": 78442,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D05-cat-01-1200.webp",
+          "sha256": "320e6ae8e9d57d480e62cd0128c728dc4b0b54f8b641ec060088e149664a133a",
+          "bytes": 198948,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "D-05",
+      "appearanceId": "cat-02",
+      "title": "追泡泡",
+      "approvedSourceSha256": "c41594da37d823b1562dcbaea4c0a95eeaee7a4431fc4cf297bf0870df8a853a",
+      "variants": [
+        {
+          "file": "demand-D05-cat-02-600.webp",
+          "sha256": "b6915ae84cde344cba9c4b46e9801441e5b2c7190e5125df4f90bf6d3735597f",
+          "bytes": 78392,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D05-cat-02-1200.webp",
+          "sha256": "0e2ee58170a8414f5fa14d816c50b081ea4271ef530b972fd4f031acd2ed4e4c",
+          "bytes": 194982,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "D-05",
+      "appearanceId": "cat-03",
+      "title": "追泡泡",
+      "approvedSourceSha256": "64fce22eacaf8c948a4d341f51ac200f0779a8370e715b93167c9958913ff02f",
+      "variants": [
+        {
+          "file": "demand-D05-cat-03-600.webp",
+          "sha256": "8f983e51f2d9375c9d9c882bbd1f53d51e5ee67f58b7980f33051103dee219d5",
+          "bytes": 78872,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D05-cat-03-1200.webp",
+          "sha256": "27081cdc59476f776ccb8491fb0bfbb1283a2c8f3065bc0f0b49027f1c20e356",
+          "bytes": 195950,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "D-05",
+      "appearanceId": "cat-04",
+      "title": "追泡泡",
+      "approvedSourceSha256": "c94d131cd1eebc07714107e7dff0bfa263e8b1bcf5cbcd55545745ce3b3e0ea1",
+      "variants": [
+        {
+          "file": "demand-D05-cat-04-600.webp",
+          "sha256": "37e9895549554e2063623ac78558e9ce228b4faa589a17912cf93c5a6ade4a46",
+          "bytes": 76286,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D05-cat-04-1200.webp",
+          "sha256": "be09ce45de2268764041bf030684b776ff6b5e1752aeef0c4a0dcde445bfdbf8",
+          "bytes": 190812,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "D-06",
+      "appearanceId": "cat-01",
+      "title": "小鱼干",
+      "approvedSourceSha256": "8e1a9decd6a4836c56d2a452b8c56e1d7ec4761f111d5eda3791c93e56f7abc4",
+      "variants": [
+        {
+          "file": "demand-D06-cat-01-600.webp",
+          "sha256": "097deefc4227e0266a91cd241cf5d23fde4e0ce8dc47868e43865ceaae34264e",
+          "bytes": 78594,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D06-cat-01-1200.webp",
+          "sha256": "173a3f75a93b2dec37e6b4218a9835831ce4706baa4933292f7857f69aeab914",
+          "bytes": 210648,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "D-06",
+      "appearanceId": "cat-02",
+      "title": "小鱼干",
+      "approvedSourceSha256": "7d109789417f0318eb010c068b858ccb58932ee65b4e1eb843a133212c5a70a6",
+      "variants": [
+        {
+          "file": "demand-D06-cat-02-600.webp",
+          "sha256": "1533b85d2d55ddb60410cee0ffe304f7d32e92671ae93b5e0aff297a64049255",
+          "bytes": 77906,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D06-cat-02-1200.webp",
+          "sha256": "311f58d6be5eadaee724e7a4f8814cd6a487a1554647168f62d9a0b698fba80e",
+          "bytes": 199920,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "D-06",
+      "appearanceId": "cat-03",
+      "title": "小鱼干",
+      "approvedSourceSha256": "9c255da557de020adc5fc15b76c2348448d99ee04ec9f11adad782d7a54ee331",
+      "variants": [
+        {
+          "file": "demand-D06-cat-03-600.webp",
+          "sha256": "f1f48b6e14a8fe8e568952d709c59c729162282cdf4edab761c7fc462d06e0a2",
+          "bytes": 78414,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D06-cat-03-1200.webp",
+          "sha256": "a6fa0f7de0f331b922beb449ccb1f194c8f1dff6f8a9b3de74d3b58d0b9f9a73",
+          "bytes": 202184,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "D-06",
+      "appearanceId": "cat-04",
+      "title": "小鱼干",
+      "approvedSourceSha256": "5240ede1524410ba88db8c620c7600d3345c106f00930a2f674ff7066e1a63fd",
+      "variants": [
+        {
+          "file": "demand-D06-cat-04-600.webp",
+          "sha256": "6e294ab2c4af273584ed585357ffc43f82c2b4dd6cc603cf60cbe1f95414203a",
+          "bytes": 71630,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "demand-D06-cat-04-1200.webp",
+          "sha256": "5df53b059959ecf1d59eb77e307494310b98345c5942d8d11cf9c1d1b8cfa635",
+          "bytes": 184434,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "approved PNG WebP export 2026-10-02"
+    },
+    {
+      "contentId": "need-01",
+      "appearanceId": "cat-01",
+      "title": "阳光会在这里等我吗？",
+      "approvedSourceSha256": "5c06438a4e6ac1829579db8d299b20a072db821caea1156a5ab3fc423e45b7b8",
+      "variants": [
+        {
+          "file": "need-window-cat-01-600.webp",
+          "sha256": "7426ef1383c4b10526c599246b62ed4a170426b98917e66198ac75c81586dcfa",
+          "bytes": 20130,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "need-window-cat-01-1200.webp",
+          "sha256": "412dea5aae91480a738f4c8bf48d59a64a0c34cc0e2ac9a2d8dbbd14d21b77c3",
+          "bytes": 46020,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "preserved existing Pages preview"
+    },
+    {
+      "contentId": "need-01",
+      "appearanceId": "cat-02",
+      "title": "阳光会在这里等我吗？",
+      "approvedSourceSha256": "1673e11a4172a1b0b3d9ec6b2e0a723fc53e09ce20f92e424a2ba948c3f21dc2",
+      "variants": [
+        {
+          "file": "need-window-cat-02-600.webp",
+          "sha256": "689be72c4663bb2bc9b95efbcfa0fd307b09c2fecfba36aa054cd1d68b61ad34",
+          "bytes": 20958,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "need-window-cat-02-1200.webp",
+          "sha256": "6cc0ebc115bd00c5e61521555be1a9ac97098f429a697134cc434c3dd3a55d97",
+          "bytes": 48550,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "preserved existing Pages preview"
+    },
+    {
+      "contentId": "need-01",
+      "appearanceId": "cat-03",
+      "title": "阳光会在这里等我吗？",
+      "approvedSourceSha256": "60c368c3c56090b85c8c99a1d16792fdb45d64efd602e06992d850ccdc75a829",
+      "variants": [
+        {
+          "file": "need-window-cat-03-600.webp",
+          "sha256": "999dd6a48e20db399bb87aeaf9e91ed98a634c559f9ad7976f0c6a68b7ad203e",
+          "bytes": 19482,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "need-window-cat-03-1200.webp",
+          "sha256": "f48bb410097584af3912e31602de18eba064c7caf739256b758d47aa267a44c5",
+          "bytes": 43406,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "preserved existing Pages preview"
+    },
+    {
+      "contentId": "need-01",
+      "appearanceId": "cat-04",
+      "title": "阳光会在这里等我吗？",
+      "approvedSourceSha256": "7e80bf27002d9283eb19c7253146e04d52db8e16a8060eb43e9924a2e17e160b",
+      "variants": [
+        {
+          "file": "need-window-cat-04-600.webp",
+          "sha256": "24d1d069636a791f67b91a3819537c86c7254f9a93c3c2d4fbe44c14b5c16131",
+          "bytes": 20360,
+          "width": 600,
+          "height": 400
+        },
+        {
+          "file": "need-window-cat-04-1200.webp",
+          "sha256": "e23a6adfe15745f4b450172b46b28f898373e8d9279ef6011b78c9052f518d48",
+          "bytes": 45894,
+          "width": 1200,
+          "height": 800
+        }
+      ],
+      "runtimeOrigin": "preserved existing Pages preview"
+    }
+  ]
+}

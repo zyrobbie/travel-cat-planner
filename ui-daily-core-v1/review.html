@@ -6,12 +6,12 @@
   <meta name="color-scheme" content="light">
   <title>有猫来信 · 日常核心体验审阅</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="./review.css?v=compact-fluid-20260928">
+  <link rel="stylesheet" href="./review.css?v=seven-demands-20261002">
 </head>
 <body>
   <header class="review-heading">
     <div><p class="eyebrow">有猫来信 · 第二批</p><h1>日常核心体验审阅</h1></div>
-    <p class="review-boundary">这是 GitHub Pages 本机体验预览，无真实云端同步、录音或自动理解回应。本轮新演示使用已批准的追光需求与河谷旅行图文；旧听雨信保留文字、画面暂不可用。正式六卡插画另轮确认，本次不计为六卡图文验收。明信片和来信盒可作最小阅读衔接，完整第三批仍待设计。</p>
+    <p class="review-boundary">这是 GitHub Pages 本机体验预览，无真实云端同步、录音或自动理解回应。七组需求卡各有四种小猫外观；下方链接使用隔离数据审阅。旧听雨信保留文字，画面暂不可用。明信片和来信盒可作最小阅读衔接，完整第三批仍待设计。</p>
   </header>
   <main class="review-layout">
     <details class="review-tools" id="review-tools" open>
@@ -35,6 +35,14 @@
             <option value="cat-04">三花 · cat-04</option>
           </select>
           <p class="tool-note" id="cat-note">只替换当前审阅场景的参考猫。</p>
+        </section>
+        <section class="tool-section" aria-labelledby="demand-heading">
+          <h2 id="demand-heading">七组需求卡 · 四种外观</h2>
+          <p class="tool-note">每个链接独立打开对应图文，不写入连续体验的本机记录。</p>
+          <div id="demand-list" class="demand-list"></div>
+          <button type="button" id="deliver-next-demand" disabled>向连续体验投递下一组</button>
+          <p class="tool-note">仅在连续体验中手动投递；一次最多一封未读，依次为追光、D01–D06。</p>
+          <p class="simulation-feedback" id="demand-feedback" role="status"></p>
         </section>
         <section class="tool-section" aria-labelledby="scenario-heading">
           <h2 id="scenario-heading">场景 <span class="count" id="scenario-count">41</span></h2>
@@ -77,6 +85,6 @@
     </section>
   </main>
   <noscript><p class="noscript-notice">请启用 JavaScript 后使用审阅工具。也可直接打开 <a href="./index.html">连续体验</a>。</p></noscript>
-  <script type="module" src="./review.mjs?v=compact-fluid-20260928"></script>
+  <script type="module" src="./review.mjs?v=seven-demands-20261002"></script>
 </body>
 </html>
