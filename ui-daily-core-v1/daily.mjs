@@ -229,8 +229,8 @@ function saveCorrectionDraft(){
 function confirmDeleteDialog(){
   const letter=currentLetter(state),response=state.responses[letter?.responseId];
   if(!letter||!response||response.status!=='ACTIVE'||ui.pendingMutation)return;
-  const dialog=document.createElement('dialog');dialog.className='confirm-dialog';
-  dialog.innerHTML=`<h2>删除这段回应？</h2><p class="confirm-object">「${e(letter.title)}」里你送出的回应 · 版本 ${response.currentRevision}</p><p>保存的原文、旧版本和来源原文都会清除。已经寄出的旅行故事仍会保留，来源改为“已删除”。删除无法撤销。</p><div class="card-actions"><button type="button" class="secondary" data-action="cancel-delete">先不删除</button><button type="button" class="primary" data-action="confirm-delete">确认删除</button></div>`;
+  const dialog=document.createElement('dialog');dialog.className='confirm-dialog';dialog.setAttribute('aria-labelledby','delete-heading');
+  dialog.innerHTML=`<h2 id="delete-heading">删除这条回应？</h2><p class="confirm-object">「${e(letter.title)}」里你送出的回应 · 版本 ${response.currentRevision}</p><p>删除后，它不会再被用于未来的旅行来信。\n已经寄到你这里的旧明信片不会被偷偷改掉。</p><p>保存的原文和旧版本也会清除。所有来源中的回应原文也将不再显示。删除无法撤销。</p><div class="card-actions"><button type="button" class="secondary" data-action="cancel-delete">取消</button><button type="button" class="primary" data-action="confirm-delete">删除</button></div>`;
   app.append(dialog);dialog.showModal();dialog.querySelector('[data-action="cancel-delete"]').focus();
 }
 function runMutation(type){
