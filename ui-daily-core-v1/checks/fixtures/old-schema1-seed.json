@@ -1,0 +1,174 @@
+{
+  "fixtureKind": "synthetic-old-pages-schema1",
+  "sourceCommit": "659c5db75282fc34d3b7228f1c7e4b40a35f57ef",
+  "sourceHashes": {
+    "daily-state.mjs": "7a06b23f83b4933c2ecd2dec9781ed73db29b549f043cf2ef5356749f7328467",
+    "storage.mjs": "50e12c9acf7447e1a9e6f5312c598d2da088fa1912bf39fbeba32dc65496db3d",
+    "demand-catalog.mjs": "f26db1adb903649f989c9525775ea684cb65e5e503dd675a59d8362fe22ddf7a"
+  },
+  "localStorage": {
+    "cat-letters-e3-g2r:confirmed-cat-v1": "{\"version\":1,\"catId\":\"cat-02\",\"name\":\"白金\"}",
+    "cat-letters-e3-g2r:daily-v1": "{\"version\":1,\"state\":{\"schemaVersion\":1,\"revision\":22,\"operationSeq\":3,\"catId\":\"cat-02\",\"appearanceId\":\"cat-02\",\"catName\":\"白金\",\"catState\":\"TRIP\",\"page\":\"F\",\"returnPage\":null,\"newLetterId\":\"postcard-01\",\"letters\":{\"need-02\":{\"id\":\"need-02\",\"type\":\"NEED_CARD\",\"date\":\"2026-09-27\",\"title\":\"可以陪我听一会儿雨吗？\",\"data\":{},\"readState\":\"READ\",\"draft\":\"\",\"draftRevision\":3,\"savedRevision\":3,\"draftSaveState\":\"IDLE\",\"replySubmitState\":\"SUCCESS\",\"checkState\":\"IDLE\",\"pendingSave\":null,\"pendingSubmission\":null,\"receiptId\":\"reply-need-02-1\",\"submittedText\":\"迁移核查：雨声像轻轻敲门，我在这里听你说。\"},\"need-d03\":{\"id\":\"need-d03\",\"type\":\"NEED_CARD\",\"date\":\"2026-10-02\",\"title\":\"小礼物\",\"data\":{\"contentId\":\"D-03\",\"body\":\"麻麻，我有个小礼物想送给你，但我担心你不喜欢，会觉得它没什么用呜呜~\",\"tip\":\"它好像很在意：这份心意会不会被你喜欢。你可以先回应它的心意，不一定要评价礼物有没有用。\"},\"readState\":\"READ\",\"draft\":\"\",\"draftRevision\":3,\"savedRevision\":3,\"draftSaveState\":\"IDLE\",\"replySubmitState\":\"SUCCESS\",\"checkState\":\"IDLE\",\"pendingSave\":null,\"pendingSubmission\":null,\"receiptId\":\"reply-need-d03-2\",\"submittedText\":\"迁移核查：我喜欢这份心意，小礼物有没有用都不重要。\"},\"need-01\":{\"id\":\"need-01\",\"type\":\"NEED_CARD\",\"date\":\"2026-09-26\",\"title\":\"阳光会在这里等我吗？\",\"data\":{},\"readState\":\"READ\",\"draft\":\"迁移核查草稿：明天也想和你一起看窗边的小光点，还没有送出。\",\"draftRevision\":1,\"savedRevision\":1,\"draftSaveState\":\"SAVED\",\"replySubmitState\":\"IDLE\",\"checkState\":\"IDLE\",\"pendingSave\":null,\"pendingSubmission\":null,\"receiptId\":null,\"submittedText\":null},\"postcard-01\":{\"id\":\"postcard-01\",\"type\":\"POSTCARD\",\"date\":\"2026-09-28\",\"title\":\"山下面有一条亮亮的河\",\"data\":{\"storyId\":\"O-RHINE-01\",\"sceneId\":\"RHINE\",\"body\":\"麻麻，今天走到山上啦！\\n\\n风把旁边的叶子吹得哗啦哗啦，我往下面一看——有一条好长好长的河，亮得像一条带子。\\n\\n河上还有小船慢慢走，我趴着看了好久，差点忘记肚子饿了喵~\"},\"readState\":\"UNREAD\",\"draft\":\"\",\"draftRevision\":0,\"savedRevision\":-1,\"draftSaveState\":\"IDLE\",\"replySubmitState\":\"IDLE\",\"checkState\":\"IDLE\",\"pendingSave\":null,\"pendingSubmission\":null,\"receiptId\":null,\"submittedText\":null}},\"currentLetterId\":\"need-01\",\"draftSaveState\":\"SAVED\",\"replySubmitState\":\"IDLE\",\"checkState\":\"IDLE\",\"pendingSave\":null,\"pendingSubmission\":null,\"submissionRecoveryRequired\":false,\"refreshError\":false,\"loadError\":false},\"receipts\":{\"reply-need-02-1\":{\"status\":\"SUCCESS\",\"requestId\":\"reply-need-02-1\",\"letterId\":\"need-02\",\"revision\":2,\"text\":\"迁移核查：雨声像轻轻敲门，我在这里听你说。\"},\"reply-need-d03-2\":{\"status\":\"SUCCESS\",\"requestId\":\"reply-need-d03-2\",\"letterId\":\"need-d03\",\"revision\":2,\"text\":\"迁移核查：我喜欢这份心意，小礼物有没有用都不重要。\"}}}"
+  },
+  "identityKey": "cat-letters-e3-g2r:confirmed-cat-v1",
+  "liveKey": "cat-letters-e3-g2r:daily-v1",
+  "identity": {
+    "version": 1,
+    "catId": "cat-02",
+    "name": "白金"
+  },
+  "envelope": {
+    "version": 1,
+    "state": {
+      "schemaVersion": 1,
+      "revision": 22,
+      "operationSeq": 3,
+      "catId": "cat-02",
+      "appearanceId": "cat-02",
+      "catName": "白金",
+      "catState": "TRIP",
+      "page": "F",
+      "returnPage": null,
+      "newLetterId": "postcard-01",
+      "letters": {
+        "need-02": {
+          "id": "need-02",
+          "type": "NEED_CARD",
+          "date": "2026-09-27",
+          "title": "可以陪我听一会儿雨吗？",
+          "data": {},
+          "readState": "READ",
+          "draft": "",
+          "draftRevision": 3,
+          "savedRevision": 3,
+          "draftSaveState": "IDLE",
+          "replySubmitState": "SUCCESS",
+          "checkState": "IDLE",
+          "pendingSave": null,
+          "pendingSubmission": null,
+          "receiptId": "reply-need-02-1",
+          "submittedText": "迁移核查：雨声像轻轻敲门，我在这里听你说。"
+        },
+        "need-d03": {
+          "id": "need-d03",
+          "type": "NEED_CARD",
+          "date": "2026-10-02",
+          "title": "小礼物",
+          "data": {
+            "contentId": "D-03",
+            "body": "麻麻，我有个小礼物想送给你，但我担心你不喜欢，会觉得它没什么用呜呜~",
+            "tip": "它好像很在意：这份心意会不会被你喜欢。你可以先回应它的心意，不一定要评价礼物有没有用。"
+          },
+          "readState": "READ",
+          "draft": "",
+          "draftRevision": 3,
+          "savedRevision": 3,
+          "draftSaveState": "IDLE",
+          "replySubmitState": "SUCCESS",
+          "checkState": "IDLE",
+          "pendingSave": null,
+          "pendingSubmission": null,
+          "receiptId": "reply-need-d03-2",
+          "submittedText": "迁移核查：我喜欢这份心意，小礼物有没有用都不重要。"
+        },
+        "need-01": {
+          "id": "need-01",
+          "type": "NEED_CARD",
+          "date": "2026-09-26",
+          "title": "阳光会在这里等我吗？",
+          "data": {},
+          "readState": "READ",
+          "draft": "迁移核查草稿：明天也想和你一起看窗边的小光点，还没有送出。",
+          "draftRevision": 1,
+          "savedRevision": 1,
+          "draftSaveState": "SAVED",
+          "replySubmitState": "IDLE",
+          "checkState": "IDLE",
+          "pendingSave": null,
+          "pendingSubmission": null,
+          "receiptId": null,
+          "submittedText": null
+        },
+        "postcard-01": {
+          "id": "postcard-01",
+          "type": "POSTCARD",
+          "date": "2026-09-28",
+          "title": "山下面有一条亮亮的河",
+          "data": {
+            "storyId": "O-RHINE-01",
+            "sceneId": "RHINE",
+            "body": "麻麻，今天走到山上啦！\n\n风把旁边的叶子吹得哗啦哗啦，我往下面一看——有一条好长好长的河，亮得像一条带子。\n\n河上还有小船慢慢走，我趴着看了好久，差点忘记肚子饿了喵~"
+          },
+          "readState": "UNREAD",
+          "draft": "",
+          "draftRevision": 0,
+          "savedRevision": -1,
+          "draftSaveState": "IDLE",
+          "replySubmitState": "IDLE",
+          "checkState": "IDLE",
+          "pendingSave": null,
+          "pendingSubmission": null,
+          "receiptId": null,
+          "submittedText": null
+        }
+      },
+      "currentLetterId": "need-01",
+      "draftSaveState": "SAVED",
+      "replySubmitState": "IDLE",
+      "checkState": "IDLE",
+      "pendingSave": null,
+      "pendingSubmission": null,
+      "submissionRecoveryRequired": false,
+      "refreshError": false,
+      "loadError": false
+    },
+    "receipts": {
+      "reply-need-02-1": {
+        "status": "SUCCESS",
+        "requestId": "reply-need-02-1",
+        "letterId": "need-02",
+        "revision": 2,
+        "text": "迁移核查：雨声像轻轻敲门，我在这里听你说。"
+      },
+      "reply-need-d03-2": {
+        "status": "SUCCESS",
+        "requestId": "reply-need-d03-2",
+        "letterId": "need-d03",
+        "revision": 2,
+        "text": "迁移核查：我喜欢这份心意，小礼物有没有用都不重要。"
+      }
+    }
+  },
+  "expected": {
+    "catId": "cat-02",
+    "appearanceId": "cat-02",
+    "catName": "白金",
+    "catState": "TRIP",
+    "page": "F",
+    "letterIds": [
+      "need-02",
+      "need-d03",
+      "need-01",
+      "postcard-01"
+    ],
+    "unreadId": "postcard-01",
+    "rainText": "迁移核查：雨声像轻轻敲门，我在这里听你说。",
+    "giftText": "迁移核查：我喜欢这份心意，小礼物有没有用都不重要。",
+    "lightDraft": "迁移核查草稿：明天也想和你一起看窗边的小光点，还没有送出。",
+    "receiptIds": [
+      "reply-need-02-1",
+      "reply-need-d03-2"
+    ],
+    "receiptDraftRevisions": [
+      {
+        "letterId": "need-02",
+        "revision": 2
+      },
+      {
+        "letterId": "need-d03",
+        "revision": 2
+      }
+    ],
+    "note": "All text is synthetic. Install the localStorage object in an isolated browser context on the preview origin before loading the new UI. Do not clear unrelated browser data."
+  }
+}

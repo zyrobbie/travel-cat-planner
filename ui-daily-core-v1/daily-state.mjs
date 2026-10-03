@@ -1,4 +1,5 @@
 // Pure model for the local E/G/H/F preview. No browser, clock or storage effects.
+import {upgradeHistory,recordSubmission,validateHistory,currentRevision} from './response-history.mjs?v=batch3-20261003';
 export const MAX_REPLY_LENGTH = 2000;
 const APPEARANCES = ['cat-01', 'cat-02', 'cat-03', 'cat-04'];
 const segmenter = new Intl.Segmenter('zh', { granularity: 'grapheme' });
@@ -21,6 +22,7 @@ function makeLetter(letter) {
     data: clone(letter.data || {}), readState: 'UNREAD', draft: '', draftRevision: 0, savedRevision: -1,
     draftSaveState: 'IDLE', replySubmitState: 'IDLE', checkState: 'IDLE',
     pendingSave: null, pendingSubmission: null, receiptId: null, submittedText: null,
+    responseId:null,readAt:null,sourceRefs:clone(letter.sourceRefs||[]),
   };
 }
 
@@ -30,14 +32,15 @@ export function initialState(options = {}) {
   const first = makeLetter(has(options, 'initialLetter') ? options.initialLetter : LETTER_FIXTURES['need-01']);
   const catState = options.catState === 'TRIP' ? 'TRIP' : 'HOME';
   return {
-    schemaVersion: 1, revision: 0, operationSeq: 0,
+    schemaVersion: 2, revision: 0, operationSeq: 0,
     catId: validId(options.catId) ? options.catId : 'cat-01', appearanceId,
     catName: typeof options.catName === 'string' && options.catName.trim() ? options.catName.trim() : '小咪',
-    catState, page: catState === 'TRIP' ? 'F' : 'E', returnPage: null,
+    catState, page: catState === 'TRIP' ? 'F' : 'E', returnPage: null,manageReturnPage:null,manageReturnLetterId:null,
     newLetterId: first?.id || null, letters: first ? { [first.id]: first } : {}, currentLetterId: null,
     draftSaveState: 'IDLE', replySubmitState: 'IDLE', checkState: 'IDLE',
     pendingSave: null, pendingSubmission: null, submissionRecoveryRequired: false,
     refreshError: false, loadError: false,
+    responses:{},correctionDrafts:{},mutationLog:{},
   };
 }
 
@@ -98,6 +101,7 @@ export function transition(state, event = {}) {
       if (!locked(next) && letter?.type === 'NEED_CARD') {
         next.returnPage = next.page === 'J' ? 'J' : homePage(next);
         letter.readState = 'READ';
+        if(!letter.readAt&&typeof event.at==='string')letter.readAt=event.at;
         if (next.newLetterId === id) next.newLetterId = null;
         next.currentLetterId = id;
         next.page = 'G';
@@ -108,6 +112,7 @@ export function transition(state, event = {}) {
       if (!locked(next) && letter?.type === 'POSTCARD') {
         next.returnPage = next.page === 'J' ? 'J' : homePage(next);
         letter.readState = 'READ';
+        if(!letter.readAt&&typeof event.at==='string')letter.readAt=event.at;
         if (next.newLetterId === id) next.newLetterId = null;
         next.currentLetterId = id;
         next.page = 'I';
@@ -115,6 +120,46 @@ export function transition(state, event = {}) {
       break;
     case 'OPEN_INBOX':
       if (!locked(next)) next.page = 'J';
+      break;
+    case 'OPEN_HISTORY':
+      if(!locked(next)){next.page='R';next.manageReturnPage=null;next.manageReturnLetterId=null;}
+      break;
+    case 'RETURN_HISTORY':
+      if(next.page==='R')next.page='J';
+      break;
+    case 'OPEN_HISTORY_LETTER':
+      if(next.page==='R'&&letter?.type==='NEED_CARD'&&letter.replySubmitState==='SUCCESS'){
+        next.currentLetterId=id;next.page='K';next.manageReturnPage='R';next.manageReturnLetterId=null;
+      }
+      break;
+    case 'OPEN_SOURCE_HISTORY':
+      if(next.page==='I'&&letter?.type==='NEED_CARD'&&letter.replySubmitState==='SUCCESS'){
+        next.manageReturnPage='I';next.manageReturnLetterId=next.currentLetterId;
+        next.currentLetterId=id;next.page='K';
+      }
+      break;
+    case 'OPEN_MANAGE':
+      if(next.page==='G'&&letter?.replySubmitState==='SUCCESS'&&
+        next.responses[letter.responseId]){
+        next.page='K';
+        next.manageReturnPage='G';next.manageReturnLetterId=null;
+      }
+      break;
+    case 'RETURN_MANAGE':
+      if(next.page==='K'){
+        next.page=next.manageReturnPage==='R'?'R':next.manageReturnPage==='I'?'I':'G';
+        if(next.page==='I')next.currentLetterId=next.manageReturnLetterId;
+        next.manageReturnPage=null;next.manageReturnLetterId=null;
+      }
+      break;
+    case 'BEGIN_CORRECTION':
+      if(next.page==='K'&&letter?.responseId&&next.responses[letter.responseId]?.status==='ACTIVE')
+        next.correctionDrafts[id]??={text:currentRevision(next.responses[letter.responseId]).text,
+          baseRevision:next.responses[letter.responseId].currentRevision,responseId:letter.responseId};
+      break;
+    case 'EDIT_CORRECTION':
+      if(next.page==='K'&&letter?.responseId&&typeof event.value==='string'&&
+        next.correctionDrafts[id])next.correctionDrafts[id].text=event.value;
       break;
     case 'RETURN_FROM_LETTER':
       if (!locked(next)) next.page = next.returnPage === 'J' ? 'J' : homePage(next);
@@ -179,6 +224,7 @@ export function transition(state, event = {}) {
     case 'SEND_SUCCESS':
       if (matchesSubmission(letter, event)) {
         letter.submittedText = typeof event.text === 'string' ? event.text : letter.pendingSubmission.text;
+        recordSubmission(next,letter,letter.submittedText,typeof event.at==='string'?event.at:null);
         letter.receiptId = event.receiptId || event.requestId;
         letter.replySubmitState = 'SUCCESS'; letter.checkState = 'IDLE';
         letter.draft = ''; letter.draftRevision += 1; letter.savedRevision = letter.draftRevision;
@@ -210,9 +256,9 @@ export function transition(state, event = {}) {
 
 /** Storage validation: malformed local data must not silently create a new cat. */
 export function validateSnapshot(state) {
-  if (!state || state.schemaVersion !== 1 || !validId(state.catId) || !APPEARANCES.includes(state.appearanceId)
+  if (!state || ![1,2].includes(state.schemaVersion) || !validId(state.catId) || !APPEARANCES.includes(state.appearanceId)
     || typeof state.catName !== 'string' || !state.catName.trim() || !['HOME', 'TRIP'].includes(state.catState)
-    || !['E', 'F', 'G', 'H', 'I', 'J'].includes(state.page) || !Number.isSafeInteger(state.revision) || state.revision < 0
+    || !['E', 'F', 'G', 'H', 'I', 'J','K','R'].includes(state.page) || !Number.isSafeInteger(state.revision) || state.revision < 0
     || !Number.isSafeInteger(state.operationSeq) || state.operationSeq < 0
     || !state.letters || typeof state.letters !== 'object' || Array.isArray(state.letters)) return false;
   const letters = Object.entries(state.letters);
@@ -227,7 +273,9 @@ export function validateSnapshot(state) {
     if (letter.replySubmitState === 'SUBMITTING' && (!letter.pendingSubmission
       || letter.pendingSubmission.letterId !== id || typeof letter.pendingSubmission.requestId !== 'string'
       || letter.pendingSubmission.revision !== letter.draftRevision || letter.pendingSubmission.text !== letter.draft)) return false;
-    if (letter.replySubmitState === 'SUCCESS' && (typeof letter.receiptId !== 'string' || typeof letter.submittedText !== 'string')) return false;
+    if (letter.replySubmitState === 'SUCCESS' && (typeof letter.receiptId !== 'string' ||
+      !(typeof letter.submittedText === 'string'||state.schemaVersion===2&&letter.submittedText===null&&
+        state.responses?.[letter.responseId]?.status==='DELETED'))) return false;
   }
   const unread = letters.filter(([, letter]) => letter.readState === 'UNREAD');
   if (unread.length > 1 || (state.newLetterId === null ? unread.length !== 0
@@ -236,20 +284,26 @@ export function validateSnapshot(state) {
   if (['G', 'H'].includes(state.page) && currentLetter(state)?.type !== 'NEED_CARD') return false;
   if (state.page === 'I' && currentLetter(state)?.type !== 'POSTCARD') return false;
   if (state.returnPage !== undefined && state.returnPage !== null && !['E', 'F', 'J'].includes(state.returnPage)) return false;
+  if(state.manageReturnPage!==undefined&&state.manageReturnPage!==null&&
+    !['G','I','R'].includes(state.manageReturnPage))return false;
+  if(state.manageReturnLetterId!==undefined&&state.manageReturnLetterId!==null&&
+    !has(state.letters,state.manageReturnLetterId))return false;
   if (state.page === 'H' && currentLetter(state)?.replySubmitState !== 'SUCCESS') return false;
+  if(state.page==='K'&&currentLetter(state)?.type!=='NEED_CARD')return false;
+  if(state.schemaVersion===2&&!validateHistory(state))return false;
   return true;
 }
 
 /** Restore without auto-sending. Unread mail wins over reopening an old editor. */
 export function restoreSnapshot(snapshot) {
   if (!validateSnapshot(snapshot)) throw new Error('INVALID_SNAPSHOT');
-  const state = clone(snapshot);
+  const state = upgradeHistory(snapshot);
   state.returnPage ??= null;
   for (const letter of Object.values(state.letters)) {
     if (letter.draftSaveState === 'SAVING') { letter.draftSaveState = 'IDLE'; letter.pendingSave = null; }
   }
   state.submissionRecoveryRequired = Object.values(state.letters).some(letter => letter.replySubmitState === 'SUBMITTING');
-  if (!state.submissionRecoveryRequired && (state.page === 'G' || state.page === 'J'
+  if (!state.submissionRecoveryRequired && (state.page === 'G' || state.page === 'J'||state.page==='K'||state.page==='R'
     || state.page === 'I' && state.newLetterId)) state.page = homePage(state);
   state.loadError = false; state.refreshError = false;
   return sync(state);

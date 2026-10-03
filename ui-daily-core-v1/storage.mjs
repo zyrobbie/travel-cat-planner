@@ -1,6 +1,9 @@
-import { initialState, transition, currentLetter, restoreSnapshot, validateSnapshot } from './daily-state.mjs';
+import { initialState, transition, currentLetter, restoreSnapshot, validateSnapshot } from './daily-state.mjs?v=batch3-20261003';
+import {upgradeHistory,currentRevision,applyMutation,redactResponse} from './response-history.mjs?v=batch3-20261003';
 
 export const STORAGE_KEY = 'cat-letters-ui-daily-core-v1:preview-v1';
+export const LIVE_STORAGE_KEY='cat-letters-e3-g2r:daily-v1';
+export const LEGACY_IMPORT_MARKER_KEY=`${LIVE_STORAGE_KEY}:legacy-import`;
 const clone = value => structuredClone(value);
 const failed = (error, extra = {}) => ({ ok: false, error, ...extra });
 
@@ -27,15 +30,24 @@ export function createDailyStore({ storage, key = STORAGE_KEY, failFixtures = {}
     const raw = adapter.getItem(key);
     if (raw === null) return null;
     const envelope = JSON.parse(raw);
-    if (envelope?.version !== 1 || !validateSnapshot(envelope.state) || !envelope.receipts
+    if (![1,2].includes(envelope?.version) || !validateSnapshot(envelope.state) || !envelope.receipts
       || typeof envelope.receipts !== 'object' || Array.isArray(envelope.receipts)) throw new Error('INVALID_SNAPSHOT');
+    if(envelope.version!==envelope.state.schemaVersion)throw new Error('INVALID_SCHEMA');
+    const legacy=envelope.version===1;
     for (const [id, receipt] of Object.entries(envelope.receipts)) {
       if (!receipt || receipt.requestId !== id || receipt.status !== 'SUCCESS'
-        || typeof receipt.letterId !== 'string' || typeof receipt.text !== 'string') throw new Error('INVALID_RECEIPT');
+        || typeof receipt.letterId !== 'string'||
+        !(typeof receipt.text==='string'||!legacy&&receipt.text===null&&receipt.redacted===true))throw new Error('INVALID_RECEIPT');
       const letter = envelope.state.letters[receipt.letterId];
-      if (!letter || letter.replySubmitState !== 'SUCCESS' || letter.receiptId !== id
-        || letter.submittedText !== receipt.text) throw new Error('INCONSISTENT_RECEIPT');
+      if (!letter || letter.replySubmitState !== 'SUCCESS' || letter.receiptId !== id)throw new Error('INCONSISTENT_RECEIPT');
+      if(legacy){if(letter.submittedText!==receipt.text)throw new Error('INCONSISTENT_RECEIPT');}
+      else{
+        const response=envelope.state.responses[letter.responseId];
+        if(!response||response.status==='DELETED'&&!(receipt.redacted&&receipt.text===null&&letter.submittedText===null)||
+          response.status==='ACTIVE'&&receipt.text!==response.revisions[0]?.text)throw new Error('INCONSISTENT_RECEIPT');
+      }
     }
+    if(legacy){envelope.state=upgradeHistory(envelope.state);envelope.version=2;envelope.migrated=true;}
     return envelope;
   }
   function writeEnvelope(state, receipts) {
@@ -43,7 +55,7 @@ export function createDailyStore({ storage, key = STORAGE_KEY, failFixtures = {}
     if (shouldFail('writeError') || !adapter) throw new Error('WRITE_ERROR');
     // One key / one setItem is the atomic unit: a reply and its receipt cannot
     // be split across two writes or reported successful before storage accepts it.
-    adapter.setItem(key, JSON.stringify({ version: 1, state, receipts }));
+    adapter.setItem(key, JSON.stringify({ version: 2, state, receipts }));
   }
   function resultEvent(state, type, extra = {}) {
     const pending = currentLetter(state)?.pendingSubmission;
@@ -58,10 +70,21 @@ export function createDailyStore({ storage, key = STORAGE_KEY, failFixtures = {}
     for (const receipt of Object.values(receipts)) {
       const letter = next.letters[receipt.letterId];
       if (!letter) throw new Error('STALE_STATE');
-      if (letter.replySubmitState === 'SUCCESS' && letter.receiptId === receipt.requestId
+      const response=next.responses[letter.responseId];
+      if(response?.status==='DELETED'){
+        if(!receipt.redacted||receipt.text!==null||letter.submittedText!==null)throw new Error('REDACTION_CONFLICT');
+        continue;
+      }
+      if(response?.status==='ACTIVE'){
+        if(receipt.text!==response.revisions[0]?.text)throw new Error('RECEIPT_CONFLICT');
+        const latest=currentRevision(response)?.text;
+        if(letter.submittedText===latest&&letter.draft==='')continue;
+        letter.submittedText=latest;
+      }else if (letter.replySubmitState === 'SUCCESS' && letter.receiptId === receipt.requestId
         && letter.submittedText === receipt.text && letter.draft === '') continue;
+      else letter.submittedText=receipt.text;
       letter.replySubmitState = 'SUCCESS'; letter.checkState = 'IDLE';
-      letter.receiptId = receipt.requestId; letter.submittedText = receipt.text;
+      letter.receiptId = receipt.requestId;
       letter.draft = ''; letter.draftRevision = Math.max(letter.draftRevision, receipt.revision + 1);
       letter.savedRevision = letter.draftRevision; letter.draftSaveState = 'IDLE';
       letter.pendingSave = null; letter.pendingSubmission = null;
@@ -100,6 +123,15 @@ export function createDailyStore({ storage, key = STORAGE_KEY, failFixtures = {}
     try {
       const envelope = readEnvelope();
       const receipts = envelope?.receipts || {};
+      // Navigation and draft saves may never roll back a response mutation,
+      // even if their unrelated state revisions have advanced in another tab.
+      if(envelope&&(JSON.stringify(envelope.state.responses)!==JSON.stringify(state.responses)||
+        JSON.stringify(envelope.state.mutationLog)!==JSON.stringify(state.mutationLog)))
+        return failed('STALE_RESPONSE_HISTORY',{stale:true});
+      for(const [id,previous] of Object.entries(envelope?.state.responses||{})){
+        if(previous.status==='DELETED'&&state.responses?.[id]?.status!=='DELETED')
+          return failed('REDACTION_CONFLICT',{stale:true});
+      }
       // A delayed save must not overwrite a newer navigation, arrival or draft.
       if (envelope && envelope.state.revision > state.revision) return failed('STALE_STATE', { stale: true });
       if (envelope && envelope.state.revision === state.revision
@@ -156,6 +188,7 @@ export function createDailyStore({ storage, key = STORAGE_KEY, failFixtures = {}
     }
     const receipts = clone(envelope?.receipts || {});
     const existing = receipts[pending.requestId] || Object.values(receipts).find(receipt => receipt.letterId === pending.letterId);
+    if(existing?.redacted)return failed('REDACTED_REPLY',{stale:true});
     if (existing) return { ok: true, reused: true, event: successEvent(submittingState, existing) };
     const savedLetter = envelope?.state.letters[pending.letterId];
     if (savedLetter && savedLetter.draftRevision > pending.revision) {
@@ -208,6 +241,7 @@ export function createDailyStore({ storage, key = STORAGE_KEY, failFixtures = {}
       const envelope = readEnvelope();
       const receipt = envelope?.receipts[pending.requestId]
         || Object.values(envelope?.receipts || {}).find(item => item.letterId === pending.letterId);
+      if(receipt?.redacted)return failed('REDACTED_REPLY',{stale:true});
       if (receipt) return { ok: true, event: successEvent(state, receipt), recovered: true };
       // A completed read establishes that this local-only store has no commit.
       // Reading does not create a receipt or call commitReply.
@@ -216,5 +250,77 @@ export function createDailyStore({ storage, key = STORAGE_KEY, failFixtures = {}
       return failed(error.message || 'READ_ERROR', { event: resultEvent(state, 'SUBMIT_UNKNOWN') });
     }
   }
-  return Object.freeze({ key, load, persist, saveDraft, commitReply, recoverSubmission });
+  function mutateResponse(ticket){
+    let readCompleted=false;
+    try{
+      if(shouldFail('mutationReadError'))throw new Error('READ_ERROR');
+      const envelope=readEnvelope();
+      readCompleted=true;
+      if(!envelope)throw new Error('MISSING_SNAPSHOT');
+      const state=clone(envelope.state),receipts=clone(envelope.receipts);
+      const result=applyMutation(state,receipts,ticket);
+      if(result.reused)return {ok:true,reused:true,state};
+      if(shouldFail('mutationError'))throw new Error('MUTATION_WRITE_ERROR');
+      if(shouldFail('mutationUnknownBefore'))return failed('UNKNOWN_RESULT',{unknown:true});
+      writeEnvelope(state,receipts);
+      if(shouldFail('mutationUnknownAfter'))return failed('UNKNOWN_RESULT',{unknown:true});
+      return {ok:true,state};
+    }catch(error){return failed(error.message||'MUTATION_ERROR',
+      {stale:error.message==='STALE_RESPONSE',unknown:!readCompleted});}
+  }
+  function recoverMutation(ticket){
+    try{
+      const envelope=readEnvelope();
+      if(!envelope)throw new Error('MISSING_SNAPSHOT');
+      const log=envelope.state.mutationLog[ticket.key];
+      if(log&&(log.responseId!==ticket.responseId||log.type!==ticket.type||
+        log.expectedRevision!==ticket.expectedRevision))throw new Error('MUTATION_KEY_CONFLICT');
+      return {ok:true,committed:!!log,state:restoreSnapshot(envelope.state)};
+    }catch(error){return failed(error.message||'READ_ERROR',{unknown:true});}
+  }
+  function redactImportedLegacy({letterId,catId,catName,legacyKey=STORAGE_KEY}){
+    try{
+      if(!adapter)throw new Error('READ_ERROR');
+      const marker=JSON.parse(adapter.getItem(LEGACY_IMPORT_MARKER_KEY)||'null');
+      if(marker&&(marker.catId!==catId||marker.catName!==catName||marker.sourceKey!==legacyKey))
+        return {ok:true,skipped:true};
+      const raw=adapter.getItem(legacyKey);
+      if(raw===null)return {ok:true,missing:true};
+      const envelope=JSON.parse(raw);
+      if(![1,2].includes(envelope?.version)||!validateSnapshot(envelope.state)||
+        envelope.state.appearanceId!==catId||envelope.state.catName!==catName||
+        !envelope.receipts||typeof envelope.receipts!=='object')throw new Error('INVALID_LEGACY_SNAPSHOT');
+      const old=envelope.state.letters[letterId];
+      if(!old||old.replySubmitState!=='SUCCESS')return {ok:true,skipped:true};
+      if(!marker){
+        // PR #12 copied the whole legacy state to the live key without a
+        // marker or receipts. Match this one original reply by identity,
+        // letter/receipt ID and exact first committed text before redacting.
+        const live=readEnvelope(),liveLetter=live?.state.letters[letterId],
+          liveResponse=live?.state.responses[liveLetter?.responseId];
+        if(!liveLetter||liveLetter.receiptId!==old.receiptId||
+          liveResponse?.revisions[0]?.text!==old.submittedText||
+          !Object.values(envelope.receipts).some(receipt=>receipt.letterId===letterId&&
+            receipt.requestId===old.receiptId&&receipt.text===old.submittedText))
+          return {ok:true,skipped:true};
+      }
+      if(envelope.version===1){
+        for(const [id,receipt] of Object.entries(envelope.receipts))if(receipt.letterId===letterId)delete envelope.receipts[id];
+        old.submittedText=null;old.receiptId=null;old.replySubmitState='IDLE';old.draft='';old.pendingSubmission=null;
+        if(envelope.state.page==='H'&&envelope.state.currentLetterId===letterId)
+          envelope.state.page=envelope.state.catState==='TRIP'?'F':'E';
+      }else{
+        const response=envelope.state.responses[old.responseId];
+        if(!response)throw new Error('MISSING_LEGACY_RESPONSE');
+        const receipts=clone(envelope.receipts);
+        redactResponse(envelope.state,receipts,response);
+        envelope.receipts=receipts;
+      }
+      envelope.state.revision+=1;
+      if(!validateSnapshot(envelope.state))throw new Error('INVALID_LEGACY_REDACTION');
+      adapter.setItem(legacyKey,JSON.stringify(envelope));
+      return {ok:true,redacted:true};
+    }catch(error){return failed(error.message||'LEGACY_REDACTION_ERROR');}
+  }
+  return Object.freeze({ key, load, persist, saveDraft, commitReply, recoverSubmission,mutateResponse,recoverMutation,redactImportedLegacy });
 }
