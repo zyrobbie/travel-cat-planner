@@ -1,0 +1,11 @@
+/* The product owns one visual viewport. Browser chrome and the keyboard may
+   resize it; only the current page content scrolls inside the shell. */
+html,body{height:100%;overflow:hidden;overscroll-behavior:none;scroll-behavior:auto}
+#app{position:absolute;top:var(--daily-viewport-top,0px);left:0;width:100%;height:var(--daily-viewport-height,100dvh);overflow:hidden}
+#app>.daily-page{height:100%;min-height:0;max-height:100%;margin:0 auto;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;scroll-behavior:auto;padding-bottom:max(28px,env(safe-area-inset-bottom))}
+#app>.daily-page.has-bottom-nav{overflow:hidden;padding-bottom:0}
+#app>.daily-page:not(.has-bottom-nav)>*,.has-bottom-nav>.page-scroll>*{flex-shrink:0}
+.has-bottom-nav>.page-scroll{display:flex;flex:1 1 auto;flex-direction:column;min-height:0;width:100%;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;scroll-behavior:auto;padding-bottom:16px}
+.has-bottom-nav>.daily-nav{flex:0 0 auto;margin:0;background:var(--bg);padding-bottom:max(12px,env(safe-area-inset-bottom))}
+#app>.daily-page .page-scroll:focus-visible{outline:none}
+@media(min-width:700px){#app>.daily-page{padding-bottom:max(48px,env(safe-area-inset-bottom))}#app>.daily-page.has-bottom-nav{padding-bottom:0}}
