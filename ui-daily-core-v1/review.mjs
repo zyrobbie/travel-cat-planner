@@ -23,14 +23,13 @@ const actions=[
   ['refresh-error','模拟读取失败','模拟读取失败；若已经送出，仍保留成功事实。'],
 ];
 let scenario=SCENARIOS.find(item=>item.id==='E-new-letter-M') || SCENARIOS[0];
-let mode='scenario';
+let mode=new URLSearchParams(location.search).get('mode')==='live'?'live':'scenario';
 let cat='cat-01';
 let width=scenario.width,height=scenario.height;
 let fit=true;
-let connected=false, childPage=null;
+let connected=false, childPage=null,childState=null,queuedQuick=null,pendingQuickTrip=null,quickRequest=0;
 let loadTimer;
-let fixedSimulation=false,frameHeight=360,loadingPreview=false;
-let childDocument=null,childObserver=null,childResizeFrame=0;
+let fixedSimulation=false,frameHeight=360;
 
 function sizeKey(){return Object.keys(sizes).find(key=>sizes[key][0]===width&&sizes[key][1]===height)||'M';}
 function setConnected(value){connected=value;document.querySelectorAll('[data-simulate]').forEach(button=>{button.disabled=!value||mode!=='scenario';});$('deliver-next-demand').disabled=!value||mode!=='live'||!['E','F','G','I','J','K','R'].includes(childPage);for(const id of ['start-trip','end-trip','deliver-travel'])$(id).disabled=!value||mode!=='live'||!['E','F','G','I','J','K','R'].includes(childPage);document.querySelectorAll('[data-live-failure]').forEach(button=>button.disabled=!value||mode!=='live');}
@@ -62,46 +61,14 @@ function scenarioButtons(){
   $('scenario-count').textContent=String(SCENARIOS.length);
   for(const [action,label,note] of actions){const button=document.createElement('button');button.type='button';button.dataset.simulate=action;button.textContent=label;button.title=note;button.disabled=true;$('simulation-actions').append(button);}
 }
-function previewUrl(){const url=new URL('./index.html',location.href);url.searchParams.set('v','batch3-20261003-4');if(mode==='scenario'){url.searchParams.set('scenario',scenario.id);url.searchParams.set('cat',cat);}return url.href;}
+function previewUrl(){const url=new URL('./index.html',location.href);url.searchParams.set('v','mobile-shell-20261003');if(mode==='scenario'){url.searchParams.set('scenario',scenario.id);url.searchParams.set('cat',cat);}return url.href;}
 function fluidMode(){return mobile.matches&&!fixedSimulation;}
-function disconnectChild(){
-  childObserver?.disconnect();childObserver=null;
-  if(childResizeFrame&&childDocument?.defaultView)childDocument.defaultView.cancelAnimationFrame(childResizeFrame);
-  childResizeFrame=0;
-  if(childDocument){delete childDocument.documentElement.dataset.reviewFluid;childDocument.getElementById('review-fluid-style')?.remove();}
-  childDocument=null;
-}
-function observeChild(){
-  if(!fluidMode()||loadingPreview)return;
-  let doc;
-  try{doc=iframe.contentDocument;}catch{return;}
-  if(!doc||doc.URL==='about:blank'||!doc.body)return;
-  if(childDocument===doc){measureChild();return;}
-  disconnectChild();childDocument=doc;
-  doc.documentElement.dataset.reviewFluid='true';
-  const style=doc.createElement('style');style.id='review-fluid-style';
-  style.textContent='html[data-review-fluid] body.adoption-app,html[data-review-fluid] .flow-page,html[data-review-fluid] .daily-page{min-height:0!important}html[data-review-fluid] .home-content{flex:none!important}html[data-review-fluid] .daily-nav{margin-top:16px!important}';
-  doc.head.append(style);
-  const root=doc.querySelector('#flow,#app')||doc.body;
-  childObserver=new doc.defaultView.ResizeObserver(()=>scheduleMeasure());
-  childObserver.observe(root);
-  scheduleMeasure();
-}
-function scheduleMeasure(){
-  if(!childDocument||childResizeFrame)return;
-  childResizeFrame=childDocument.defaultView.requestAnimationFrame(()=>{childResizeFrame=0;measureChild();});
-}
-function measureChild(){
-  if(!fluidMode()||!childDocument||childDocument!==iframe.contentDocument)return;
-  const root=childDocument.querySelector('#flow,#app')||childDocument.body;
-  const height=Math.max(1,Math.ceil(Math.max(root.scrollHeight,root.getBoundingClientRect().bottom+childDocument.defaultView.scrollY)));
-  if(height===frameHeight)return;
-  frameHeight=height;iframe.style.height=`${height}px`;iframe.height=height;mount.style.height=`${height}px`;
-}
+function mobileFrameHeight(){return Math.max(420,Math.min(720,Math.round((visualViewport?.height||innerHeight)*.76)));}
 function updateControls(){
   const live=mode==='live';
   $('mode-scenario').setAttribute('aria-pressed',String(!live));$('mode-live').setAttribute('aria-pressed',String(live));
-  $('mode-note').textContent=live?'连续体验使用当前浏览器保存的预览数据；手动模拟在此模式不可用。':'场景数据相互隔离；手动模拟只作用于当前场景，不改连续体验的本机数据。';
+  $('mode-note').textContent=live?'连续体验使用当前浏览器保存的预览数据；场景模拟不可用，手动投递仍可用。':'场景数据相互隔离；手动模拟只作用于当前场景，不改连续体验的本机数据。';
+  $('quick-live').textContent=live?'正在看连续体验':'打开连续体验';$('quick-live').setAttribute('aria-pressed',String(live));
   setConnected(connected);
   $('cat-select').disabled=live;
   $('cat-note').textContent=live?'连续体验保持本机小猫，不通过审阅工具换猫。':'只替换当前审阅场景的参考猫。';
@@ -123,14 +90,15 @@ function resizePreview(){
   document.querySelector('.size-buttons').hidden=fluid;
   $('fit-toggle').hidden=fluid;
   if(fluid){
-    const available=Math.max(1,stage.clientWidth);
+    const computed=getComputedStyle(stage);
+    const available=Math.max(1,stage.clientWidth-parseFloat(computed.paddingLeft)-parseFloat(computed.paddingRight)-2);
+    frameHeight=mobileFrameHeight();
     iframe.style.width=`${available}px`;iframe.width=available;
     iframe.style.height=`${frameHeight}px`;iframe.height=frameHeight;
     iframe.style.transform='none';mount.style.width=`${available}px`;mount.style.height=`${frameHeight}px`;
-    $('viewport-caption').textContent=`手机内容自适应 · ${available} CSS px 宽 · 长内容随页面自然延展`;
-    observeChild();return;
+    $('viewport-caption').textContent=`手机独立视口 · ${available} × ${frameHeight} CSS px · 信件在框内滚动，审阅工具在框外`;
+    return;
   }
-  disconnectChild();
   const computed=getComputedStyle(stage);
   const available=Math.max(1,stage.clientWidth-parseFloat(computed.paddingLeft)-parseFloat(computed.paddingRight));
   const scale=fit?Math.min(1,available/width):1;
@@ -141,17 +109,17 @@ function resizePreview(){
 }
 function showPreviewError(){
   if(connected)return;
-  clearTimeout(loadTimer);disconnectChild();mount.hidden=true;$('preview-error').hidden=false;
+  clearTimeout(loadTimer);mount.hidden=true;$('preview-error').hidden=false;
   $('connection-status').textContent='预览未能显示 · 可重新载入';
 }
-function waiting(){childPage=null;setConnected(false);$('connection-status').textContent='正在载入产品预览…';$('state-summary').replaceChildren();const pair=document.createElement('div'),term=document.createElement('dt'),value=document.createElement('dd');term.textContent='预览';value.textContent='等待状态';pair.append(term,value);$('state-summary').append(pair);}
+function waiting(){childPage=null;childState=null;setConnected(false);$('connection-status').textContent='正在载入产品预览…';$('state-summary').replaceChildren();const pair=document.createElement('div'),term=document.createElement('dt'),value=document.createElement('dd');term.textContent='预览';value.textContent='等待状态';pair.append(term,value);$('state-summary').append(pair);}
 function loadPreview(){
-  clearTimeout(loadTimer);waiting();updateControls();disconnectChild();frameHeight=360;loadingPreview=true;
+  clearTimeout(loadTimer);waiting();updateControls();frameHeight=mobileFrameHeight();
   mount.hidden=false;$('preview-error').hidden=true;
   $('simulation-feedback').textContent='手动模拟只在预览就绪后启用。';iframe.src=previewUrl();resizePreview();
   loadTimer=setTimeout(()=>{if(!connected)showPreviewError();},7000);
 }
-function setMode(next){if(mode===next)return;mode=next;loadPreview();}
+function setMode(next){if(mode===next)return;mode=next;const url=new URL(location.href);if(next==='live')url.searchParams.set('mode','live');else url.searchParams.delete('mode');history.replaceState(null,'',url);if(next!=='live')queuedQuick=null;loadPreview();}
 function selectScenario(id){const selected=SCENARIOS.find(item=>item.id===id);if(!selected)return;scenario=selected;width=selected.width;height=selected.height;loadPreview();if(matchMedia('(max-width:760px)').matches)$('review-tools').open=false;}
 function describeState(state){
   const names={WELCOME:'待领养',ERROR:'身份读取异常',E:'在家首页',F:'旅行中同一个家',G:'需求卡与回应',H:'发送成功',I:'明信片阅读',J:'来信盒',K:'回应管理',R:'回应记录'};
@@ -163,7 +131,33 @@ function describeState(state){
   if(current)rows.push(['当前文字',`${Number.isFinite(current.draftLength)?current.draftLength:0} 字符`]);
   const fragment=document.createDocumentFragment();for(const [term,value] of rows){const item=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=term;dd.textContent=value;item.append(dt,dd);fragment.append(item);}$('state-summary').replaceChildren(fragment);
 }
+function quickFeedback(message){$('quick-feedback').textContent=message;}
+function quickStateChanged(){
+  const live=mode==='live',needsAdoption=live&&childPage==='WELCOME';
+  $('quick-adopt').hidden=!needsAdoption;
+  $('quick-open-letter').hidden=!live||!childState?.newLetterId;
+  if(needsAdoption){queuedQuick=null;pendingQuickTrip=null;quickFeedback('这台浏览器还没有领养小猫。先领养，再回来手动投递。');return;}
+  if(live&&childPage==='ERROR'){queuedQuick=null;pendingQuickTrip=null;quickFeedback('本机身份与记录暂时不一致。请先在预览中重新读取，原记录会保留。');return;}
+  if(live&&queuedQuick){const action=queuedQuick;queuedQuick=null;runQuick(action);}
+}
+function postLiveAction(action,extra={}){const requestId=`quick-${++quickRequest}`;iframe.contentWindow.postMessage({type:'daily-review-action',action,requestId,...extra},location.origin);return requestId;}
+function runQuick(kind){
+  if(mode!=='live'){queuedQuick=kind;quickFeedback('正在打开连续体验…');setMode('live');return;}
+  if(!connected||!childState){queuedQuick=kind;quickFeedback('正在载入连续体验…');loadPreview();return;}
+  if(childPage==='WELCOME'||childPage==='ERROR'){quickStateChanged();return;}
+  if(childState.newLetterId){quickFeedback('已有一封未读来信。先打开它，原有来信与草稿不会被覆盖。');$('quick-open-letter').hidden=false;return;}
+  $('quick-open-letter').hidden=true;
+  if(kind==='demand'){quickFeedback('正在手动投递一封需求来信…');postLiveAction('deliver-next-demand');return;}
+  const sceneId=$('quick-scene').value;
+  if(childState.catState!=='TRIP'){
+    quickFeedback('正在手动让小猫出发，然后投递普通旅行信…');pendingQuickTrip={sceneId,requestId:postLiveAction('trip')};
+  }else{quickFeedback('正在手动投递普通旅行信…');postLiveAction('deliver-travel',{sceneId,linked:false});}
+}
 scenarioButtons();demandLinks();
+$('quick-live').addEventListener('click',()=>{if(mode==='live'){quickFeedback('正在连续体验；可在此手动投递测试来信。');return;}quickFeedback('正在打开连续体验…');setMode('live');});
+$('quick-demand').addEventListener('click',()=>runQuick('demand'));
+$('quick-travel').addEventListener('click',()=>runQuick('travel'));
+$('quick-open-letter').addEventListener('click',()=>{if(mode!=='live'||!connected||!childState?.newLetterId){quickFeedback('当前没有待打开的未读来信。');return;}quickFeedback('正在打开这封来信…');postLiveAction('open-new-letter');});
 $('mode-scenario').addEventListener('click',()=>setMode('scenario'));
 $('mode-live').addEventListener('click',()=>setMode('live'));
 $('cat-select').addEventListener('change',event=>{if(mode!=='scenario')return;cat=event.target.value;loadPreview();});
@@ -203,16 +197,29 @@ document.querySelectorAll('[data-live-failure]').forEach(button=>button.addEvent
 window.addEventListener('message',event=>{
   if(event.origin!==location.origin||event.source!==iframe.contentWindow)return;
   if(event.data?.type==='demand-delivery-result'){
-    if(mode==='live'){$('demand-feedback').textContent=event.data.message||'操作状态未知。';$('travel-feedback').textContent=event.data.message||'操作状态未知。';}
+    if(mode==='live'){
+      const message=event.data.message||'操作状态未知。';
+      $('demand-feedback').textContent=message;$('travel-feedback').textContent=message;
+      if(pendingQuickTrip&&event.data.requestId===pendingQuickTrip.requestId){
+        const {sceneId}=pendingQuickTrip;pendingQuickTrip=null;
+        if(event.data.status==='delivered'){
+          quickFeedback('小猫已出发，正在投递普通旅行信…');
+          postLiveAction('deliver-travel',{sceneId,linked:false});
+        }else quickFeedback(message);
+      }else{
+        quickFeedback(message);
+        if(event.data.status==='delivered'&&event.data.id)$('quick-open-letter').hidden=false;
+      }
+    }
     return;
   }
   if(event.data?.type!=='daily-state'||!event.data.state||typeof event.data.state!=='object')return;
-  clearTimeout(loadTimer);childPage=event.data.state.page;setConnected(true);mount.hidden=false;$('preview-error').hidden=true;
+  clearTimeout(loadTimer);childState=event.data.state;childPage=childState.page;setConnected(true);mount.hidden=false;$('preview-error').hidden=true;
   $('connection-status').textContent=mode==='scenario'?'场景已就绪 · 隔离数据':'连续体验已就绪 · 本机保存';
-  describeState(event.data.state);
+  describeState(childState);quickStateChanged();
 });
 iframe.addEventListener('load',()=>{
-  loadingPreview=false;resizePreview();
+  resizePreview();
   let path='';try{path=iframe.contentWindow.location.pathname;}catch{}
   if(path.includes('/ui-adoption-flow-v1/')){
     clearTimeout(loadTimer);setConnected(true);$('connection-status').textContent='领养流程已载入 · 本机保存';
@@ -227,4 +234,5 @@ setToolDisclosure();mobile.addEventListener('change',setToolDisclosure);
 let lastStageWidth=0;
 new ResizeObserver(()=>{if(stage.clientWidth!==lastStageWidth){lastStageWidth=stage.clientWidth;resizePreview();}}).observe(stage);
 window.addEventListener('resize',resizePreview);
+visualViewport?.addEventListener('resize',resizePreview);
 loadPreview();

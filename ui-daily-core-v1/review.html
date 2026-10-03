@@ -7,6 +7,7 @@
   <title>有猫来信 · 日常核心体验审阅</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="./review.css?v=seven-demands-20261002">
+  <link rel="stylesheet" href="./review-mobile-shell.css?v=mobile-shell-20261003">
 </head>
 <body>
   <header class="review-heading">
@@ -78,6 +79,14 @@
       <header class="preview-heading">
         <div class="preview-title-row"><h2 id="preview-heading">正在准备预览…</h2><a id="open-preview" href="./index.html?scenario=E-new-letter-M&amp;cat=cat-01" target="_blank" rel="noopener noreferrer">新窗口打开<span aria-hidden="true"> ↗</span></a></div>
         <p id="scenario-note" class="preview-note"></p>
+        <section class="live-quick" aria-label="连续体验手动测试">
+          <div class="live-quick-heading"><strong>连续体验测试</strong><button type="button" id="quick-live">打开连续体验</button></div>
+          <p>这些操作需要你主动点击，只改当前浏览器的预览记录；已有小猫、来信和草稿会保留。</p>
+          <div class="live-quick-actions"><button type="button" id="quick-demand">投递一封需求来信</button><label for="quick-scene">普通旅行信场景</label><select id="quick-scene"><option value="RHINE">莱茵河谷</option><option value="FIREFLY">萤火虫</option><option value="LIGHTHOUSE">灯塔</option></select><button type="button" id="quick-travel">投递普通旅行信</button></div>
+          <p id="quick-feedback" class="quick-feedback" role="status">选择连续体验后，可以在这里手动投递测试来信。</p>
+          <button type="button" id="quick-open-letter" hidden>去看来信</button>
+          <a id="quick-adopt" href="../ui-adoption-flow-v1/index.html?v=compact-fluid-20260928" hidden>先领养一只小猫 ↗</a>
+        </section>
         <div class="viewport-tools">
           <div class="size-buttons" role="group" aria-label="预览视口尺寸">
             <button type="button" data-size="S" aria-pressed="false">S <span>360</span></button>
@@ -98,11 +107,11 @@
       <footer class="preview-state" aria-label="预览当前状态">
         <div class="state-heading"><h3>当前状态</h3><span id="connection-status">等待预览就绪</span></div>
         <dl id="state-summary"><div><dt>预览</dt><dd>正在加载…</dd></div></dl>
-        <p>此区及左侧工具仅供团队审阅，不属于产品页面。手机默认随内容延展；固定视口模拟可单独选择。</p>
+        <p>此区及左侧工具仅供团队审阅，不属于产品页面。预览框有独立视口，信件长文在框内滚动。</p>
       </footer>
     </section>
   </main>
   <noscript><p class="noscript-notice">请启用 JavaScript 后使用审阅工具。也可直接打开 <a href="./index.html">连续体验</a>。</p></noscript>
-  <script type="module" src="./review.mjs?v=batch3-20261003-4"></script>
+  <script type="module" src="./review.mjs?v=mobile-shell-20261003"></script>
 </body>
 </html>
