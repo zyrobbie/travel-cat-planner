@@ -152,7 +152,7 @@ test('a real storage object receives a versioned independent-key snapshot', () =
   const saved = store.persist(editor('持久化的草稿'));
   assert.equal(saved.ok, true); assert.equal(storage.writes, 1);
   assert.equal(storage.data.has(STORAGE_KEY), true);
-  assert.equal(JSON.parse(storage.data.get(STORAGE_KEY)).version, 1);
+  assert.equal(JSON.parse(storage.data.get(STORAGE_KEY)).version, 2);
   assert.equal(currentLetter(store.load().state).draft, '持久化的草稿');
 });
 

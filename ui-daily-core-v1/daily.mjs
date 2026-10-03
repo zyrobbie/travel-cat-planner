@@ -1,9 +1,10 @@
 import {needCard,replyInput,updateReplyInputState,focusReply,icon,escapeHtml as e,homeNavigation,newLetterEntry} from '../ui-components-v1/daily-components.mjs?v=g2r-reply-fix-01';
 import {catImageSources} from '../ui-adoption-flow-v1/runtime-images.mjs';
-import {initialState,transition,currentLetter,getHomeEntry,inboxLetters,LETTER_FIXTURES,canSubmit} from './daily-state.mjs';
-import {createDailyStore,STORAGE_KEY} from './storage.mjs';
+import {initialState,transition,currentLetter,getHomeEntry,inboxLetters,LETTER_FIXTURES,canSubmit} from './daily-state.mjs?v=batch3-20261003-3';
+import {createDailyStore,STORAGE_KEY,LIVE_STORAGE_KEY,LEGACY_IMPORT_MARKER_KEY} from './storage.mjs?v=batch3-20261003-3';
 import {buildScenario,buildDemandReview,SCENARIOS} from './scenarios.mjs?v=seven-demands-20261002';
 import {demandById,demandImageStem,demandLetter,nextDemandForState} from './demand-catalog.mjs';
+import {makeTravelDelivery,storyById,sourceEntries,currentRevision,travelScenes} from './response-history.mjs?v=batch3-20261003-3';
 import {readPreviewIdentity} from '../ui-adoption-flow-v1/preview-identity.mjs';
 const params=new URLSearchParams(location.search), app=document.querySelector('#app');
 const scenarioId=params.get('scenario'),reviewDemandId=params.get('reviewDemand'),requestedCat=params.get('cat');
@@ -15,7 +16,6 @@ const invalidReview=reviewing&&(params.has('scenario')&&params.has('reviewDemand
 const fixture=invalidReview?null:scenarioId?buildScenario(scenarioId,{catId:requestedCat||'cat-01'})
   :reviewDemandId?buildDemandReview(reviewDemandId,{catId:requestedCat||'cat-01'}):null;
 const identityResult=fixture||invalidReview?{ok:true,identity:null}:readPreviewIdentity();
-const LIVE_STORAGE_KEY='cat-letters-e3-g2r:daily-v1';
 if(invalidReview){
   document.documentElement.dataset.page='INVALID_SCENARIO';
   app.innerHTML='<section class="daily-page entry-page"><span class="wordmark">有猫来信 · 审阅</span><div class="entry-message"><h1>找不到这个审阅场景</h1><p>场景参数不正确，本机连续体验记录没有被打开或修改。</p><a class="primary" href="./review.html">返回场景审阅</a></div></section>';
@@ -33,10 +33,28 @@ let loaded=fixture?null:store.load();
 if(!fixture&&loaded.fresh){
   // The former daily preview remains untouched. Import it only when its
   // independent sample identity exactly matches the confirmed adopted cat.
-  const legacy=createDailyStore({key:STORAGE_KEY}).load();
-  if(legacy.recovered&&legacy.ok&&legacy.state.appearanceId===liveIdentity.catId&&legacy.state.catName===liveIdentity.name){
-    const migrated=store.persist(legacy.state);
-    if(migrated.ok)loaded=store.load();
+  let marker=null;
+  try{marker=localStorage.getItem(LEGACY_IMPORT_MARKER_KEY);}catch{marker='unavailable';}
+  if(marker){
+    let reset=false;try{reset=JSON.parse(marker)?.reset===true;}catch{}
+    if(reset){
+      const created=store.persist(loaded.state);
+      if(created.ok){
+        try{localStorage.setItem(LEGACY_IMPORT_MARKER_KEY,JSON.stringify({...JSON.parse(marker),reset:false}));loaded=store.load();}
+        catch{loaded={ok:false,state:transition(created.state,{type:'LOAD_ERROR'})};}
+      }else loaded={ok:false,state:transition(loaded.state,{type:'LOAD_ERROR'})};
+    }else loaded={ok:false,state:transition(loaded.state,{type:'LOAD_ERROR'})};
+  }
+  else{
+    const legacy=createDailyStore({key:STORAGE_KEY}).load();
+    if(legacy.recovered&&legacy.ok&&legacy.state.appearanceId===liveIdentity.catId&&legacy.state.catName===liveIdentity.name){
+      try{
+        localStorage.setItem(LEGACY_IMPORT_MARKER_KEY,JSON.stringify({sourceKey:STORAGE_KEY,catId:liveIdentity.catId,catName:liveIdentity.name}));
+        const migrated=store.persist(legacy.state);
+        if(migrated.ok)loaded=store.load();
+        else{localStorage.removeItem(LEGACY_IMPORT_MARKER_KEY);loaded={ok:false,state:transition(loaded.state,{type:'LOAD_ERROR'})};}
+      }catch{loaded={ok:false,state:transition(loaded.state,{type:'LOAD_ERROR'})};}
+    }
   }
 }
 let state=fixture?.state||loaded.state, saveTimer,sendTimer,composing=false,externalChange=false,saveFailure=false;
@@ -46,6 +64,8 @@ if(!fixture&&(state.appearanceId!==liveIdentity.catId||state.catName!==liveIdent
 }else{
 const restored=currentLetter(state)?.draftSaveState==='SAVED'&&!!currentLetter(state)?.draft;
 if(!fixture&&restored)ui.draftRestored=true;
+ui.inboxFilter??='all';ui.unreadOnly??=false;ui.firstRead??=false;ui.sourceOpen??=false;
+let inboxScroll=0,mutationSerial=0,correctionTimer=null;
 if(params.get('textScale')==='200')document.documentElement.dataset.textScale='200';
 const arrow=()=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg>';
 const bodyById={'need-01':'窗边的小光点，刚才还在我的爪子旁边。\n我一眨眼，它就跑远了。\n明天它还会来吗？','need-02':'窗外又下起雨了。\n我把爪子缩进软软的毯子里，听见雨滴轻轻敲着玻璃。\n你那边，也在下雨吗？'};
@@ -63,6 +83,12 @@ function dateText(date){
   if(typeof date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(date))return '';
   const parsed=new Date(`${date}T12:00:00`);
   return Number.isNaN(parsed.valueOf())?'':new Intl.DateTimeFormat('zh-CN',{year:'numeric',month:'numeric',day:'numeric'}).format(parsed);
+}
+function versionTimeText(at){
+  if(typeof at!=='string'||!at)return '';
+  const value=new Date(at);
+  return Number.isNaN(value.valueOf())?'':new Intl.DateTimeFormat('zh-CN',
+    {year:'numeric',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).format(value);
 }
 function isToday(date){
   const now=new Date();const today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
@@ -100,29 +126,53 @@ function detail(){
   const mustShow=state.replySubmitState==='SUBMITTING'||state.replySubmitState==='ERROR'||state.submissionRecoveryRequired||state.draftSaveState==='ERROR'||state.loadError||saveFailure||externalChange||state.checkState!=='IDLE';
   if(mustShow)ui.replyExpanded=true;
   const expanded=ui.replyExpanded||mustShow;
-  const response=l.replySubmitState==='SUCCESS'?`<section class="paper sent-reply"><h2>你送出的回应</h2><p>${e(l.submittedText)}</p></section>`:expanded?`<details class="tip-box"${ui.tipsOpen?' open':''}><summary>看看小提示</summary><p>${e(tip).replace(/\n/g,'<br>')}</p></details><div data-slot="recovery">${recoveryNotice()}</div>${replyInput(replyOptions())}`:'';
+  const record=state.responses[l.responseId];
+  const response=l.replySubmitState==='SUCCESS'?`<section class="paper sent-reply"><div class="response-heading"><h2>你送出的回应</h2><span class="meta">${record?.status==='DELETED'?'已删除':record?.currentRevision>1?'已更正':''}</span></div>${record?.status==='DELETED'?'<p>这条回应已删除。</p>':`<p>${e(currentRevision(record)?.text??l.submittedText)}</p><div class="management-actions"><button type="button" class="text-button" data-action="open-manage">查看与管理回应</button></div>`}</section>`:expanded?`<details class="tip-box"${ui.tipsOpen?' open':''}><summary>看看小提示</summary><p>${e(tip).replace(/\n/g,'<br>')}</p></details><div data-slot="recovery">${recoveryNotice()}</div>${replyInput(replyOptions())}`:'';
   return `<section class="daily-page detail-page"><header class="detail-top">${backButton()}</header><h1 class="detail-title">一封来信</h1><p class="letter-date">收到：${e(dateText(l.date))}</p><div data-slot="new-mail">${newMailNotice()}</div>${eventScene(l)}${needCard({mode:'e3',catId:state.appearanceId,catName:state.catName,time:dateText(l.date),title:l.title,body,avatarUrl:`./assets/web/avatar-${state.appearanceId}-160.webp`,replyTargetId:'daily-reply',replyActionType:'expand-reply',skipAction:true,replyAction:l.replySubmitState!=='SUCCESS'})}${response}<div data-slot="page-storage-error"></div></section>`;
 }
 function postcardScene(l){
-  const approvedDemo=l.data?.storyId==='UI-DEMO-RHINE-20260928'&&l.data?.sceneId==='RHINE';
-  const picture=approvedDemo?(ui.imageError?'<div class="scene-fallback"><p>旅行画面暂时没能加载。</p><button class="secondary" data-action="retry-image">再试一次</button></div>':`<div class="scene-loading" role="status">正在展开旅行画面…</div>${sceneImage(`postcard-rhine-${state.appearanceId}`,`${state.catName}在山上望着河流的旅行画面`)}`):'<div class="scene-fallback"><p>这封旅行信的画面暂不可用，文字仍可阅读。</p></div>';
+  const scene=l.data?.sceneId;
+  const approved=travelScenes.includes(scene)&&!!storyById(l.data?.storyId)||l.data?.storyId==='UI-DEMO-RHINE-20260928'&&scene==='RHINE';
+  const picture=approved?(ui.imageError?'<div class="scene-fallback"><p>旅行画面暂时没能加载，文字仍可阅读。</p><button class="secondary" data-action="retry-image">再试一次</button></div>':`<div class="scene-loading" role="status">正在展开旅行画面…</div>${sceneImage(`postcard-${scene.toLowerCase()}-${state.appearanceId}`,`${state.catName}的${e(l.data?.place||'旅行')}画面`)}`):'<div class="scene-fallback"><p>这封旅行信的画面暂不可用，文字仍可阅读。</p></div>';
   return `<div class="scene postcard-scene">${picture}</div>`;
+}
+function sourceBlock(letter){
+  const items=sourceEntries(state,letter,{firstRead:ui.firstRead});
+  if(!items.length)return '';
+  return `<details class="source-fold"${ui.sourceOpen?' open':''}><summary>看看以前说过的话</summary>${items.map(item=>`<section class="paper source-note"><span class="meta">${e(state.letters[item.letterId]?.title||'一封来信')} · 来源版本 ${item.revision}</span>${item.status==='deleted'?'<p class="source-status">这条回应已删除。</p>':`${versionTimeText(item.at)?`<p class="version-note">版本时间：${e(versionTimeText(item.at))}</p>`:''}${item.status==='corrected'?'<p class="source-status">这条回应后来已更正。以下是寄出时使用的旧版本。</p>':''}<blockquote>${e(item.text)}</blockquote><button type="button" class="text-button" data-action="manage-source" data-letter-id="${e(item.letterId)}">管理这条回应</button>`}</section>`).join('')}</details>`;
 }
 function postcard(){
   const l=currentLetter(state),body=l?.data?.body;
   if(!body)return `<section class="daily-page detail-page"><header class="detail-top">${backButton()}</header><h1 class="detail-title">旅行来信</h1><div class="error-block"><h2>这封信的正文暂时无法读取</h2><p>信件记录仍在，可以返回后重试。</p></div></section>`;
-  return `<section class="daily-page postcard-page"><header class="detail-top">${backButton()}</header><h1 class="detail-title">旅行来信</h1><p class="letter-date">收到：${e(dateText(l.date))}</p>${postcardScene(l)}<article class="paper postcard-letter">${l.data?.place?`<p class="postcard-place">${e(l.data.place)}</p>`:''}<h2>${e(l.title)}</h2><p>${e(body)}</p></article><button type="button" class="secondary keep-letter" data-action="return-letter">收好这封信</button><div data-slot="page-storage-error"></div></section>`;
+  return `<section class="daily-page postcard-page"><header class="detail-top">${backButton()}</header><h1 class="detail-title">旅行来信</h1><p class="letter-date">收到：${e(dateText(l.date))}</p>${postcardScene(l)}<article class="paper postcard-letter">${l.data?.place?`<p class="postcard-place">${e(l.data.place)}</p>`:''}<h2>${e(l.title)}</h2><div class="story-paragraphs">${body.split('\n\n').map(part=>`<p>${e(part).replace(/\n/g,'<br>')}</p>`).join('')}</div></article>${sourceBlock(l)}<div class="reading-footer"><button type="button" class="quiet-link" data-action="home">回到家</button><button type="button" class="secondary" data-action="return-letter">收好这封信</button></div><div data-slot="page-storage-error"></div></section>`;
 }
 function inbox(){
-  const letters=inboxLetters(state);
-  return `<section class="daily-page inbox-page"><header class="page-top"><span class="wordmark">有猫来信</span></header><div class="home-content"><h1 class="detail-title">来信盒</h1>${letters.length?`<ul class="inbox-list">${letters.map(l=>`<li><button class="paper inbox-item" type="button" data-action="open-inbox-letter" data-letter-id="${e(l.id)}"><span class="inbox-kind">${l.type==='POSTCARD'?'旅行来信':'小猫来信'}${l.readState==='UNREAD'?' · 未读':''}</span><strong>${e(l.title)}</strong><span class="meta">${e(dateText(l.date))}</span>${l.type==='NEED_CARD'&&l.draft&&l.replySubmitState!=='SUCCESS'?'<span class="meta">有一份未写完的回应</span>':''}</button></li>`).join('')}</ul>`:'<p class="empty-letter">来信盒里还没有信。</p>'}<div data-slot="page-storage-error"></div></div>${homeNavigation({active:'inbox',unread:!!state.newLetterId})}</section>`;
+  const all=inboxLetters(state),letters=all.filter(l=>(ui.inboxFilter==='all'||ui.inboxFilter==='need'&&l.type==='NEED_CARD'||ui.inboxFilter==='travel'&&l.type==='POSTCARD')&&(!ui.unreadOnly||l.readState==='UNREAD'));
+  const filters=[['all','全部'],['need','小猫来信'],['travel','旅行来信']];
+  return `<section class="daily-page inbox-page"><header class="page-top"><span class="wordmark">有猫来信</span></header><div class="home-content"><div class="inbox-heading"><h1>来信盒</h1><button type="button" class="quiet-link" data-action="open-history">管理我的回应</button></div><p class="inbox-subtitle">它写过的小事，都收在这里。</p><div class="filters" role="group" aria-label="筛选来信">${filters.map(([id,label])=>`<button type="button" class="filter" data-action="set-filter" data-filter="${id}" aria-pressed="${ui.inboxFilter===id}">${label}</button>`).join('')}<label class="unread-toggle"><input type="checkbox" id="unread-only"${ui.unreadOnly?' checked':''}>只看未读</label></div>${letters.length?`<ul class="inbox-list">${letters.map(l=>`<li><button class="paper inbox-item" type="button" data-action="open-inbox-letter" data-letter-id="${e(l.id)}"><span class="row"><span class="kind-label">${l.type==='POSTCARD'?'旅行来信':'小猫来信'}</span><span class="${l.readState==='UNREAD'?'unread-label':'mail-date'}">${l.readState==='UNREAD'?'<i class="daily-unread-dot"></i>未读':'已读'}</span></span><strong>${e(l.title)}</strong><span class="mail-date">收到：${e(dateText(l.date))}</span>${l.type==='NEED_CARD'&&l.draft&&l.replySubmitState!=='SUCCESS'?'<span class="meta">有一份未写完的回应</span>':''}</button></li>`).join('')}</ul>`:`<section class="empty-state"><h2>${all.length?'没有符合筛选的来信':'来信盒里还没有信。'}</h2><p>${all.length?'换一个筛选，以前的信都还在。':'小猫写给你的信，会收在这里。'}</p>${all.length?'<button class="text-button" data-action="clear-filter">查看全部</button>':''}</section>`}<div data-slot="page-storage-error"></div></div>${homeNavigation({active:'inbox',unread:!!state.newLetterId})}</section>`;
+}
+function manage(){
+  const l=currentLetter(state),response=state.responses[l?.responseId],draft=state.correctionDrafts[l?.id];
+  if(!l||!response)return `<section class="daily-page detail-page"><div class="error-block">这条回应暂时无法读取。</div><button class="secondary" data-action="return-manage">返回</button></section>`;
+  const demand=demandById(l.id),body=l.data?.body||demand?.body||bodyById[l.id]||'';
+  const stale=draft&&draft.baseRevision!==response.currentRevision;
+  const revision=response.status==='ACTIVE'?currentRevision(response):null;
+  const current=revision?.text??null;
+  const currentTime=versionTimeText(revision?.at);
+  const editor=ui.editing&&response.status==='ACTIVE'&&draft?`<form class="paper composer editor" id="correction-form"><label for="correction">更正这条回应</label><p class="edit-description">更正会保留新版本。已经寄来的旅行故事，以及它当时引用的文字，都不会被新文字替换。</p><textarea id="correction" aria-describedby="correction-help"${ui.pendingMutation?' readonly':''}>${e(draft.text)}</textarea><p id="correction-help" class="edit-count">${[...new Intl.Segmenter('zh',{granularity:'grapheme'}).segment(draft.text)].length} / 2000 字</p>${stale?'<p class="mutation-notice">回应版本已变化。这份旧草稿仍在，请重新读取并核对后操作。</p>':''}${ui.correctionError?`<p class="mutation-notice" role="status">${e(ui.correctionError)}</p>`:''}<div class="card-actions"><button type="button" class="text-button" data-action="cancel-edit">取消</button><button type="submit" class="primary"${stale||ui.pendingMutation?' disabled':''}>保存更正</button></div></form>`:'';
+  return `<section class="daily-page detail-page manage-page"><header class="detail-top"><button class="quiet-link back-button" data-action="return-manage">${arrow()}${state.manageReturnPage==='I'?'返回旅行信':state.manageReturnPage==='R'?'返回回应列表':'返回来信'}</button></header><h1 class="detail-title">以前的来信</h1><p class="letter-date">收到：${e(dateText(l.date))}</p>${eventScene(l)}${body?needCard({mode:'e3',catId:state.appearanceId,catName:state.catName,time:dateText(l.date),title:l.title,body,avatarUrl:`./assets/web/avatar-${state.appearanceId}-160.webp`,replyAction:false}):`<section class="error-block">原信正文暂时无法读取，回应记录仍在。</section>`}<section class="paper sent-reply"><div class="response-heading"><h2>你送出的回应</h2><span class="meta">${response.status==='DELETED'?'已删除':`版本 ${response.currentRevision}${response.currentRevision>1?' · 已更正':''}`}</span></div>${response.status==='DELETED'?'<p>这条回应已删除。</p>':`${currentTime?`<p class="version-note">${response.currentRevision>1?'更正':'送出'}：${e(currentTime)}</p>`:''}<p class="body-copy">${e(current)}</p><div class="management-actions"><button type="button" class="text-button" data-action="edit-correction"${ui.pendingMutation?' disabled':''}>更正这条回应</button><button type="button" class="text-button quiet-danger" data-action="ask-delete"${ui.pendingMutation?' disabled':''}>删除这条回应</button></div>`}</section>${ui.mutationNotice?`<p class="mutation-notice" role="status">${e(ui.mutationNotice)}</p>`:''}${editor}${ui.correctionError&&!ui.editing?`<p class="mutation-notice" role="status">${e(ui.correctionError)}</p>`:''}${ui.pendingMutation?`<aside class="mutation-notice" role="status">操作结果还不确定。请先重新读取，避免重复提交。<button type="button" class="secondary" data-action="recover-mutation">重新读取结果</button></aside>`:''}<div class="reading-footer"><button type="button" class="quiet-link" data-action="home">回到家</button></div><div data-slot="page-storage-error"></div></section>`;
+}
+function historyList(){
+  const letters=Object.values(state.letters).filter(letter=>letter.type==='NEED_CARD'&&letter.replySubmitState==='SUCCESS')
+    .sort((a,b)=>b.date.localeCompare(a.date)||a.id.localeCompare(b.id));
+  return `<section class="daily-page detail-page history-page"><header class="detail-top"><button type="button" class="quiet-link back-button" data-action="return-history">${arrow()}返回来信盒</button></header><h1 class="detail-title history-title">管理我的回应</h1>${letters.length?`<ul class="inbox-list">${letters.map(letter=>`<li><button type="button" class="paper inbox-item" data-action="open-history-letter" data-letter-id="${e(letter.id)}"><span class="kind-label">送给${e(state.catName)}的回应${state.responses[letter.responseId]?.status==='DELETED'?' · 已删除':''}</span><strong>${e(letter.title)}</strong><span class="mail-date">收到：${e(dateText(letter.date))}</span></button></li>`).join('')}</ul>`:'<section class="empty-state"><h2>还没有送出的回应</h2><p>以后可以从这里回看。</p></section>'}${homeNavigation({active:'inbox',unread:!!state.newLetterId})}</section>`;
 }
 function recoveryNotice(){if(state.loadError)return '<aside class="inline-notice page-banner" role="status"><strong>暂时没能读取本机记录。</strong><p>当前文字仍在这里，可以重新读取后再送出。</p><button class="secondary" data-action="retry-load">重新读取</button></aside>';return state.submissionRecoveryRequired?'<aside class="inline-notice page-banner" role="status"><strong>正在确认刚才的发送结果。</strong><p>文字仍在这里，先重新读取结果。</p><button class="secondary" data-action="recover">重新读取</button></aside>':'';}
 function success(){return `<section class="daily-page success-page"><header class="page-top"><span class="wordmark">有猫来信</span></header><div class="success-content"><div class="success-panel">${icon('check')}<h1 class="story-title">送出去啦。</h1></div>${state.refreshError?'<aside class="inline-notice"><strong>回应已经送出。</strong><p>暂时没能读取最新状态，可以重新读取，也可以先回到小猫身边。</p><button class="secondary" data-action="retry-refresh">重新读取</button></aside>':''}${ui.reading?'<p class="local-notice" role="status">回应已经送出，正在读取最新状态…</p>':''}<button class="primary" data-action="home">回到家</button></div></section>`;}
 function keyboard(){return '<aside class="keyboard-study" aria-label="键盘布局示意"><p>键盘展开 · 布局示意</p><div class="key-row">'+['Q','W','E','R','T','Y','U','I','O','P'].map(x=>`<span class="key">${x}</span>`).join('')+'</div><div class="key-row">'+['A','S','D','F','G','H','J','K','L'].map(x=>`<span class="key">${x}</span>`).join('')+'</div><div class="key-row">'+['⇧','Z','X','C','V','B','N','M','⌫'].map(x=>`<span class="key">${x}</span>`).join('')+'</div><div class="key-row"><span class="key">123</span><span class="key">◉</span><span class="key key-wide">空格</span><span class="key">换行</span></div></aside>';}
 function replaceScene(){
  const old=app.querySelector('.scene');if(!old)return;
- const markup=['E','F'].includes(state.page)?homeArtwork():state.page==='G'?eventScene(currentLetter(state)):state.page==='I'?postcardScene(currentLetter(state)):null;
+ const markup=['E','F'].includes(state.page)?homeArtwork():['G','K'].includes(state.page)?eventScene(currentLetter(state)):state.page==='I'?postcardScene(currentLetter(state)):null;
  if(!markup)return;
  const template=document.createElement('template');template.innerHTML=markup;
  const next=template.content.firstElementChild;old.replaceWith(next);watchSceneImages(next);notify();
@@ -139,10 +189,13 @@ function watchAvatar(){const img=app.querySelector('img[data-slot="need-avatar"]
  const loaded=typeof img.decode==='function'?img.decode():new Promise((resolve,reject)=>{if(img.complete)return img.naturalWidth?resolve():reject();img.addEventListener('load',resolve,{once:true});img.addEventListener('error',reject,{once:true});});
  loaded.then(()=>clearTimeout(timer),()=>{clearTimeout(timer);fail();});
 }
-function render(){document.documentElement.dataset.page=state.page;document.body.classList.toggle('keyboard-layout',!!ui.keyboard&&state.page==='G');app.innerHTML=(['E','F'].includes(state.page)?home():state.page==='G'?detail():state.page==='I'?postcard():state.page==='J'?inbox():success())+(ui.keyboard&&state.page==='G'?keyboard():'');
+function render(){if(state.page!=='K')ui.mutationNotice='';document.documentElement.dataset.page=state.page;document.body.classList.toggle('keyboard-layout',!!ui.keyboard&&state.page==='G');app.innerHTML=(['E','F'].includes(state.page)?home():state.page==='G'?detail():state.page==='I'?postcard():state.page==='J'?inbox():state.page==='K'?manage():state.page==='R'?historyList():success())+(ui.keyboard&&state.page==='G'?keyboard():'');
+ if(ui.pendingMutation&&state.page!=='K')app.querySelector('.daily-page')?.insertAdjacentHTML('beforeend','<aside class="inline-notice pending-global" role="status">一项管理操作的结果尚未确认。<button class="secondary" data-action="recover-mutation">重新读取结果</button></aside>');
  if(ui.reading){const retry=app.querySelector('[data-action="retry-refresh"]');if(retry)retry.disabled=true;} watchSceneImages();watchAvatar();
  app.querySelectorAll('[data-action="home"],[data-action="skip"]').forEach(b=>b.disabled=state.replySubmitState==='SUBMITTING');
- const ta=app.querySelector('textarea');if(ta){ta.addEventListener('input',onInput);ta.addEventListener('compositionstart',()=>{composing=true;clearTimeout(saveTimer);patch();});ta.addEventListener('compositionend',()=>{composing=false;onInput();});growInput(ta);}
+ const ta=app.querySelector('textarea');if(ta&&ta.id!=='correction'){ta.addEventListener('input',onInput);ta.addEventListener('compositionstart',()=>{composing=true;clearTimeout(saveTimer);patch();});ta.addEventListener('compositionend',()=>{composing=false;onInput();});growInput(ta);}
+ const correction=app.querySelector('#correction');if(correction){correction.addEventListener('input',onCorrectionInput);growInput(correction);}
+ const fold=app.querySelector('.source-fold');if(fold)fold.addEventListener('toggle',()=>{ui.sourceOpen=fold.open;});
  if(ui.focus&&ta){focusReply(app,'daily-reply');ta.setSelectionRange(ta.value.length,ta.value.length);ui.focus=false;}
  if(ui.keyboard&&ta)requestAnimationFrame(()=>app.querySelector('.composer').scrollIntoView({block:'start',behavior:'instant'}));
  patch();notify();}
@@ -160,6 +213,67 @@ function apply(event,{paint=true,save=false}={}){
  if(paint)render();else patch();return true;
 }
 function onInput(){const ta=app.querySelector('textarea');if(!ta)return;ui.draftRestored=false;state=transition(state,{type:'EDIT',value:ta.value});growInput(ta);patch();clearTimeout(saveTimer);if(!composing&&!externalChange)saveTimer=setTimeout(()=>saveDraft(),550);}
+function onCorrectionInput(event){
+  if(state.page!=='K'||ui.pendingMutation)return;
+  state=transition(state,{type:'EDIT_CORRECTION',value:event.target.value});
+  const count=[...new Intl.Segmenter('zh',{granularity:'grapheme'}).segment(event.target.value)].length;
+  app.querySelector('#correction-help').textContent=`${count} / 2000 字`;
+  app.querySelector('#correction-form [type="submit"]').disabled=!event.target.value.trim()||count>2000||
+    state.correctionDrafts[state.currentLetterId]?.baseRevision!==state.responses[currentLetter(state)?.responseId]?.currentRevision;
+  clearTimeout(correctionTimer);correctionTimer=setTimeout(saveCorrectionDraft,550);
+}
+function saveCorrectionDraft(){
+  clearTimeout(correctionTimer);
+  if(state.page!=='K'||externalChange)return false;
+  const input=app.querySelector('#correction');
+  if(input)state=transition(state,{type:'EDIT_CORRECTION',value:input.value});
+  const result=store.persist(state);
+  if(result.ok){state=result.state;ui.correctionError='';notify();return true;}
+  ui.correctionError='本机保存失败，当前文字还在。请保留本页重试。';
+  if(result.stale||result.conflict)externalChange=true;
+  patch();return false;
+}
+function confirmDeleteDialog(){
+  const letter=currentLetter(state),response=state.responses[letter?.responseId];
+  if(!letter||!response||response.status!=='ACTIVE'||ui.pendingMutation)return;
+  const dialog=document.createElement('dialog');dialog.className='confirm-dialog';dialog.setAttribute('aria-labelledby','delete-heading');
+  dialog.innerHTML=`<h2 id="delete-heading">删除这条回应？</h2><p class="confirm-object">「${e(letter.title)}」里你送出的回应 · 版本 ${response.currentRevision}</p><p>删除后，它不会再被用于未来的旅行来信。\n已经寄到你这里的旧明信片不会被偷偷改掉。</p><p>保存的原文和旧版本也会清除。所有来源中的回应原文也将不再显示。删除无法撤销。</p><div class="card-actions"><button type="button" class="secondary" data-action="cancel-delete">取消</button><button type="button" class="primary" data-action="confirm-delete">删除</button></div>`;
+  app.append(dialog);dialog.showModal();dialog.querySelector('[data-action="cancel-delete"]').focus();
+}
+function runMutation(type){
+  if(ui.pendingMutation||externalChange||state.page!=='K')return;
+  const letter=currentLetter(state),response=state.responses[letter?.responseId],draft=state.correctionDrafts[letter?.id];
+  if(!letter||!response||response.status!=='ACTIVE'||type==='CORRECT'&&!draft)return;
+  if(type==='CORRECT'&&!saveCorrectionDraft())return;
+  if(type==='CORRECT'&&draft.baseRevision!==response.currentRevision){ui.correctionError='回应版本已变化，请重新读取并核对后操作。';render();return;}
+  const ticket={type,responseId:response.id,letterId:letter.id,expectedRevision:type==='CORRECT'?draft.baseRevision:response.currentRevision,
+    key:`mutation-${globalThis.crypto?.randomUUID?.()||`${Date.now()}-${++mutationSerial}`}`,
+    text:type==='CORRECT'?draft.text:null,at:new Date().toISOString()};
+  if(type==='DELETE'){
+    const cleaned=store.redactImportedLegacy({letterId:letter.id,catId:state.appearanceId,catName:state.catName});
+    if(!cleaned.ok){ui.correctionError='旧预览副本暂时没能清除。回应仍保留，请稍后重试。';render();return;}
+  }
+  const result=store.mutateResponse(ticket);
+  if(result.ok){state=result.state;ui.pendingMutation=null;ui.correctionError='';ui.editing=false;
+    ui.mutationNotice=type==='DELETE'?'回应已删除，已寄旅行信仍保留。':'更正已保存。';render();return;}
+  if(result.unknown){ui.pendingMutation=ticket;ui.correctionError='操作结果还不确定，请先重新读取。';render();return;}
+  if(result.stale){externalChange=true;ui.correctionError='回应已在另一处变化，请重新读取后核对。';render();return;}
+  ui.correctionError='这次没能保存，当前文字仍在。请重试。';render();
+}
+function recoverMutation(){
+  const ticket=ui.pendingMutation;if(!ticket)return;
+  const result=store.recoverMutation(ticket);
+  if(!result.ok){ui.correctionError='暂时无法确认结果。请保留本页，稍后重新读取。';render();return;}
+  state=result.state;ui.pendingMutation=null;ui.correctionError='';externalChange=false;
+  ui.mutationNotice=result.committed?(ticket.type==='DELETE'?'已确认：回应已删除。':'已确认：更正已保存。'):
+    '已确认：上次操作未写入；草稿和原回应仍保留。';
+  const opened=transition(state,{type:'OPEN_NEED',letterId:ticket.letterId,at:new Date().toISOString()});
+  const managed=transition(opened,{type:'OPEN_MANAGE'});
+  const saved=store.persist(managed);
+  if(saved.ok)state=saved.state;
+  ui.editing=!result.committed&&ticket.type==='CORRECT'&&state.responses[ticket.responseId]?.status==='ACTIVE';
+  render();
+}
 function saveDraft(){clearTimeout(saveTimer);if(externalChange||composing||state.replySubmitState==='SUBMITTING'||state.replySubmitState==='SUCCESS')return false;const l=currentLetter(state);if(!l||l.draftSaveState==='SAVED'&&l.savedRevision===l.draftRevision)return true;state=transition(state,{type:'BEGIN_SAVE'});patch();const r=store.saveDraft(state);if(r.event)state=transition(state,r.event);if(r.stale){externalChange=true;const pending=state.pendingSave;if(pending)state=transition(state,{type:'SAVE_ERROR',...pending});}patch();return r.ok;}
 function goHome(eventType='BACK_HOME'){
  if(state.replySubmitState==='SUBMITTING')return;
@@ -169,24 +283,40 @@ function goHome(eventType='BACK_HOME'){
 }
 function openLetter(letter,{resume=false}={}){
  if(!letter||externalChange)return;
- const next=transition(state,{type:letter.type==='POSTCARD'?'OPEN_POSTCARD':'OPEN_NEED',letterId:letter.id});
+ const firstRead=letter.type==='POSTCARD'&&letter.readState==='UNREAD';
+ const next=transition(state,{type:letter.type==='POSTCARD'?'OPEN_POSTCARD':'OPEN_NEED',letterId:letter.id,at:new Date().toISOString()});
  if(next.page===state.page&&next.currentLetterId===state.currentLetterId){if(resume){ui.replyExpanded=true;render();}return;}
  const result=store.persist(next);
  if(!result.ok){saveFailure=true;if(result.stale||result.conflict)externalChange=true;patch();return;}
  state=result.state;saveFailure=false;ui.imageError=false;ui.catImageError=false;
+ ui.firstRead=firstRead;ui.sourceOpen=false;ui.mutationNotice='';
  ui.draftRestored=letter.type==='NEED_CARD'&&!!letter.draft;
  ui.replyExpanded=resume&&letter.type==='NEED_CARD';
  ui.focus=false;render();window.scrollTo(0,0);
 }
 async function submit(){if(externalChange||composing||!canSubmit(state))return;clearTimeout(saveTimer);state=transition(state,{type:'BEGIN_SUBMIT'});const ticket=state.pendingSubmission?.requestId;if(!ticket)return;if(!persist()){if(!externalChange)state=transition(state,{type:'SEND_ERROR',letterId:state.currentLetterId,requestId:ticket});patch();return;}patch();app.querySelectorAll('[data-action="home"],[data-action="skip"]').forEach(b=>b.disabled=true);sendTimer=setTimeout(()=>{if(externalChange||state.submissionRecoveryRequired||state.pendingSubmission?.requestId!==ticket)return;const r=store.commitReply(state);if(r.event)state=transition(state,r.event);render();if(state.page==='H')window.scrollTo(0,0);},850);}
-app.addEventListener('submit',event=>{event.preventDefault();submit();});
+app.addEventListener('submit',event=>{event.preventDefault();if(event.target.id==='correction-form')runMutation('CORRECT');else submit();});
 app.addEventListener('click',event=>{const b=event.target.closest('[data-action]');if(!b||b.disabled)return;const a=b.dataset.action;
  if(a==='expand-reply'){if(!ui.replyExpanded){ui.replyExpanded=true;render();}focusReply(app,b.dataset.replyTarget);}
  else if(a==='focus-reply')focusReply(app,b.dataset.replyTarget);else if(a==='home'||a==='skip'||a==='new-mail-home')goHome();
- else if(a==='return-letter')goHome('RETURN_FROM_LETTER');
- else if(a==='inbox'||a==='history'){if(apply({type:'OPEN_INBOX'},{save:true}))window.scrollTo(0,0);}
+ else if(a==='return-letter'){goHome('RETURN_FROM_LETTER');if(state.page==='J')requestAnimationFrame(()=>window.scrollTo(0,inboxScroll));}
+ else if(a==='return-manage'){clearTimeout(correctionTimer);if(ui.editing&&!saveCorrectionDraft())return;ui.editing=false;if(apply({type:'RETURN_MANAGE'},{save:true}))window.scrollTo(0,0);}
+ else if(a==='open-manage'){if(apply({type:'OPEN_MANAGE'},{save:true})){ui.editing=false;ui.correctionError='';window.scrollTo(0,0);}}
+ else if(a==='open-history'){if(apply({type:'OPEN_HISTORY'},{save:true}))window.scrollTo(0,0);}
+ else if(a==='return-history'){if(apply({type:'RETURN_HISTORY'},{save:true}))requestAnimationFrame(()=>window.scrollTo(0,inboxScroll));}
+ else if(a==='open-history-letter'){if(apply({type:'OPEN_HISTORY_LETTER',letterId:b.dataset.letterId},{save:true})){ui.editing=false;window.scrollTo(0,0);}}
+ else if(a==='manage-source'){if(apply({type:'OPEN_SOURCE_HISTORY',letterId:b.dataset.letterId},{save:true})){ui.editing=false;window.scrollTo(0,0);}}
+ else if(a==='edit-correction'){if(apply({type:'BEGIN_CORRECTION'},{save:true})){ui.editing=true;render();app.querySelector('#correction')?.focus();}}
+ else if(a==='cancel-edit'){clearTimeout(correctionTimer);if(!saveCorrectionDraft())return;ui.editing=false;render();}
+ else if(a==='ask-delete')confirmDeleteDialog();
+ else if(a==='cancel-delete'){app.querySelector('dialog')?.close();app.querySelector('dialog')?.remove();}
+ else if(a==='confirm-delete'){app.querySelector('dialog')?.close();app.querySelector('dialog')?.remove();runMutation('DELETE');}
+ else if(a==='recover-mutation')recoverMutation();
+ else if(a==='set-filter'){ui.inboxFilter=b.dataset.filter;render();window.scrollTo(0,0);}
+ else if(a==='clear-filter'){ui.inboxFilter='all';ui.unreadOnly=false;render();window.scrollTo(0,0);}
+ else if(a==='inbox'||a==='history'){inboxScroll=0;if(apply({type:'OPEN_INBOX'},{save:true}))window.scrollTo(0,0);}
  else if(a==='open-letter')openLetter(getHomeEntry(state));
- else if(a==='open-inbox-letter'||a==='resume-draft')openLetter(state.letters[b.dataset.letterId],{resume:a==='resume-draft'});
+ else if(a==='open-inbox-letter'||a==='resume-draft'){if(a==='open-inbox-letter')inboxScroll=window.scrollY;openLetter(state.letters[b.dataset.letterId],{resume:a==='resume-draft'});}
  else if(a==='retry-image'){ui.imageError=false;ui.catImageError=false;ui.imageRetry=(ui.imageRetry||0)+1;replaceScene();}
  else if(a==='retry-load'){ui.loading=false;const r=store.load(state);state=state.page==='G'&&r.ok?transition(state,{type:'LOAD_SUCCESS'}):r.state;render();}
  else if(a==='retry-refresh'){ui.reading=false;const r=store.load(state);if(r.ok)state=transition(r.state,{type:'REFRESH_SUCCESS'});else state=transition(state,{type:'REFRESH_ERROR'});render();}
@@ -194,16 +324,76 @@ app.addEventListener('click',event=>{const b=event.target.closest('[data-action]
  else if(['retry-draft','draft-retry'].includes(a))saveDraft();
  else if(['retry-check','check-retry'].includes(a))submit();
  else if(a==='retry-persist'){persist();patch();}
- else if(a==='external-reload'){clearTimeout(sendTimer);clearTimeout(saveTimer);if(currentLetter(state)?.draft&&!confirm('重新读取会替换本页的未保存文字。请先复制保留文字，再继续读取。'))return;externalChange=false;const r=store.load(state);state=r.state;render();}
+ else if(a==='external-reload'){clearTimeout(sendTimer);clearTimeout(saveTimer);clearTimeout(correctionTimer);const correction=state.page==='K'?app.querySelector('#correction')?.value:null;if((currentLetter(state)?.draft||correction)&&!confirm('重新读取会替换本页的未保存文字。请先复制保留文字，再继续读取。'))return;externalChange=false;const r=store.load(state);state=r.state;render();}
 });
-window.addEventListener('pagehide',()=>{if(!fixture&&!externalChange&&state.page==='G'&&state.replySubmitState!=='SUBMITTING'){const ta=app.querySelector('textarea');if(ta)state=transition(state,{type:'EDIT',value:ta.value});composing=false;saveDraft();}});
-window.addEventListener('storage',ev=>{if(!fixture&&ev.key===store.key){clearTimeout(saveTimer);clearTimeout(sendTimer);externalChange=true;patch();}});
+app.addEventListener('change',event=>{if(event.target.id==='unread-only'){ui.unreadOnly=event.target.checked;render();window.scrollTo(0,0);}});
+window.addEventListener('pagehide',()=>{if(!fixture&&!externalChange&&state.page==='G'&&state.replySubmitState!=='SUBMITTING'){const ta=app.querySelector('textarea');if(ta)state=transition(state,{type:'EDIT',value:ta.value});composing=false;saveDraft();}if(!fixture&&!externalChange&&state.page==='K')saveCorrectionDraft();});
+window.addEventListener('storage',ev=>{
+ if(fixture||ev.key!==store.key)return;
+ clearTimeout(saveTimer);clearTimeout(sendTimer);clearTimeout(correctionTimer);
+ const oldLetterId=state.currentLetterId,oldPage=state.page;
+ const correctionText=oldPage==='K'?app.querySelector('#correction')?.value:null;
+ const correctionBase=state.correctionDrafts?.[oldLetterId]?.baseRevision;
+ const replyText=oldPage==='G'&&state.letters[oldLetterId]?.replySubmitState!=='SUCCESS'?
+   app.querySelector('#daily-reply')?.value:null;
+ const remote=store.load(state);
+ if(!remote.ok){
+   externalChange=true;window.__dailyState=null;window.__dailyUI={externalChange:true};
+   app.innerHTML='<section class="daily-page entry-page"><div class="error-block"><h2>本机记录已在另一页面变化</h2><p>暂时无法安全读取最新内容。请保留页面，稍后重新读取。</p><button class="secondary" data-action="external-reload">重新读取</button></div></section>';
+   return;
+ }
+ state=remote.state;externalChange=false;ui.firstRead=false;ui.sourceOpen=false;
+ const active=state.letters[oldLetterId],record=state.responses[active?.responseId];
+ if(typeof correctionText==='string'&&record?.status==='ACTIVE'){
+   state=transition(state,{type:'OPEN_NEED',letterId:oldLetterId});
+   state=transition(state,{type:'OPEN_MANAGE'});
+   state.correctionDrafts[oldLetterId]={text:correctionText,baseRevision:correctionBase,responseId:record.id};
+   state.revision+=1;
+   externalChange=true;
+   ui.correctionError='另一个页面更新了记录；当前文字仍在本页，请复制保留后重新读取。';
+ }else if(typeof replyText==='string'&&active?.type==='NEED_CARD'&&active.replySubmitState!=='SUCCESS'){
+   state=transition(state,{type:'OPEN_NEED',letterId:oldLetterId});
+   state=transition(state,{type:'EDIT',value:replyText});
+   externalChange=true;saveFailure=true;
+ }
+ const pendingResponse=state.responses[ui.pendingMutation?.responseId];
+ if(pendingResponse?.status==='DELETED'){
+   ui.pendingMutation={key:ui.pendingMutation.key,type:ui.pendingMutation.type,
+     responseId:pendingResponse.id,letterId:pendingResponse.letterId,
+     expectedRevision:ui.pendingMutation.expectedRevision,text:null};
+   ui.editing=false;
+ }
+ if(record?.status==='DELETED'){
+   ui.editing=false;ui.correctionError='';ui.mutationNotice='这条回应已在另一页面删除。';
+ }
+ render();
+});
 window.addEventListener('message',ev=>{if(ev.origin!==location.origin||ev.source!==parent||ev.data?.type!=='daily-review-action')return;const action=ev.data.action;
  if(!fixture){
-  if(action!=='deliver-next-demand')return;
+  if(['mutation-failure','mutation-unknown-before','mutation-unknown-after','mutation-read-error'].includes(action)){
+    const key={'mutation-failure':'mutationError','mutation-unknown-before':'mutationUnknownBefore',
+      'mutation-unknown-after':'mutationUnknownAfter','mutation-read-error':'mutationReadError'}[action];
+    failures[key]=1;return;
+  }
+  if(!['deliver-next-demand','trip','home','deliver-travel'].includes(action))return;
   const report=(status,message,id)=>parent.postMessage({type:'demand-delivery-result',status,message,id},location.origin);
   if(externalChange||saveFailure||state.loadError){report('blocked','本机记录尚未就绪，请先重新读取或保存。');return;}
+  if(action==='trip'||action==='home'){
+    const changed=apply({type:action==='trip'?'CAT_TRIP':'CAT_HOME'},{save:true});
+    report(changed?'delivered':'blocked',changed?(action==='trip'?'小猫已出发，原有来信仍在。':'小猫已回家，原有来信仍在。'):'状态暂时没能保存。');
+    return;
+  }
   if(state.newLetterId){report('blocked','先读完当前未读来信，再投递下一组。');return;}
+  if(action==='deliver-travel'){
+    if(state.catState!=='TRIP'){report('blocked','请先在审阅工具中让小猫出发旅行。');return;}
+    const now=new Date(),date=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const built=makeTravelDelivery(state,{sceneId:ev.data.sceneId,linked:ev.data.linked===true,date});
+    if(!built.ok){report('blocked',built.error==='NO_VERIFIED_SOURCE'?'没有已人工核对的对应回应原文；可选择普通旅行信。':built.error==='ALREADY_DELIVERED'?'这篇旅行信已经收到。':'旅行场景参数不正确。');return;}
+    const delivered=apply({type:'NEW_LETTER',letter:built.letter},{paint:state.page!=='G',save:true});
+    report(delivered&&state.newLetterId===built.letter.id?'delivered':'blocked',
+      delivered&&state.newLetterId===built.letter.id?`已收到「${built.letter.title}」。`:'暂时没能保存这封旅行信。',built.letter.id);
+    return;
+  }
   if(state.catState==='TRIP'){report('blocked','小猫旅行中；先回家再接收新的需求卡。');return;}
   if(state.page==='H'){report('blocked','先从送出成功页回到家。');return;}
   const next=nextDemandForState(state);

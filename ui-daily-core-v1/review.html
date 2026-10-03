@@ -10,8 +10,8 @@
 </head>
 <body>
   <header class="review-heading">
-    <div><p class="eyebrow">有猫来信 · 第二批</p><h1>日常核心体验审阅</h1></div>
-    <p class="review-boundary">这是 GitHub Pages 本机体验预览，无真实云端同步、录音或自动理解回应。七组需求卡各有四种小猫外观；下方链接使用隔离数据审阅。旧听雨信保留文字，画面暂不可用。明信片和来信盒可作最小阅读衔接，完整第三批仍待设计。</p>
+    <div><p class="eyebrow">有猫来信 · 第三批</p><h1>日常核心体验审阅</h1></div>
+    <p class="review-boundary">这是 GitHub Pages 本机体验预览，无真实云端同步、录音或自动理解回应。七组需求卡各有四种小猫外观；旧听雨信保留文字，画面暂不可用。连续体验已接入旅行信、来信盒及回应更正与删除；旅行信只由审阅者手动投递。下方场景链接使用隔离数据审阅。</p>
   </header>
   <main class="review-layout">
     <details class="review-tools" id="review-tools" open>
@@ -25,8 +25,8 @@
           </div>
           <p class="tool-note" id="mode-note">场景数据相互隔离，不改连续体验的本机数据。</p>
           <a class="tool-note" href="../ui-adoption-flow-v1/index.html?v=compact-fluid-20260928" target="_blank" rel="noopener noreferrer">从选猫开始连续体验 ↗</a>
-          <button type="button" class="reset-preview" id="reset-preview">重置两批预览测试数据</button>
-          <p class="tool-note">重置仅清除这两批 Pages 预览的新身份与日常记录；正式 /app/ 数据和旧版预览记录不受影响。</p>
+          <button type="button" class="reset-preview" id="reset-preview">重置预览测试数据</button>
+          <p class="tool-note">重置仅清除本次 Pages 预览的新身份与日常记录；正式 /app/ 数据和旧版预览记录不受影响。</p>
           <label class="field-label" for="cat-select">参考小猫</label>
           <select id="cat-select">
             <option value="cat-01">橘白 · cat-01</option>
@@ -43,6 +43,24 @@
           <button type="button" id="deliver-next-demand" disabled>向连续体验投递下一组</button>
           <p class="tool-note">仅在连续体验中手动投递；一次最多一封未读，依次为追光、D01–D06。</p>
           <p class="simulation-feedback" id="demand-feedback" role="status"></p>
+        </section>
+        <section class="tool-section" aria-labelledby="travel-heading">
+          <h2 id="travel-heading">旅行信 · 连续体验手动投递</h2>
+          <p class="tool-note">这些按钮只在连续体验中手动触发。不会自动分析回应，也不会自动安排旅行。</p>
+          <div class="simulation-buttons"><button type="button" id="start-trip" disabled>让小猫出发</button><button type="button" id="end-trip" disabled>让小猫回家</button></div>
+          <label class="field-label" for="travel-scene">本次旅行场景</label>
+          <select id="travel-scene"><option value="RHINE">莱茵河谷</option><option value="FIREFLY">萤火虫</option><option value="LIGHTHOUSE">灯塔</option></select>
+          <label class="tool-note"><input id="travel-linked" type="checkbox"> 使用已核对的真实已送回应版本</label>
+          <button type="button" id="deliver-travel" disabled>手动投递旅行信</button>
+          <p class="tool-note">有来源样例只接受预先人工核对过的完整回应原文；其他文字无法确认关联时，可投递普通旅行信。审阅工具不会替你填入样例，也不会把任意文字解释成你的真实意思。</p>
+          <details class="tool-note"><summary>查看已核对的样例文字</summary><p>阿橘：累了可以歇一会儿。不想聊天的时候，也可以告诉阿橘：我想安静地待一会儿。</p><p>大橘：不知道说什么的时候，陪在它旁边也可以。陪伴也是表达关心的一种方式。</p><p>小礼物：我喜欢的是你想着我的心意呀。小礼物也可以装着很大的喜欢。</p><p>追泡泡：面对新朋友可以先看看，不需要马上加入。按让自己舒服的速度，慢慢来就好。</p></details>
+          <p class="simulation-feedback" id="travel-feedback" role="status"></p>
+        </section>
+        <section class="tool-section" aria-labelledby="mutation-heading">
+          <h2 id="mutation-heading">回应管理故障审阅</h2>
+          <p class="tool-note">只作用于连续体验的下一次更正或删除；用于验证失败与结果未知后的重新读取。不会改变回应内容。</p>
+          <div class="simulation-buttons"><button type="button" data-live-failure="mutation-failure" disabled>下一次明确失败</button><button type="button" data-live-failure="mutation-unknown-before" disabled>下一次结果未知 · 未写入</button><button type="button" data-live-failure="mutation-unknown-after" disabled>下一次结果未知 · 已写入</button><button type="button" data-live-failure="mutation-read-error" disabled>下一次读取失败</button></div>
+          <p class="simulation-feedback" id="mutation-feedback" role="status"></p>
         </section>
         <section class="tool-section" aria-labelledby="scenario-heading">
           <h2 id="scenario-heading">场景 <span class="count" id="scenario-count">41</span></h2>
@@ -85,6 +103,6 @@
     </section>
   </main>
   <noscript><p class="noscript-notice">请启用 JavaScript 后使用审阅工具。也可直接打开 <a href="./index.html">连续体验</a>。</p></noscript>
-  <script type="module" src="./review.mjs?v=seven-demands-20261002"></script>
+  <script type="module" src="./review.mjs?v=batch3-20261003-4"></script>
 </body>
 </html>

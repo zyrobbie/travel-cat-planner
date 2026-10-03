@@ -33,7 +33,7 @@ let fixedSimulation=false,frameHeight=360,loadingPreview=false;
 let childDocument=null,childObserver=null,childResizeFrame=0;
 
 function sizeKey(){return Object.keys(sizes).find(key=>sizes[key][0]===width&&sizes[key][1]===height)||'M';}
-function setConnected(value){connected=value;document.querySelectorAll('[data-simulate]').forEach(button=>{button.disabled=!value||mode!=='scenario';});$('deliver-next-demand').disabled=!value||mode!=='live'||!['E','F','G','I','J'].includes(childPage);}
+function setConnected(value){connected=value;document.querySelectorAll('[data-simulate]').forEach(button=>{button.disabled=!value||mode!=='scenario';});$('deliver-next-demand').disabled=!value||mode!=='live'||!['E','F','G','I','J','K','R'].includes(childPage);for(const id of ['start-trip','end-trip','deliver-travel'])$(id).disabled=!value||mode!=='live'||!['E','F','G','I','J','K','R'].includes(childPage);document.querySelectorAll('[data-live-failure]').forEach(button=>button.disabled=!value||mode!=='live');}
 function demandLinks(){
   const labels=['橘白','狸花','奶油白','三花'];
   for(const demand of DEMAND_SEQUENCE){
@@ -62,7 +62,7 @@ function scenarioButtons(){
   $('scenario-count').textContent=String(SCENARIOS.length);
   for(const [action,label,note] of actions){const button=document.createElement('button');button.type='button';button.dataset.simulate=action;button.textContent=label;button.title=note;button.disabled=true;$('simulation-actions').append(button);}
 }
-function previewUrl(){const url=new URL('./index.html',location.href);url.searchParams.set('v','seven-demands-20261002');if(mode==='scenario'){url.searchParams.set('scenario',scenario.id);url.searchParams.set('cat',cat);}return url.href;}
+function previewUrl(){const url=new URL('./index.html',location.href);url.searchParams.set('v','batch3-20261003-4');if(mode==='scenario'){url.searchParams.set('scenario',scenario.id);url.searchParams.set('cat',cat);}return url.href;}
 function fluidMode(){return mobile.matches&&!fixedSimulation;}
 function disconnectChild(){
   childObserver?.disconnect();childObserver=null;
@@ -154,7 +154,7 @@ function loadPreview(){
 function setMode(next){if(mode===next)return;mode=next;loadPreview();}
 function selectScenario(id){const selected=SCENARIOS.find(item=>item.id===id);if(!selected)return;scenario=selected;width=selected.width;height=selected.height;loadPreview();if(matchMedia('(max-width:760px)').matches)$('review-tools').open=false;}
 function describeState(state){
-  const names={WELCOME:'待领养',ERROR:'身份读取异常',E:'在家首页',F:'旅行中同一个家',G:'需求卡与回应',H:'发送成功',I:'明信片阅读',J:'来信盒'};
+  const names={WELCOME:'待领养',ERROR:'身份读取异常',E:'在家首页',F:'旅行中同一个家',G:'需求卡与回应',H:'发送成功',I:'明信片阅读',J:'来信盒',K:'回应管理',R:'回应记录'};
   const draftNames={IDLE:'未触发保存',SAVING:'保存中',SAVED:'已保存',ERROR:'保存失败'};
   const submitNames={IDLE:'尚未发送',SUBMITTING:'发送中',SUCCESS:'已送出',ERROR:'发送失败',UNKNOWN:'结果待确认'};
   const letters=Array.isArray(state.letters)?state.letters:[];
@@ -178,6 +178,9 @@ $('reset-preview').addEventListener('click',()=>{
   try{
     localStorage.removeItem(PREVIEW_IDENTITY_KEY);
     localStorage.removeItem('cat-letters-e3-g2r:daily-v1');
+    const markerKey='cat-letters-e3-g2r:daily-v1:legacy-import';
+    const marker=JSON.parse(localStorage.getItem(markerKey)||'{}');
+    localStorage.setItem(markerKey,JSON.stringify({...marker,reset:true,suppressReimport:true}));
     sessionStorage.setItem('cat-letters-e3-g2r:adoption-session-v1',JSON.stringify({version:1,state:{step:'A',selectedCatId:null,catNameDraft:'',adoptionStatus:'UNCONFIRMED',confirmedCat:null},storedResult:null}));
     loadPreview();
     $('simulation-feedback').textContent='两批新版预览测试数据已重置。可以从选猫开始。';
@@ -187,10 +190,20 @@ $('reset-preview').addEventListener('click',()=>{
 });
 $('simulation-actions').addEventListener('click',event=>{const button=event.target.closest('[data-simulate]');if(!button||!connected||mode!=='scenario')return;const definition=actions.find(item=>item[0]===button.dataset.simulate);if(!definition)return;iframe.contentWindow.postMessage({type:'daily-review-action',action:definition[0]},location.origin);$('simulation-feedback').textContent=`已发出手动模拟指令：${definition[2]}`;});
 $('deliver-next-demand').addEventListener('click',()=>{if(!connected||mode!=='live'||$('deliver-next-demand').disabled)return;iframe.contentWindow.postMessage({type:'daily-review-action',action:'deliver-next-demand'},location.origin);$('demand-feedback').textContent='正在投递下一组…';});
+for(const [id,action] of [['start-trip','trip'],['end-trip','home'],['deliver-travel','deliver-travel']])$(id).addEventListener('click',()=>{
+  if(!connected||mode!=='live'||$(id).disabled)return;
+  iframe.contentWindow.postMessage({type:'daily-review-action',action,sceneId:$('travel-scene').value,linked:$('travel-linked').checked},location.origin);
+  $('travel-feedback').textContent='正在保存手动审阅操作…';
+});
+document.querySelectorAll('[data-live-failure]').forEach(button=>button.addEventListener('click',()=>{
+  if(button.disabled||mode!=='live')return;
+  iframe.contentWindow.postMessage({type:'daily-review-action',action:button.dataset.liveFailure},location.origin);
+  $('mutation-feedback').textContent=`已设置：${button.textContent}。请在预览中执行一次更正或删除。`;
+}));
 window.addEventListener('message',event=>{
   if(event.origin!==location.origin||event.source!==iframe.contentWindow)return;
   if(event.data?.type==='demand-delivery-result'){
-    if(mode==='live')$('demand-feedback').textContent=event.data.message||'投递状态未知。';
+    if(mode==='live'){$('demand-feedback').textContent=event.data.message||'操作状态未知。';$('travel-feedback').textContent=event.data.message||'操作状态未知。';}
     return;
   }
   if(event.data?.type!=='daily-state'||!event.data.state||typeof event.data.state!=='object')return;

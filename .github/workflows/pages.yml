@@ -30,6 +30,7 @@ jobs:
           node ui-daily-core-v1/checks/daily-state.test.mjs
           node ui-daily-core-v1/checks/g2r-state.test.mjs
           node ui-daily-core-v1/checks/seven-demands.test.mjs
+          node ui-daily-core-v1/checks/batch3-state.test.mjs
           node ui-components-v1/checks/daily-components.test.mjs
       - run: npm run pages:build
       - run: npx playwright install --with-deps chromium
