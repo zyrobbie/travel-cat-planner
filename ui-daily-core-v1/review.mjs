@@ -27,7 +27,7 @@ let mode=new URLSearchParams(location.search).get('mode')==='live'?'live':'scena
 let cat='cat-01';
 let width=scenario.width,height=scenario.height;
 let fit=true;
-let connected=false, childPage=null,childState=null,queuedQuick=null,pendingQuickTrip=null,quickRequest=0;
+let connected=false, childPage=null,childState=null,queuedQuick=null,pendingQuickTrip=null,pendingQuickOpen=null,quickRequest=0;
 let loadTimer;
 let fixedSimulation=false,frameHeight=360;
 
@@ -112,7 +112,7 @@ function showPreviewError(){
   clearTimeout(loadTimer);mount.hidden=true;$('preview-error').hidden=false;
   $('connection-status').textContent='预览未能显示 · 可重新载入';
 }
-function waiting(){childPage=null;childState=null;setConnected(false);$('connection-status').textContent='正在载入产品预览…';$('state-summary').replaceChildren();const pair=document.createElement('div'),term=document.createElement('dt'),value=document.createElement('dd');term.textContent='预览';value.textContent='等待状态';pair.append(term,value);$('state-summary').append(pair);}
+function waiting(){childPage=null;childState=null;pendingQuickOpen=null;setConnected(false);$('connection-status').textContent='正在载入产品预览…';$('state-summary').replaceChildren();const pair=document.createElement('div'),term=document.createElement('dt'),value=document.createElement('dd');term.textContent='预览';value.textContent='等待状态';pair.append(term,value);$('state-summary').append(pair);}
 function loadPreview(){
   clearTimeout(loadTimer);waiting();updateControls();frameHeight=mobileFrameHeight();
   mount.hidden=false;$('preview-error').hidden=true;
@@ -157,7 +157,7 @@ scenarioButtons();demandLinks();
 $('quick-live').addEventListener('click',()=>{if(mode==='live'){quickFeedback('正在连续体验；可在此手动投递测试来信。');return;}quickFeedback('正在打开连续体验…');setMode('live');});
 $('quick-demand').addEventListener('click',()=>runQuick('demand'));
 $('quick-travel').addEventListener('click',()=>runQuick('travel'));
-$('quick-open-letter').addEventListener('click',()=>{if(mode!=='live'||!connected||!childState?.newLetterId){quickFeedback('当前没有待打开的未读来信。');return;}quickFeedback('正在打开这封来信…');postLiveAction('open-new-letter');});
+$('quick-open-letter').addEventListener('click',()=>{if(mode!=='live'||!connected||!childState?.newLetterId){quickFeedback('当前没有待打开的未读来信。');return;}quickFeedback('正在打开这封来信…');pendingQuickOpen=postLiveAction('open-new-letter');});
 $('mode-scenario').addEventListener('click',()=>setMode('scenario'));
 $('mode-live').addEventListener('click',()=>setMode('live'));
 $('cat-select').addEventListener('change',event=>{if(mode!=='scenario')return;cat=event.target.value;loadPreview();});
@@ -209,6 +209,10 @@ window.addEventListener('message',event=>{
       }else{
         quickFeedback(message);
         if(event.data.status==='delivered'&&event.data.id)$('quick-open-letter').hidden=false;
+      }
+      if(pendingQuickOpen&&event.data.requestId===pendingQuickOpen){
+        pendingQuickOpen=null;
+        if(event.data.status==='opened')requestAnimationFrame(()=>stage.scrollIntoView({block:'start',behavior:'auto'}));
       }
     }
     return;
