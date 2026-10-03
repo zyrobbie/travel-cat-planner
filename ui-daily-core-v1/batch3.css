@@ -6,3 +6,4 @@ html[data-text-scale="200"] :is(.postcard-letter p,.sent-reply p,.source-note bl
 .mutation-notice{text-wrap:pretty}.mutation-notice .secondary{display:flex;width:max-content;max-width:100%;margin-top:12px}
 html[data-text-scale="200"] .confirm-dialog{box-sizing:border-box;max-height:calc(100dvh - 32px);overflow:auto}html[data-text-scale="200"] .confirm-dialog h2{font-size:46px}html[data-text-scale="200"] .confirm-dialog p{font-size:28px;line-height:1.65}
 html[data-text-scale="200"] .editor label{font-size:42px}.source-note blockquote{text-wrap:pretty}
+html[data-text-scale="200"] .pending-global{font-size:26px;line-height:1.8}.pending-global{width:100%;box-sizing:border-box;margin:16px 0}
