@@ -62,7 +62,7 @@ function scenarioButtons(){
   $('scenario-count').textContent=String(SCENARIOS.length);
   for(const [action,label,note] of actions){const button=document.createElement('button');button.type='button';button.dataset.simulate=action;button.textContent=label;button.title=note;button.disabled=true;$('simulation-actions').append(button);}
 }
-function previewUrl(){const url=new URL('./index.html',location.href);url.searchParams.set('v','batch3-20261003-2');if(mode==='scenario'){url.searchParams.set('scenario',scenario.id);url.searchParams.set('cat',cat);}return url.href;}
+function previewUrl(){const url=new URL('./index.html',location.href);url.searchParams.set('v','batch3-20261003-3');if(mode==='scenario'){url.searchParams.set('scenario',scenario.id);url.searchParams.set('cat',cat);}return url.href;}
 function fluidMode(){return mobile.matches&&!fixedSimulation;}
 function disconnectChild(){
   childObserver?.disconnect();childObserver=null;

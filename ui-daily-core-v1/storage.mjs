@@ -1,5 +1,5 @@
-import { initialState, transition, currentLetter, restoreSnapshot, validateSnapshot } from './daily-state.mjs?v=batch3-20261003';
-import {upgradeHistory,currentRevision,applyMutation,redactResponse} from './response-history.mjs?v=batch3-20261003';
+import { initialState, transition, currentLetter, restoreSnapshot, validateSnapshot } from './daily-state.mjs?v=batch3-20261003-3';
+import {upgradeHistory,currentRevision,applyMutation,redactResponse} from './response-history.mjs?v=batch3-20261003-3';
 
 export const STORAGE_KEY = 'cat-letters-ui-daily-core-v1:preview-v1';
 export const LIVE_STORAGE_KEY='cat-letters-e3-g2r:daily-v1';

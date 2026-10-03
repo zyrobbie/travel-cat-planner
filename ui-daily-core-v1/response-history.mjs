@@ -80,9 +80,9 @@ export function sourceEntries(state,letter,{firstRead=false}={}){
     const response=state.responses[ref.responseId];
     const version=response?.revisions.find(item=>item.revision===ref.revision);
     if(!response||response.status==='DELETED'||version?.text==null)
-      return {status:'deleted',revision:ref.revision,text:null,letterId:response?.letterId};
+      return {status:'deleted',revision:ref.revision,text:null,letterId:response?.letterId,at:null};
     return {status:response.currentRevision===ref.revision?'current':'corrected',
-      revision:ref.revision,text:version.text.slice(ref.start,ref.end),letterId:response.letterId};
+      revision:ref.revision,text:version.text.slice(ref.start,ref.end),letterId:response.letterId,at:version.at};
   });
 }
 // Only an explicit review action may deliver a travel letter. The literal

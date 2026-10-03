@@ -1,5 +1,5 @@
 // Pure model for the local E/G/H/F preview. No browser, clock or storage effects.
-import {upgradeHistory,recordSubmission,validateHistory,currentRevision} from './response-history.mjs?v=batch3-20261003';
+import {upgradeHistory,recordSubmission,validateHistory,currentRevision} from './response-history.mjs?v=batch3-20261003-3';
 export const MAX_REPLY_LENGTH = 2000;
 const APPEARANCES = ['cat-01', 'cat-02', 'cat-03', 'cat-04'];
 const segmenter = new Intl.Segmenter('zh', { granularity: 'grapheme' });

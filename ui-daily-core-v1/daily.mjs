@@ -1,10 +1,10 @@
 import {needCard,replyInput,updateReplyInputState,focusReply,icon,escapeHtml as e,homeNavigation,newLetterEntry} from '../ui-components-v1/daily-components.mjs?v=g2r-reply-fix-01';
 import {catImageSources} from '../ui-adoption-flow-v1/runtime-images.mjs';
-import {initialState,transition,currentLetter,getHomeEntry,inboxLetters,LETTER_FIXTURES,canSubmit} from './daily-state.mjs?v=batch3-20261003';
-import {createDailyStore,STORAGE_KEY,LIVE_STORAGE_KEY,LEGACY_IMPORT_MARKER_KEY} from './storage.mjs?v=batch3-20261003';
+import {initialState,transition,currentLetter,getHomeEntry,inboxLetters,LETTER_FIXTURES,canSubmit} from './daily-state.mjs?v=batch3-20261003-3';
+import {createDailyStore,STORAGE_KEY,LIVE_STORAGE_KEY,LEGACY_IMPORT_MARKER_KEY} from './storage.mjs?v=batch3-20261003-3';
 import {buildScenario,buildDemandReview,SCENARIOS} from './scenarios.mjs?v=seven-demands-20261002';
 import {demandById,demandImageStem,demandLetter,nextDemandForState} from './demand-catalog.mjs';
-import {makeTravelDelivery,storyById,sourceEntries,currentRevision,travelScenes} from './response-history.mjs?v=batch3-20261003';
+import {makeTravelDelivery,storyById,sourceEntries,currentRevision,travelScenes} from './response-history.mjs?v=batch3-20261003-3';
 import {readPreviewIdentity} from '../ui-adoption-flow-v1/preview-identity.mjs';
 const params=new URLSearchParams(location.search), app=document.querySelector('#app');
 const scenarioId=params.get('scenario'),reviewDemandId=params.get('reviewDemand'),requestedCat=params.get('cat');
@@ -84,6 +84,12 @@ function dateText(date){
   const parsed=new Date(`${date}T12:00:00`);
   return Number.isNaN(parsed.valueOf())?'':new Intl.DateTimeFormat('zh-CN',{year:'numeric',month:'numeric',day:'numeric'}).format(parsed);
 }
+function versionTimeText(at){
+  if(typeof at!=='string'||!at)return '';
+  const value=new Date(at);
+  return Number.isNaN(value.valueOf())?'':new Intl.DateTimeFormat('zh-CN',
+    {year:'numeric',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).format(value);
+}
 function isToday(date){
   const now=new Date();const today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
   return date===today;
@@ -133,7 +139,7 @@ function postcardScene(l){
 function sourceBlock(letter){
   const items=sourceEntries(state,letter,{firstRead:ui.firstRead});
   if(!items.length)return '';
-  return `<details class="source-fold"${ui.sourceOpen?' open':''}><summary>看看以前说过的话</summary>${items.map(item=>`<section class="paper source-note"><span class="meta">${e(state.letters[item.letterId]?.title||'一封来信')} · 来源版本 ${item.revision}</span>${item.status==='deleted'?'<p class="source-status">这条回应已删除。</p>':`${item.status==='corrected'?'<p class="source-status">这条回应后来已更正。以下是寄出时使用的旧版本。</p>':''}<blockquote>${e(item.text)}</blockquote>`}<button type="button" class="text-button" data-action="manage-source" data-letter-id="${e(item.letterId)}">管理这条回应</button></section>`).join('')}</details>`;
+  return `<details class="source-fold"${ui.sourceOpen?' open':''}><summary>看看以前说过的话</summary>${items.map(item=>`<section class="paper source-note"><span class="meta">${e(state.letters[item.letterId]?.title||'一封来信')} · 来源版本 ${item.revision}</span>${item.status==='deleted'?'<p class="source-status">这条回应已删除。</p>':`${versionTimeText(item.at)?`<p class="version-note">版本时间：${e(versionTimeText(item.at))}</p>`:''}${item.status==='corrected'?'<p class="source-status">这条回应后来已更正。以下是寄出时使用的旧版本。</p>':''}<blockquote>${e(item.text)}</blockquote><button type="button" class="text-button" data-action="manage-source" data-letter-id="${e(item.letterId)}">管理这条回应</button>`}</section>`).join('')}</details>`;
 }
 function postcard(){
   const l=currentLetter(state),body=l?.data?.body;
@@ -150,9 +156,11 @@ function manage(){
   if(!l||!response)return `<section class="daily-page detail-page"><div class="error-block">这条回应暂时无法读取。</div><button class="secondary" data-action="return-manage">返回</button></section>`;
   const demand=demandById(l.id),body=l.data?.body||demand?.body||bodyById[l.id]||'';
   const stale=draft&&draft.baseRevision!==response.currentRevision;
-  const current=response.status==='ACTIVE'?currentRevision(response)?.text:null;
+  const revision=response.status==='ACTIVE'?currentRevision(response):null;
+  const current=revision?.text??null;
+  const currentTime=versionTimeText(revision?.at);
   const editor=ui.editing&&response.status==='ACTIVE'&&draft?`<form class="paper composer editor" id="correction-form"><label for="correction">更正这条回应</label><p class="edit-description">更正会保留新版本。已经寄来的旅行故事，以及它当时引用的文字，都不会被新文字替换。</p><textarea id="correction" aria-describedby="correction-help"${ui.pendingMutation?' readonly':''}>${e(draft.text)}</textarea><p id="correction-help" class="edit-count">${[...new Intl.Segmenter('zh',{granularity:'grapheme'}).segment(draft.text)].length} / 2000 字</p>${stale?'<p class="mutation-notice">回应版本已变化。这份旧草稿仍在，请重新读取并核对后操作。</p>':''}${ui.correctionError?`<p class="mutation-notice" role="status">${e(ui.correctionError)}</p>`:''}<div class="card-actions"><button type="button" class="text-button" data-action="cancel-edit">取消</button><button type="submit" class="primary"${stale||ui.pendingMutation?' disabled':''}>保存更正</button></div></form>`:'';
-  return `<section class="daily-page detail-page manage-page"><header class="detail-top"><button class="quiet-link back-button" data-action="return-manage">${arrow()}${state.manageReturnPage==='I'?'返回旅行信':state.manageReturnPage==='R'?'返回回应列表':'返回来信'}</button></header><h1 class="detail-title">以前的来信</h1><p class="letter-date">收到：${e(dateText(l.date))}</p>${eventScene(l)}${body?needCard({mode:'e3',catId:state.appearanceId,catName:state.catName,time:dateText(l.date),title:l.title,body,avatarUrl:`./assets/web/avatar-${state.appearanceId}-160.webp`,replyAction:false}):`<section class="error-block">原信正文暂时无法读取，回应记录仍在。</section>`}<section class="paper sent-reply"><div class="response-heading"><h2>你送出的回应</h2><span class="meta">${response.status==='DELETED'?'已删除':`版本 ${response.currentRevision}`}</span></div>${response.status==='DELETED'?'<p>这条回应已删除。</p>':`<p class="body-copy">${e(current)}</p><div class="management-actions"><button type="button" class="text-button" data-action="edit-correction"${ui.pendingMutation?' disabled':''}>更正这条回应</button><button type="button" class="text-button quiet-danger" data-action="ask-delete"${ui.pendingMutation?' disabled':''}>删除这条回应</button></div>`}</section>${editor}${ui.correctionError&&!ui.editing?`<p class="mutation-notice" role="status">${e(ui.correctionError)}</p>`:''}${ui.pendingMutation?`<aside class="mutation-notice" role="status">操作结果还不确定。请先重新读取，避免重复提交。<button type="button" class="secondary" data-action="recover-mutation">重新读取结果</button></aside>`:''}<div class="reading-footer"><button type="button" class="quiet-link" data-action="home">回到家</button></div><div data-slot="page-storage-error"></div></section>`;
+  return `<section class="daily-page detail-page manage-page"><header class="detail-top"><button class="quiet-link back-button" data-action="return-manage">${arrow()}${state.manageReturnPage==='I'?'返回旅行信':state.manageReturnPage==='R'?'返回回应列表':'返回来信'}</button></header><h1 class="detail-title">以前的来信</h1><p class="letter-date">收到：${e(dateText(l.date))}</p>${eventScene(l)}${body?needCard({mode:'e3',catId:state.appearanceId,catName:state.catName,time:dateText(l.date),title:l.title,body,avatarUrl:`./assets/web/avatar-${state.appearanceId}-160.webp`,replyAction:false}):`<section class="error-block">原信正文暂时无法读取，回应记录仍在。</section>`}<section class="paper sent-reply"><div class="response-heading"><h2>你送出的回应</h2><span class="meta">${response.status==='DELETED'?'已删除':`版本 ${response.currentRevision}${response.currentRevision>1?' · 已更正':''}`}</span></div>${response.status==='DELETED'?'<p>这条回应已删除。</p>':`${currentTime?`<p class="version-note">${response.currentRevision>1?'更正':'送出'}：${e(currentTime)}</p>`:''}<p class="body-copy">${e(current)}</p><div class="management-actions"><button type="button" class="text-button" data-action="edit-correction"${ui.pendingMutation?' disabled':''}>更正这条回应</button><button type="button" class="text-button quiet-danger" data-action="ask-delete"${ui.pendingMutation?' disabled':''}>删除这条回应</button></div>`}</section>${editor}${ui.correctionError&&!ui.editing?`<p class="mutation-notice" role="status">${e(ui.correctionError)}</p>`:''}${ui.pendingMutation?`<aside class="mutation-notice" role="status">操作结果还不确定。请先重新读取，避免重复提交。<button type="button" class="secondary" data-action="recover-mutation">重新读取结果</button></aside>`:''}<div class="reading-footer"><button type="button" class="quiet-link" data-action="home">回到家</button></div><div data-slot="page-storage-error"></div></section>`;
 }
 function historyList(){
   const letters=Object.values(state.letters).filter(letter=>letter.type==='NEED_CARD'&&letter.replySubmitState==='SUCCESS')
