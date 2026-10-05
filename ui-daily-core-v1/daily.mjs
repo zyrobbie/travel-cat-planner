@@ -1,5 +1,6 @@
 import {needCard,replyInput,updateReplyInputState,focusReply,icon,escapeHtml as e,homeNavigation,newLetterEntry} from '../ui-components-v1/daily-components.mjs?v=g2r-reply-fix-01';
 import {catImageSources} from '../ui-adoption-flow-v1/runtime-images.mjs';
+import {HOME_POSES,homePoseForNavigation,homePosePlacement,homePoseSource,homePoseCanvasStyle,homePoseContactStyle} from './home-poses.mjs';
 import {initialState,transition,currentLetter,getHomeEntry,inboxLetters,LETTER_FIXTURES,canSubmit} from './daily-state.mjs?v=batch3-20261003-3';
 import {createDailyStore,STORAGE_KEY,LIVE_STORAGE_KEY,LEGACY_IMPORT_MARKER_KEY} from './storage.mjs?v=batch3-20261003-3';
 import {buildScenario,buildDemandReview,SCENARIOS} from './scenarios.mjs?v=seven-demands-20261002';
@@ -22,12 +23,13 @@ window.visualViewport?.addEventListener('resize',syncVisualViewport);
 window.visualViewport?.addEventListener('scroll',syncVisualViewport);
 window.addEventListener('resize',syncVisualViewport);
 window.addEventListener('scroll',syncVisualViewport);
-const scenarioId=params.get('scenario'),reviewDemandId=params.get('reviewDemand'),requestedCat=params.get('cat');
+const scenarioId=params.get('scenario'),reviewDemandId=params.get('reviewDemand'),requestedCat=params.get('cat'),requestedPose=params.get('pose');
 const reviewing=params.has('scenario')||params.has('reviewDemand');
 const invalidReview=reviewing&&(params.has('scenario')&&params.has('reviewDemand')
   || params.has('scenario')&&!SCENARIOS.some(s=>s.id===scenarioId)
   || params.has('reviewDemand')&&!demandById(reviewDemandId)
-  || requestedCat!==null&&!/^cat-0[1-4]$/.test(requestedCat));
+  || requestedCat!==null&&!/^cat-0[1-4]$/.test(requestedCat)
+  || requestedPose!==null&&!HOME_POSES.includes(requestedPose));
 const fixture=invalidReview?null:scenarioId?buildScenario(scenarioId,{catId:requestedCat||'cat-01'})
   :reviewDemandId?buildDemandReview(reviewDemandId,{catId:requestedCat||'cat-01'}):null;
 const identityResult=fixture||invalidReview?{ok:true,identity:null}:readPreviewIdentity();
@@ -77,6 +79,22 @@ if(!fixture&&(state.appearanceId!==liveIdentity.catId||state.catName!==liveIdent
   app.innerHTML='<section class="daily-page entry-page"><span class="wordmark">有猫来信</span><div class="entry-message"><h1>本机记录与已确认的小猫不一致</h1><p>记录已保留。请不要清除浏览器数据，先重新读取确认。</p><a class="primary" href="./index.html">重新读取</a></div></section>';
   if(parent!==window)parent.postMessage({type:'daily-state',state:{page:'ERROR',catState:null,newLetterId:null,letters:[]}},location.origin);
 }else{
+const navigationType=performance.getEntriesByType('navigation')[0]?.type;
+let savedPose=null;
+try{savedPose=history.state?.catLettersHomePoseV1;}catch{}
+const homePose=reviewing?(requestedPose||'sit'):homePoseForNavigation({
+  catId:state.appearanceId,navigationType,historyPose:savedPose,
+});
+if(!fixture){
+  // History traversal may recreate this document without bfcache. Keep its
+  // prior pose then; a reload or fresh navigation draws a new one. Never touch
+  // the persistent cat, letter, draft, or reply record for this visual choice.
+  try{
+    const previous=history.state;
+    if(previous===null||Object.prototype.toString.call(previous)==='[object Object]')
+      history.replaceState({...previous,catLettersHomePoseV1:{catId:state.appearanceId,pose:homePose}},'');
+  }catch{}
+}
 const restored=currentLetter(state)?.draftSaveState==='SAVED'&&!!currentLetter(state)?.draft;
 if(!fixture&&restored)ui.draftRestored=true;
 ui.inboxFilter??='all';ui.unreadOnly??=false;ui.firstRead??=false;ui.sourceOpen??=false;
@@ -99,11 +117,22 @@ function sceneImage(stem,alt,extra=''){
   const image=width=>`./assets/web/${stem}-${width}.webp${ui.imageRetry?`?retry=${ui.imageRetry}`:''}`;
   return `<img ${extra} src="${image(600)}" srcset="${image(600)} 600w, ${image(1200)} 1200w" sizes="(max-width:699px) calc(100vw - 32px), 564px" decoding="async" fetchpriority="high" alt="${e(alt)}" width="1536" height="1024">`;
 }
+function homeCatLayer(){
+  if(homePose==='sit'){
+    const source=catImageSources(state.appearanceId,ui.imageRetry||0);
+    return `<span class="home-cat-shadow ${state.appearanceId}" aria-hidden="true"></span><img class="home-cat ${state.appearanceId}" src="${source.src}" srcset="${source.srcset}" sizes="${source.sizes}" decoding="async" alt="${e(state.catName)}猫在家中" width="1122" height="1402">`;
+  }
+  const placement=homePosePlacement(state.appearanceId,homePose);
+  const contacts=placement.contacts.map(rect=>`<span class="home-pose-contact" style="${homePoseContactStyle(rect)}" aria-hidden="true"></span>`).join('');
+  const source=homePoseSource(state.appearanceId,homePose,ui.imageRetry||0);
+  const action=homePose==='stretch'?'伸懒腰':'轻按小球';
+  return `${contacts}<img class="home-cat home-pose" src="${source}" style="${homePoseCanvasStyle(placement)}" decoding="async" alt="${e(state.catName)}在家中${action}" width="1536" height="1024">`;
+}
 function homeArtwork(){
   const trip=state.catState==='TRIP';
   const alt=trip?'熟悉的家，小猫出门旅行了':`${state.catName}在熟悉的家里`;
-  const source=catImageSources(state.appearanceId,ui.imageRetry||0);
-  return `<div class="scene home-scene${trip?' is-away':''}" id="home-scene" aria-label="${e(alt)}">${ui.imageError||ui.catImageError?`<div class="scene-fallback"><p>${ui.catImageError?`${e(state.catName)}的画面暂时没能加载。`:'图片暂时没能加载。'}</p><button class="secondary" data-action="retry-image">再试一次</button></div>`:`<div class="scene-loading" role="status">正在布置小猫的家…</div>${sceneImage('home-empty','','class="home-room"')}${trip?'':`<span class="home-cat-shadow ${state.appearanceId}" aria-hidden="true"></span><img class="home-cat ${state.appearanceId}" src="${source.src}" srcset="${source.srcset}" sizes="${source.sizes}" decoding="async" alt="${e(state.catName)}猫在家中" width="1122" height="1402">`}`}</div>`;
+  const failed=ui.imageError||!trip&&ui.catImageError;
+  return `<div class="scene home-scene${trip?' is-away':''}" id="home-scene"${trip?'':` data-home-pose="${homePose}"`} aria-label="${e(alt)}">${failed?`<div class="scene-fallback"><p>${ui.catImageError&&!trip?`${e(state.catName)}的画面暂时没能加载。`:'图片暂时没能加载。'}</p><button class="secondary" data-action="retry-image">再试一次</button></div>`:`<div class="scene-loading" role="status">正在布置小猫的家…</div>${sceneImage('home-empty','','class="home-room"')}${trip?'':homeCatLayer()}`}</div>`;
 }
 function dateText(date){
   if(typeof date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(date))return '';
