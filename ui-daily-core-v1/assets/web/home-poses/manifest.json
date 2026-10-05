@@ -1,0 +1,70 @@
+{
+  "source": "user-approved transparent PNGs under outputs/E3-approved-assets/home-poses",
+  "conversion": "Pillow LANCZOS resize to 768x512, WebP quality=88 method=6 exact=true, alpha retained",
+  "assets": [
+    {
+      "pose": "stretch",
+      "catId": "cat-01",
+      "approvedPngSha256": "d110397095073777fa184b8273d9089fc758cbbac3bc156190b216d36a63a0cb",
+      "webp": "stretch-cat-01-768.webp",
+      "webpSha256": "2a4317d58e983d0e57e7c1ddb7a36bf13df18a58a56e664b9172dcfacb00ed39",
+      "webpBytes": 53860
+    },
+    {
+      "pose": "stretch",
+      "catId": "cat-02",
+      "approvedPngSha256": "26d0d9a066124feadfca326c1353d423b216db617c96240f8a5247a7605f9ba8",
+      "webp": "stretch-cat-02-768.webp",
+      "webpSha256": "5e5d8a8d94f334abbfbb3a4a1659e6776c892d931aa5bc5856a1f742142a912d",
+      "webpBytes": 52520
+    },
+    {
+      "pose": "stretch",
+      "catId": "cat-03",
+      "approvedPngSha256": "862c0d55fa4fa7b07d971041f6143873a585e43646d471bb81428c0a160018ea",
+      "webp": "stretch-cat-03-768.webp",
+      "webpSha256": "903480ba6158719a2580a05fe8731ffffb0e6b1cbbffecb1eb4ca632ca073bd3",
+      "webpBytes": 44030
+    },
+    {
+      "pose": "stretch",
+      "catId": "cat-04",
+      "approvedPngSha256": "bb742e5f6ec6d5e0a2346478ff45c63b578fcc7130994913eda23e0860ee5287",
+      "webp": "stretch-cat-04-768.webp",
+      "webpSha256": "994dcc5c1e1d7de6558dcb99d520ae426ca97342773e4e30e5244522e1763645",
+      "webpBytes": 53226
+    },
+    {
+      "pose": "play-ball",
+      "catId": "cat-01",
+      "approvedPngSha256": "ca729778412b83e221f4231e20ed20f9b391bd0f0da887b792c43bcb783f9083",
+      "webp": "play-ball-cat-01-768.webp",
+      "webpSha256": "6be0c21dcf6e1d2f428106cf460c59d403e7648dbc7c17140574d09a7a736bf1",
+      "webpBytes": 50676
+    },
+    {
+      "pose": "play-ball",
+      "catId": "cat-02",
+      "approvedPngSha256": "04c08f5112d83a5f3515c288d85a289989c5a127ea901ab7a636a367adadf932",
+      "webp": "play-ball-cat-02-768.webp",
+      "webpSha256": "5cc9ccc7ec9bde834bdea62cc5dce51b9308d2458e2dde9dcb2671ab8f9d7845",
+      "webpBytes": 52218
+    },
+    {
+      "pose": "play-ball",
+      "catId": "cat-03",
+      "approvedPngSha256": "094ec6f3f8026e5b94ca8258a9a46eea923280f541192d0498071e65e6b014b4",
+      "webp": "play-ball-cat-03-768.webp",
+      "webpSha256": "02f3f225333f414986c1b0cf9034574550d2f13a1b52b9a214b5c13ad5bf0d16",
+      "webpBytes": 43086
+    },
+    {
+      "pose": "play-ball",
+      "catId": "cat-04",
+      "approvedPngSha256": "a3e160657e635192cc2536c2a36812466b5ef69debe34a5adff96bdd3fdd104d",
+      "webp": "play-ball-cat-04-768.webp",
+      "webpSha256": "2e546f02ddbebdc055edde50c57c1df482e883213c5cb5386a5039d3a24cd1b1",
+      "webpBytes": 57948
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>HOME 四猫三姿态 · 隔离审阅</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#f4f0e7;color:#4f4237;font-family:system-ui,"PingFang SC",sans-serif}
+    main{max-width:1260px;margin:auto;padding:24px}h1{font-size:24px;margin:0 0 8px}p{line-height:1.7;color:#75675b;margin:0 0 20px}
+    .layout{display:grid;grid-template-columns:minmax(260px,360px) 1fr;gap:28px;align-items:start}.controls{background:#fffaf2;border:1px solid #e4d9ca;border-radius:14px;padding:18px}
+    .group{margin:0 0 18px}.group h2{font-size:15px;margin:0 0 8px}.choices{display:flex;flex-wrap:wrap;gap:7px}
+    button{min-height:38px;border:1px solid #d8cabc;border-radius:8px;background:#fff;color:inherit;padding:7px 10px;cursor:pointer;font:inherit}
+    button[aria-pressed=true]{background:#9a5637;color:#fff;border-color:#9a5637}button:focus-visible,a:focus-visible{outline:2px solid #9a5637;outline-offset:2px}
+    code{display:block;white-space:pre-wrap;line-height:1.6;font-size:12px;margin:10px 0 16px}a{color:#9a5637}
+    .frame-wrap{display:flex;justify-content:center;overflow:auto}iframe{width:390px;height:844px;border:1px solid #d8cabc;border-radius:14px;background:#fff;flex:none}
+    @media(max-width:760px){main{padding:16px}.layout{display:block}.frame-wrap{margin-top:18px}iframe{width:min(390px,100%)}}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>HOME · 四猫三姿态</h1>
+    <p>仅限隔离审阅：每一项打开独立内存样例，不读取或清除连续体验的猫、来信、草稿和回应。产品页面没有姿态选择控件。</p>
+    <div class="layout">
+      <div class="controls">
+        <div class="group"><h2>小猫</h2><div class="choices" id="cats"></div></div>
+        <div class="group"><h2>日常姿态</h2><div class="choices" id="poses"></div></div>
+        <div class="group"><h2>预览宽度</h2><div class="choices" id="widths"></div></div>
+        <code id="parameters"></code>
+        <a id="open" target="_blank" rel="noopener">在新标签打开当前样例 ↗</a>
+      </div>
+      <div class="frame-wrap"><iframe id="preview" title="HOME 姿态隔离样例"></iframe></div>
+    </div>
+  </main>
+  <script type="module">
+    import {HOME_POSES,homePosePlacement} from './home-poses.mjs';
+    const names={'cat-01':'橘白','cat-02':'狸花','cat-03':'奶油白','cat-04':'三花'};
+    const poseNames={sit:'坐姿',stretch:'伸懒腰','play-ball':'玩球'};
+    const state={cat:'cat-01',pose:'sit',width:390};
+    function buttons(id,choices,key,label){
+      const group=document.querySelector(`#${id}`);
+      for(const choice of choices){
+        const button=document.createElement('button');button.type='button';button.textContent=label(choice);
+        button.addEventListener('click',()=>{state[key]=choice;render();});group.append(button);
+      }
+    }
+    buttons('cats',Object.keys(names),'cat',value=>names[value]);
+    buttons('poses',HOME_POSES,'pose',value=>poseNames[value]);
+    buttons('widths',[390,1440],'width',value=>`${value}px`);
+    function render(){
+      for(const [id,key] of [['cats','cat'],['poses','pose'],['widths','width']])
+        for(const button of document.querySelector(`#${id}`).children)
+          button.setAttribute('aria-pressed',String(button.textContent===({cat:names,pose:poseNames,width:{390:'390px',1440:'1440px'}}[key][state[key]])));
+      const url=new URL('./index.html',location.href);
+      url.searchParams.set('scenario','E-empty-M');url.searchParams.set('cat',state.cat);url.searchParams.set('pose',state.pose);
+      document.querySelector('#preview').src=url.href;
+      document.querySelector('#preview').style.width=`${state.width}px`;
+      document.querySelector('#open').href=url.href;
+      const placement=state.pose==='sit'?'沿用已验收坐姿 CSS':JSON.stringify(homePosePlacement(state.cat,state.pose));
+      document.querySelector('#parameters').textContent=`${state.cat} / ${state.pose}\n1536×1024 房间坐标：${placement}`;
+    }
+    render();
+  </script>
+</body>
+</html>
