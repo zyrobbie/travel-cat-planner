@@ -86,7 +86,21 @@ test("E3 new cat persists appearance and approved scenes without changing the 14
 
   for (const contentId of ["D-01", "D-02", "D-03", "D-04", "D-05", "D-06", "D-07"]) {
     await control(page, "投递下一需求卡");
+    const unread = (await row(page)).letters[0];
+    expect(unread.read_at).toBeNull();
+    await expect(page.locator(".e3-new-letter")).toContainText("未读");
+    await expect(page.locator(".e3-new-letter")).not.toContainText(unread.snapshot.body);
+    await expect(page.locator(".e3-new-letter")).not.toContainText(unread.snapshot.title);
+    await expect(page.locator(".e3-letter-scene")).toHaveCount(0);
+    if (contentId === "D-07") {
+      await page.reload();
+      await expect(page.locator(".e3-new-letter")).toContainText("未读");
+      expect((await row(page)).letters[0].read_at).toBeNull();
+      await expect(page.locator(".e3-new-letter")).not.toContainText(unread.snapshot.body);
+    }
     await page.getByRole("button", { name: "看看来信", exact: true }).click();
+    expect((await row(page)).letters[0].read_at).not.toBeNull();
+    await expect(page.locator("article")).toContainText(unread.snapshot.body);
     await expect(page.locator(".e3-letter-scene.is-ready img")).toBeVisible();
     const item = (await row(page)).letters[0];
     expect(item.snapshot.contentId).toBe(contentId);
@@ -107,7 +121,13 @@ test("E3 new cat persists appearance and approved scenes without changing the 14
   await expect(page.locator(".e3-home-cat")).toHaveCount(0);
   await page.screenshot({ path: `${shots}/trip-empty-home-mobile.png`, fullPage: true });
   await control(page, "寄出普通旅行信");
+  const postcard = (await row(page)).letters[0];
+  expect(postcard.read_at).toBeNull();
+  await expect(page.locator(".e3-new-letter")).toContainText("未读");
+  await expect(page.locator(".e3-new-letter")).not.toContainText(postcard.snapshot.body);
+  await expect(page.locator(".e3-letter-scene")).toHaveCount(0);
   await page.getByRole("button", { name: "打开看看", exact: true }).click();
+  await expect(page.locator("article")).toContainText(postcard.snapshot.body);
   await expect(page.locator(".e3-letter-scene.is-ready img")).toBeVisible();
   expect(await page.locator(".e3-letter-scene img").getAttribute("src")).toContain("postcard-rhine-cat-03");
   await page.screenshot({ path: `${shots}/postcard-mobile.png`, fullPage: true });

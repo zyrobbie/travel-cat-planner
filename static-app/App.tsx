@@ -716,18 +716,20 @@ export default function Home() {
           ) : null}
           {latest ? (
             <section className="e3-new-letter">
-              <h2>
-                {latest.type === "POSTCARD"
-                  ? state.trip ? "旅行中寄来一封信" : "旅行时寄来的信，还没打开"
-                  : "有一封来信，还没打开"}
-              </h2>
+              <div className="e3-new-letter-heading">
+                <h2>
+                  {latest.type === "POSTCARD"
+                    ? state.trip ? "旅行中寄来一封信" : "旅行时寄来的信，还没打开"
+                    : "有一封来信，还没打开"}
+                </h2>
+                <span className="e3-new-letter-status"><span aria-hidden="true" />未读</span>
+              </div>
               <p className={s.meta}>收到：{new Date(latest.delivered_at).toLocaleDateString("zh-CN")}</p>
-              {latest.type === "DEMAND" && (
-                <p className={s.story}>{latest.snapshot.body}</p>
-              )}
-              <button className={s.primary} onClick={() => open(latest)}>
-                {latest.type === "POSTCARD" ? "打开看看" : "看看来信"}
-              </button>
+              <div className="e3-new-letter-actions">
+                <button className={s.primary} onClick={() => open(latest)}>
+                  {latest.type === "POSTCARD" ? "打开看看" : "看看来信"}<span aria-hidden="true"> →</span>
+                </button>
+              </div>
             </section>
           ) : state.trip ? (
             <p className="e3-empty-letter">暂时没有新来信。</p>
