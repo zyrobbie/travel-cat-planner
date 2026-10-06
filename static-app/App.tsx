@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { api, type AppState, type Letter } from "./local-api";
 import s from "../src/app/page.module.css";
 import LocalControl from "./Control";
-import ResponseManager from "./ResponseManager";
+import ResponseManager, { type ResponseManagerHandle } from "./ResponseManager";
 import SourceHistory from "./SourceHistory";
 import {
   listParticipants,
@@ -35,6 +35,10 @@ const scenes: Record<string, string> = {
   FIREFLY: "日本 · 辰野",
   LIGHTHOUSE: "苏格兰 · 天空岛",
 };
+type ManageReturn =
+  | { screen: "inbox" }
+  | { screen: "responses"; scrollTop: number }
+  | { screen: "source"; letterId: string; scrollTop: number };
 export default function Home() {
   const [state, setState] = useState<AppState | null>(null),
     [loaded, setLoaded] = useState(false),
@@ -57,6 +61,10 @@ export default function Home() {
   const [manage, setManage] = useState(false),
     [message, setMessage] = useState(""),
     [firstRead, setFirstRead] = useState(false);
+  const [manageReturn, setManageReturn] = useState<ManageReturn | null>(null);
+  const [sourceOpen, setSourceOpen] = useState(false);
+  const returnScroll = useRef<number | null>(null);
+  const responseManager = useRef<ResponseManagerHandle>(null);
   const generation = useRef(0);
   const [draftStatus, setDraftStatus] = useState("");
   const draftWrite = useRef(0);
@@ -203,7 +211,7 @@ export default function Home() {
       setBusy(false);
     }
   }
-  async function open(l: Letter) {
+  async function open(l: Letter, options?: { manage?: boolean; returnTo?: ManageReturn }) {
     await run(async () => {
       const epoch = generation.current,
         pid = selectedId();
@@ -216,7 +224,9 @@ export default function Home() {
       setState(fresh);
       setLetterId(l.id);
       setFirstRead(committed.firstRead);
-      setManage(fresh.drafts[l.id]?.kind === "edit");
+      setManage(!!options?.manage || fresh.drafts[l.id]?.kind === "edit");
+      setManageReturn(options?.returnTo ?? { screen: "inbox" });
+      if (options?.returnTo?.screen !== "source") setSourceOpen(false);
       setReplyExpanded(fresh.drafts[l.id]?.kind === "reply");
       setMessage("");
       setDraft(
@@ -259,9 +269,31 @@ export default function Home() {
       reload().catch(() => {});
     });
   }
-  async function openManaged(l: Letter) {
-    await open(l);
-    if (l.response) setManage(true);
+  function currentScroll() {
+    return document.querySelector<HTMLElement>(".e3-app-shell > main")?.scrollTop ?? 0;
+  }
+  async function leaveLetter() {
+    if (manage) {
+      try {
+        if (await responseManager.current?.prepareToLeave() === false) return;
+      } catch (e) {
+        setError(`更正草稿尚未保存：${(e as Error).message}`);
+        return;
+      }
+      setManage(false);
+    }
+    const target = manageReturn;
+    setManageReturn(null);
+    setMessage("");
+    if (target?.screen === "source") {
+      returnScroll.current = target.scrollTop;
+      setLetterId(target.letterId);
+      setFirstRead(false);
+      setScreen("letter");
+    } else if (target?.screen === "responses") {
+      returnScroll.current = target.scrollTop;
+      setScreen("responses");
+    } else setScreen("inbox");
   }
   const cat = state?.participant.cat_name ?? "小咪",
     appearanceId = isAppearanceId(state?.participant.appearanceId) ? state!.participant.appearanceId : null,
@@ -287,7 +319,8 @@ export default function Home() {
   }, [poseCatId]);
   useEffect(() => {
     const main = document.querySelector<HTMLElement>(".e3-app-shell > main");
-    main?.scrollTo({ top: 0, behavior: "instant" });
+    main?.scrollTo({ top: returnScroll.current ?? 0, behavior: "instant" });
+    returnScroll.current = null;
   }, [screen, letterId, adoptionStep]);
   currentView.current = {
     responseId:
@@ -303,6 +336,8 @@ export default function Home() {
     setDraft("");
     setReplyExpanded(false);
     setManage(false);
+    setManageReturn(null);
+    setSourceOpen(false);
     setMessage("");
     setLetterId(null);
     setScreen("home");
@@ -473,16 +508,9 @@ export default function Home() {
           <button
             disabled={busy}
             className={s.quiet}
-            onClick={() => {
-              if (manage) {
-                setError("请先点“取消管理”保存草稿，再返回来信盒。");
-                return;
-              }
-              setManage(false);
-              setScreen("inbox");
-            }}
+            onClick={leaveLetter}
           >
-            ← 来信盒
+            {manageReturn?.screen === "source" ? "← 返回旅行信" : manageReturn?.screen === "responses" ? "← 返回回应列表" : "← 来信盒"}
           </button>
           {letter.type === "POSTCARD" ? (
             <>
@@ -505,15 +533,24 @@ export default function Home() {
             收到日期：
             {new Date(letter.delivered_at).toLocaleDateString("zh-CN")}
           </p>
-          <article className={s.letter}>
+          <article className={`${s.letter}${letter.snapshot.contentId === "D-07" ? " e3-welcome-letter" : ""}`}>
             {letter.type === "DEMAND" && <h2 className="e3-demand-title">{letter.snapshot.title}</h2>}
-            <div className={s.story}>{letter.snapshot.body}</div>
+            <div className={`${s.story} e3-story`}>{letter.snapshot.body}</div>
           </article>
           {message && !letter.response && <p role="status">{message}</p>}
           {letter.type === "POSTCARD" ? (
             <>
               <p className={s.signature}>—— {letter.snapshot.catName}</p>
-              {!firstRead && <SourceHistory letter={letter} state={state} />}
+              {!firstRead && <SourceHistory
+                letter={letter}
+                state={state}
+                isOpen={sourceOpen}
+                onOpenChange={setSourceOpen}
+                onManage={(source) => {
+                  setSourceOpen(true);
+                  open(source, { manage: true, returnTo: { screen: "source", letterId: letter.id, scrollTop: currentScroll() } });
+                }}
+              />}
               <button className={s.primary} onClick={() => setScreen("home")}>
                 收好这封信
               </button>
@@ -525,13 +562,13 @@ export default function Home() {
             </section>
           ) : letter.response ? (
             <>
-              <h2>那次你对{letter.snapshot.catName}说：</h2>
-              <p className={s.story}>{letter.response}</p>
               {message && <p role="status">{message}</p>}
               {manage && letter.responseId ? (
                 <ResponseManager
+                  ref={responseManager}
                   key={letter.responseId}
                   participantId={state.participant.id}
+                  letterTitle={letter.snapshot.title}
                   response={state.responses[letter.responseId]}
                   initialDraft={state.drafts[letter.id]}
                   onBusy={(value) => {
@@ -553,16 +590,20 @@ export default function Home() {
                   }}
                 />
               ) : (
-                <button
-                  className={s.secondary}
-                  disabled={busy}
-                  onClick={() => {
-                    setManage(true);
-                    setMessage("");
-                  }}
-                >
-                  管理这条回应
-                </button>
+                <section className="e3-response-summary">
+                  <h2>你送出的回应</h2>
+                  <p className={s.story}>{letter.response}</p>
+                  <button
+                    className={s.secondary}
+                    disabled={busy}
+                    onClick={() => {
+                      setManage(true);
+                      setMessage("");
+                    }}
+                  >
+                    管理这条回应
+                  </button>
+                </section>
               )}
             </>
           ) : replyExpanded ? (
@@ -657,7 +698,7 @@ export default function Home() {
           <p className="e3-inbox-subtitle">送给小猫的话，都可以在这里回看。</p>
           {state.letters.filter((l) => l.type === "DEMAND" && !!l.responseId).length ?
             state.letters.filter((l) => l.type === "DEMAND" && !!l.responseId).map((l) =>
-              <button key={l.id} className={s.row} onClick={() => openManaged(l)}>
+              <button key={l.id} className={s.row} onClick={() => open(l, { manage: true, returnTo: { screen: "responses", scrollTop: currentScroll() } })}>
                 <span className={s.meta}>送给{l.snapshot.catName}的回应{l.response ? "" : " · 已删除"}</span>
                 <strong>{l.snapshot.title}</strong>
                 <span className={s.meta}>收到：{new Date(l.delivered_at).toLocaleDateString("zh-CN")}</span>

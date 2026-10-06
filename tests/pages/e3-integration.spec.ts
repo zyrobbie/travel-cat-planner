@@ -186,7 +186,7 @@ test("new adoption schedules one persisted welcome letter and settles it only wh
   await second.clock.install({ time: welcome.at - 1 });
   await second.clock.setFixedTime(welcome.at - 1);
   await second.goto(page.url());
-  await Promise.all([page.clock.runFor(1), second.clock.runFor(1)]);
+  await Promise.all([page.clock.runFor(10), second.clock.runFor(10)]);
   await expect(page.getByRole("button", { name: "看看来信", exact: true })).toBeVisible();
   const settled = await row(page);
   expect(settled.letters).toHaveLength(1);
@@ -462,11 +462,13 @@ test("E3 skip and cancel management preserve reply and correction drafts", async
   await page.getByRole("button", { name: "来信盒", exact: true }).click();
   await page.getByRole("button", { name: /阿橘/ }).click();
   await page.getByRole("button", { name: "管理这条回应" }).click();
+  await page.getByRole("button", { name: "更正这条回应" }).click();
   await page.getByLabel("更正后的回应").fill("想改一改，先保存草稿");
   await expect(page.getByText("更正草稿已保存在本机，尚未提交。", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "取消管理" }).click();
   expect(Object.values((await row(page)).drafts).map((d: any) => d.text)).toEqual(["想改一改，先保存草稿"]);
   await page.getByRole("button", { name: "管理这条回应" }).click();
+  await page.getByRole("button", { name: "更正这条回应" }).click();
   await expect(page.getByLabel("更正后的回应")).toHaveValue("想改一改，先保存草稿");
   await page.evaluate(() => {
     IDBObjectStore.prototype.put = function () { throw new DOMException("synthetic", "QuotaExceededError"); };

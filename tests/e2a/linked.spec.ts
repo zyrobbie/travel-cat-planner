@@ -89,7 +89,7 @@ test("Three complete linked stories, missing/negative/conditional claims fallbac
     await expect(
       page.getByRole("heading", { name: title, exact: true }),
     ).toBeVisible();
-    await expect(page.getByText("看看以前的来信", { exact: true })).toHaveCount(
+    await expect(page.getByText("看看以前说过的话", { exact: true })).toHaveCount(
       0,
     );
     if (story === "L-FIREFLY")
@@ -100,7 +100,7 @@ test("Three complete linked stories, missing/negative/conditional claims fallbac
     await page.getByRole("button", { name: "收好这封信" }).click();
     await page.getByRole("button", { name: "来信盒", exact: true }).click();
     await page.getByRole("button", { name: new RegExp(title) }).click();
-    await page.getByText("看看以前的来信", { exact: true }).click();
+    await page.getByText("看看以前说过的话", { exact: true }).click();
     await expect(page.getByText(full, { exact: true }).first()).toBeVisible();
     if (story === "L-FIREFLY") {
       expect(
@@ -152,10 +152,12 @@ test("Edit invalidates selected story; stale send/version conflicts reject; deli
   await editor.goto(base + "#" + id);
   await openDemandHistory(editor);
   await editor.getByRole("button", { name: "管理这条回应" }).click();
+  await editor.getByRole("button", { name: "更正这条回应" }).click();
   const conflict = await ctx.newPage();
   await conflict.goto(base + "#" + id);
   await openDemandHistory(conflict);
   await conflict.getByRole("button", { name: "管理这条回应" }).click();
+  await conflict.getByRole("button", { name: "更正这条回应" }).click();
   const changed = "独有合成原文二：在山路上累了可以休息。";
   await editor.getByLabel("更正后的回应").fill(changed);
   await editor.getByRole("button", { name: "保存更正" }).click();
@@ -178,6 +180,7 @@ test("Edit invalidates selected story; stale send/version conflicts reject; deli
     (l: any) => l.type === "POSTCARD",
   ).snapshot.body;
   await editor.getByRole("button", { name: "管理这条回应" }).click();
+  await editor.getByRole("button", { name: "更正这条回应" }).click();
   await editor
     .getByLabel("更正后的回应")
     .fill("独有合成原文三：现在的更正不应改写旧故事。");
@@ -191,7 +194,7 @@ test("Edit invalidates selected story; stale send/version conflicts reject; deli
   await control.getByRole("button", { name: "收好这封信" }).click();
   await control.getByRole("button", { name: "来信盒", exact: true }).click();
   await control.getByRole("button", { name: /我走了另一条路/ }).click();
-  await control.getByText("看看以前的来信", { exact: true }).click();
+  await control.getByText("看看以前说过的话", { exact: true }).click();
   await expect(
     control.getByText("这条回应已更正。以下是寄出时使用的旧版本。"),
   ).toBeVisible();
@@ -249,6 +252,7 @@ test("Deleting another local participant does not erase unrelated draft; failed 
   await demand(b, "乙独有的合成回应");
   await openDemandHistory(b);
   await b.getByRole("button", { name: "管理这条回应" }).click();
+  await b.getByRole("button", { name: "更正这条回应" }).click();
   await b.getByLabel("更正后的回应").fill("[SYNTHETIC:UNAVAILABLE]");
   await b.getByRole("button", { name: "保存更正" }).click();
   await expect(b.locator("p[role=alert]")).toContainText("尚未完成更正");
@@ -301,6 +305,7 @@ test("Delete before send invalidates; stale edit cannot resurrect; deleted respo
   await stale.goto(base + "#" + id);
   await openDemandHistory(stale);
   await stale.getByRole("button", { name: "管理这条回应" }).click();
+  await stale.getByRole("button", { name: "更正这条回应" }).click();
   const control = await ctx.newPage();
   await control.addInitScript(() =>
     Object.defineProperty(window, "BroadcastChannel", { value: undefined }),
@@ -381,6 +386,7 @@ test("Two pages simultaneously delete/send and edit/send serialize safely", asyn
     await p.goto(base + "#" + id);
     await openDemandHistory(p);
     await p.getByRole("button", { name: "管理这条回应" }).click();
+    if (mutation === "edit") await p.getByRole("button", { name: "更正这条回应" }).click();
     if (mutation === "delete")
       await p
         .getByRole("button", { name: "删除这条回应", exact: true })
@@ -484,6 +490,7 @@ test("Foreign participant source cannot be selected; intercepted edit stores no 
   await enter(p);
   await openDemandHistory(p);
   await p.getByRole("button", { name: "管理这条回应" }).click();
+  await p.getByRole("button", { name: "更正这条回应" }).click();
   await p.getByLabel("更正后的回应").fill("[SYNTHETIC:INTERCEPT]");
   await p.getByRole("button", { name: "保存更正" }).click();
   await expect(p.getByRole("heading", { name: "独立安全路径" })).toBeVisible();
