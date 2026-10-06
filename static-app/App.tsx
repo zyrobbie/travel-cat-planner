@@ -12,6 +12,23 @@ import {
   type LocalState,
 } from "./store";
 import { selectedId } from "./local-api";
+import { APPEARANCES, countCatName, isAppearanceId, type AppearanceId } from "./model";
+import { responsiveCat } from "./assets";
+import { HomeScene, EventScene, PostcardScene, type HomePose } from "./Scenes";
+import { homePoseForNavigation } from "../ui-daily-core-v1/home-poses.mjs";
+import { effectiveTime } from "./calendar-plan";
+const REVIEW_MODE = ["localhost", "127.0.0.1"].includes(location.hostname) &&
+  !new URLSearchParams(location.search).has("product");
+const ORIGINAL_PREVIEW_URL = "https://zyrobbie.github.io/travel-cat-planner/ui-daily-core-v1/index.html";
+const catNames: Record<AppearanceId, string> = {
+  "cat-01": "橘白", "cat-02": "狸花", "cat-03": "奶油白", "cat-04": "三花",
+};
+const catLines: Record<AppearanceId, [string, string]> = {
+  "cat-01": ["喜欢晒太阳，", "也喜欢挨着你。"],
+  "cat-02": ["耳朵总是先听见", "一点新鲜事。"],
+  "cat-03": ["轻轻靠过来，", "陪你慢一点。"],
+  "cat-04": ["发现一点小事，", "就想告诉你。"],
+};
 const scenes: Record<string, string> = {
   RHINE: "德国 · 莱茵河谷",
   FIREFLY: "日本 · 辰野",
@@ -24,13 +41,17 @@ export default function Home() {
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [controlOpen, setControlOpen] = useState(false),
-    [name, setName] = useState("小咪"),
-    [screen, setScreen] = useState<"home" | "inbox" | "letter" | "success">(
+    [name, setName] = useState(""),
+    [appearance, setAppearance] = useState<AppearanceId | null>(null),
+    [adoptionStep, setAdoptionStep] = useState<"choose" | "name" | "confirm" | "confirmed">("choose"),
+    [screen, setScreen] = useState<"home" | "inbox" | "responses" | "letter" | "success">(
       "home",
     ),
     [letterId, setLetterId] = useState<string | null>(null),
+    [replyExpanded, setReplyExpanded] = useState(false),
     [draft, setDraft] = useState(""),
     [filter, setFilter] = useState("全部"),
+    [unreadOnly, setUnreadOnly] = useState(false),
     [safety, setSafety] = useState(false);
   const [manage, setManage] = useState(false),
     [message, setMessage] = useState(""),
@@ -38,6 +59,8 @@ export default function Home() {
   const generation = useRef(0);
   const [draftStatus, setDraftStatus] = useState("");
   const draftWrite = useRef(0);
+  const draftSavePending = useRef<Promise<unknown>>(Promise.resolve());
+  const homePose = useRef<{ catId: string; pose: HomePose } | null>(null);
   const [saved, setSaved] = useState<LocalState[]>([]);
   const pending = useRef(false);
   const currentView = useRef<{ responseId?: string }>({});
@@ -64,6 +87,7 @@ export default function Home() {
           setLetterId(entry[0]);
           setDraft(entry[1].kind === "reply" ? entry[1].text : "");
           setManage(entry[1].kind === "edit");
+          setReplyExpanded(entry[1].kind === "reply");
           setScreen("letter");
           setFirstRead(false);
           setDraftStatus("已恢复本机草稿，尚未发送。");
@@ -72,10 +96,13 @@ export default function Home() {
           setLetterId(null);
           setManage(false);
           setDraft("");
+          setReplyExpanded(false);
         }
       }
       const rows = await listParticipants();
-      if (epoch === generation.current) setSaved(rows);
+      if (epoch === generation.current) {
+        setSaved(rows);
+      }
     } catch (e) {
       if (epoch === generation.current) {
         setLoadFailed(true);
@@ -93,6 +120,27 @@ export default function Home() {
     initialLoad();
   }, []);
   useEffect(() => {
+    const sync = () => {
+      const viewport = window.visualViewport;
+      const zoomed = !!viewport && Math.abs(viewport.scale - 1) > 0.01;
+      const height = zoomed ? window.innerHeight : (viewport?.height || window.innerHeight);
+      const top = zoomed ? 0 : (viewport?.pageTop ?? ((viewport?.offsetTop || 0) + window.scrollY));
+      document.documentElement.style.setProperty("--e3-viewport-height", `${Math.max(1, height)}px`);
+      document.documentElement.style.setProperty("--e3-viewport-top", `${top}px`);
+    };
+    sync();
+    window.visualViewport?.addEventListener("resize", sync);
+    window.visualViewport?.addEventListener("scroll", sync);
+    window.addEventListener("resize", sync);
+    window.addEventListener("scroll", sync);
+    return () => {
+      window.visualViewport?.removeEventListener("resize", sync);
+      window.visualViewport?.removeEventListener("scroll", sync);
+      window.removeEventListener("resize", sync);
+      window.removeEventListener("scroll", sync);
+    };
+  }, []);
+  useEffect(() => {
     const refresh = () => {
       if (!pending.current && document.visibilityState === "visible")
         reload().catch((e) => setError(e.message));
@@ -106,6 +154,18 @@ export default function Home() {
       window.clearInterval(timer);
     };
   }, []);
+  useEffect(() => {
+    const welcome = state?.calendar.nodes.find(
+      (node) => node.id === "welcome:d0" && !node.result,
+    );
+    if (!welcome || !state) return;
+    const remaining = welcome.at - effectiveTime(state.calendar, Date.now());
+    const timer = window.setTimeout(() => {
+      if (!pending.current && document.visibilityState === "visible")
+        reload().catch((e) => setError(e.message));
+    }, Math.max(0, remaining));
+    return () => window.clearTimeout(timer);
+  }, [state]);
   useEffect(
     () =>
       subscribe((change) => {
@@ -156,6 +216,7 @@ export default function Home() {
       setLetterId(l.id);
       setFirstRead(committed.firstRead);
       setManage(fresh.drafts[l.id]?.kind === "edit");
+      setReplyExpanded(fresh.drafts[l.id]?.kind === "reply");
       setMessage("");
       setDraft(
         fresh.drafts[l.id]?.kind === "reply" ? fresh.drafts[l.id].text : "",
@@ -191,15 +252,42 @@ export default function Home() {
         return;
       }
       setDraft("");
+      setReplyExpanded(false);
       setScreen("success");
       window.scrollTo(0, 0);
       reload().catch(() => {});
     });
   }
+  async function openManaged(l: Letter) {
+    await open(l);
+    if (l.response) setManage(true);
+  }
   const cat = state?.participant.cat_name ?? "小咪",
+    appearanceId = isAppearanceId(state?.participant.appearanceId) ? state!.participant.appearanceId : null,
+    poseCatId = state ? (appearanceId ?? `legacy:${state.participant.id}`) : "",
     letter = state?.letters.find((x) => x.id === letterId),
     latest = state?.letters.find((x) => !x.read_at),
+    visibleLetters = (state?.letters ?? []).filter((l) =>
+      (filter === "全部" || l.type === (filter === "小猫来信" ? "DEMAND" : "POSTCARD")) &&
+      (!unreadOnly || !l.read_at)),
     intercepted = safety || state?.participant.safety_state === "INTERCEPTED";
+  if (state && homePose.current?.catId !== poseCatId) {
+    const navigationType = (performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined)?.type;
+    homePose.current = {
+      catId: poseCatId,
+      pose: homePoseForNavigation({ catId: poseCatId, navigationType, historyPose: history.state?.catLettersHomePoseV1 }) as HomePose,
+    };
+  }
+  useEffect(() => {
+    if (!state || !homePose.current || homePose.current.catId !== poseCatId) return;
+    const previous = history.state;
+    if (previous === null || Object.prototype.toString.call(previous) === "[object Object]")
+      history.replaceState({ ...previous, catLettersHomePoseV1: { catId: poseCatId, pose: homePose.current.pose } }, "");
+  }, [poseCatId]);
+  useEffect(() => {
+    const main = document.querySelector<HTMLElement>(".e3-app-shell > main");
+    main?.scrollTo({ top: 0, behavior: "instant" });
+  }, [screen, letterId, adoptionStep]);
   currentView.current = {
     responseId:
       letter?.responseId &&
@@ -212,19 +300,23 @@ export default function Home() {
     generation.current++;
     history.replaceState(null, "", id ? `#${id}` : location.pathname);
     setDraft("");
+    setReplyExpanded(false);
     setManage(false);
     setMessage("");
     setLetterId(null);
     setScreen("home");
     setSafety(false);
     setControlOpen(false);
+    setAppearance(null);
+    setName("");
+    setAdoptionStep("choose");
     await initialLoad();
   }
   return (
-    <div className={s.shell}>
+    <div className={`${s.shell} e3-app-shell`}>
       <header className={s.header}>
         <span className={s.brand}>有猫来信</span>
-        <button
+        {REVIEW_MODE && <button
           className={s.quiet}
           disabled={busy}
           onClick={() =>
@@ -237,15 +329,15 @@ export default function Home() {
           }
         >
           {controlOpen ? "回到体验" : "演示推进"}
-        </button>
+        </button>}
       </header>
-      <details className={s.note}>
+      {REVIEW_MODE && <details className={s.note}>
         <summary>本机体验与数据说明</summary>
         <p>
-          数据仅保存在此浏览器，清除浏览器数据后可能丢失。没有云端账号或跨设备同步。演示推进中的不同体验仅做本机数据分区，不构成安全隔离；请使用合成内容。当前图片为内部占位，不接
+          数据仅保存在此浏览器，清除浏览器数据后可能丢失。没有云端账号或跨设备同步。演示推进中的不同体验仅做本机数据分区，不构成安全隔离；请使用合成内容。不接
           AI 或真实安全识别服务。
         </p>
-      </details>
+      </details>}
       {error && (
         <p role="alert" className={s.error}>
           {error}
@@ -281,10 +373,17 @@ export default function Home() {
           <button className={s.primary} onClick={() => initialLoad()}>
             重试
           </button>
+          <button className={s.secondary} onClick={() => selectExperience("")}>
+            查看本机已有体验
+          </button>
         </main>
       ) : !state ? (
-        <main>
-          {saved.length > 0 && (
+        <main className="e3-adoption-page">
+          {adoptionStep === "choose" && <aside className="e3-separate-data">
+            新版在本机独立测试；<a href={ORIGINAL_PREVIEW_URL}>原审阅入口</a>和记录继续保留。
+            两份数据不迁入、不合并，也不会互相覆盖。
+          </aside>}
+          {adoptionStep === "choose" && saved.length > 0 && (
             <section>
               <h2>继续已有体验</h2>
               {saved.map((p) => (
@@ -300,38 +399,54 @@ export default function Home() {
               <hr className={s.divider} />
             </section>
           )}
-          <div className={s.scene}>小猫形象 · 内部占位</div>
-          <h1>这是一只还在慢慢长大的小猫。</h1>
-          <p className={s.note}>
-            数据仅保存在此浏览器，清除浏览器数据后可能丢失。
-          </p>
-          <p>
-            它会把每天的小事写给你。
-            <br />
-            你想回的时候就回几句，不想回也没关系。
-          </p>
-          <p>有时候，它会自己跑出去旅行，再从远方寄信回来。</p>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              run(async () => {
-                await api("start", { name });
-                await reload();
-              });
-            }}
-          >
-            <label htmlFor="name">给它起个名字吧</label>
-            <input
-              id="name"
-              maxLength={12}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-            <button disabled={busy || !name.trim()} className={s.primary}>
-              开始一起生活
-            </button>
-          </form>
+          {adoptionStep === "choose" ? <>
+              <h1>选一只你喜欢的小猫吧</h1>
+              <p className={s.note}>以后，它会一直是陪你生活和旅行的那一只。</p>
+              <fieldset className="e3-adoption-cats">
+                <legend className="e3-visually-hidden">选择小猫外观</legend>
+                {APPEARANCES.map((id) => {
+                  const source = responsiveCat(id);
+                  return <label key={id} className={`e3-adoption-card${appearance === id ? " is-selected" : ""}`}>
+                    <input type="radio" name="cat-appearance" value={id} checked={appearance === id} onChange={() => setAppearance(id)} aria-label={`选择${catNames[id]}猫`} />
+                    <img src={source.src} srcSet={source.srcSet} sizes="(max-width:600px) 42vw, 180px" alt={`${catNames[id]}猫完整全身像`} />
+                    <strong>{catNames[id]}</strong>
+                    <span className="e3-choice-line"><span>{catLines[id][0]}</span><span>{catLines[id][1]}</span></span>
+                    <span className="e3-choice-control">{appearance === id ? "◉ 已选择" : "○ 想认识它"}</span>
+                  </label>;
+                })}
+              </fieldset>
+              <button type="button" className={s.primary} disabled={!appearance} onClick={() => { setAdoptionStep("name"); window.scrollTo(0, 0); }}>继续</button>
+              <p className={s.note}>数据仅保存在此浏览器，清除浏览器数据后可能丢失。</p>
+            </> : adoptionStep === "name" && appearance ? <>
+              <button type="button" className={s.quiet} onClick={() => setAdoptionStep("choose")}>← 返回</button>
+              <h1>给它起个名字吧</h1>
+              <div className="e3-adoption-single"><img {...responsiveCat(appearance)} sizes="200px" alt={`${catNames[appearance]}猫完整全身像`} /></div>
+              <form onSubmit={(e) => { e.preventDefault(); if (name.trim() && countCatName(name) <= 12) setAdoptionStep("confirm"); }}>
+                <label htmlFor="name">给它起个名字吧</label>
+                <input id="name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" placeholder="给它起个名字" required />
+                <p className="e3-name-count">{countCatName(name)} / 12</p>
+                <button className={s.primary} disabled={!name.trim() || countCatName(name) > 12}>继续</button>
+              </form>
+            </> : adoptionStep === "confirm" && appearance ? <>
+              <button type="button" className={s.quiet} onClick={() => setAdoptionStep("name")}>← 返回</button>
+              <h1>确认领养</h1>
+              <div className="e3-adoption-single"><img {...responsiveCat(appearance)} sizes="200px" alt={`${catNames[appearance]}猫完整全身像`} /></div>
+              <h2 className="e3-confirm-name">{name.trim()}</h2>
+              <p>以后，就和它一起生活啦。</p>
+              <p className="e3-adoption-rule">这份本机体验确认后，小猫的外观就固定了。请确认你的选择。</p>
+              <div className="e3-confirm-actions">
+                <button type="button" className={s.secondary} disabled={busy} onClick={() => setAdoptionStep("choose")}>再看看</button>
+                <button type="button" className={s.primary} disabled={busy} onClick={() => run(async () => {
+                  await api("start", { name, appearanceId: appearance });
+                  setAdoptionStep("confirmed");
+                  await reload();
+                })}>确认领养</button>
+              </div>
+            </> : <>
+              <h1>已确认领养</h1>
+              <p>正在打开这只小猫的本机记录。如果暂时没能读取，可以再试一次。</p>
+              <button type="button" className={s.primary} onClick={() => run(async () => { await reload(); })}>重新读取</button>
+            </>}
         </main>
       ) : intercepted ? (
         <main>
@@ -340,18 +455,29 @@ export default function Home() {
           <p>这里仅用于验证状态与数据隔离，不提供真实危机识别或专业支持。</p>
         </main>
       ) : screen === "success" ? (
-        <main className={s.success}>
-          <h1 role="status">送出去啦。</h1>
-          <button className={s.primary} onClick={() => setScreen("home")}>
-            回到{cat}身边
-          </button>
+        <main className={`${s.success} e3-success-page`}>
+          <div className="e3-success-content">
+            <div className="e3-success-panel">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="m5 12 4 4L19 6" />
+              </svg>
+              <h1 role="status">送出去啦。</h1>
+            </div>
+            <button className={s.primary} onClick={() => setScreen("home")}>
+              回到{cat}身边
+            </button>
+          </div>
         </main>
       ) : screen === "letter" && letter ? (
-        <main>
+        <main className="e3-detail-page">
           <button
             disabled={busy}
             className={s.quiet}
             onClick={() => {
+              if (manage) {
+                setError("请先点“取消管理”保存草稿，再返回来信盒。");
+                return;
+              }
               setManage(false);
               setScreen("inbox");
             }}
@@ -360,9 +486,7 @@ export default function Home() {
           </button>
           {letter.type === "POSTCARD" ? (
             <>
-              <div className={`${s.scene} ${s.postScene}`}>
-                旅行画面 · 内部占位
-              </div>
+              <PostcardScene letter={letter} appearance={appearanceId} />
               <p className={s.meta}>
                 {scenes[letter.snapshot.scene ?? ""]} ·{" "}
                 {[letter.snapshot.season, letter.snapshot.timeOfDay]
@@ -372,13 +496,17 @@ export default function Home() {
               <h1>{letter.snapshot.title}</h1>
             </>
           ) : (
-            <h1>{letter.snapshot.catName}的来信</h1>
+            <>
+              <EventScene letter={letter} appearance={appearanceId} />
+              <h1>{letter.snapshot.catName}的来信</h1>
+            </>
           )}
           <p className={s.meta}>
             收到日期：
             {new Date(letter.delivered_at).toLocaleDateString("zh-CN")}
           </p>
           <article className={s.letter}>
+            {letter.type === "DEMAND" && <h2 className="e3-demand-title">{letter.snapshot.title}</h2>}
             <div className={s.story}>{letter.snapshot.body}</div>
           </article>
           {message && !letter.response && <p role="status">{message}</p>}
@@ -390,6 +518,11 @@ export default function Home() {
                 收好这封信
               </button>
             </>
+          ) : letter.responseId && state.responses[letter.responseId]?.status === "DELETED" ? (
+            <section className="e3-deleted-response">
+              <h2>你送出的回应</h2>
+              <p>这条回应已删除。原来的来信和已寄出的旅行信仍保留。</p>
+            </section>
           ) : letter.response ? (
             <>
               <h2>那次你对{letter.snapshot.catName}说：</h2>
@@ -405,7 +538,10 @@ export default function Home() {
                     pending.current = value;
                     setBusy(value);
                   }}
-                  onCancel={() => setManage(false)}
+                  onCancel={async () => {
+                    await reload();
+                    setManage(false);
+                  }}
                   onDone={(result) => {
                     setManage(false);
                     setDraft("");
@@ -429,7 +565,7 @@ export default function Home() {
                 </button>
               )}
             </>
-          ) : (
+          ) : replyExpanded ? (
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -446,7 +582,7 @@ export default function Home() {
                     sequence = ++draftWrite.current;
                   setDraft(text);
                   setDraftStatus("正在保存草稿…");
-                  saveDraft(
+                  draftSavePending.current = saveDraft(
                     state.participant.id,
                     letter.id,
                     "reply",
@@ -473,7 +609,6 @@ export default function Home() {
                 <details>
                   <summary>看看小提示</summary>
                   <div className={s.inset}>
-                    <small>内部草案，尚未专业审核</small>
                     <p className={s.tip}>{letter.snapshot.tip}</p>
                   </div>
                 </details>
@@ -487,8 +622,11 @@ export default function Home() {
                 className={s.secondary}
                 onClick={() =>
                   run(async () => {
+                    await draftSavePending.current.catch(() => {});
+                    if (draft) await saveDraft(state.participant.id, letter.id, "reply", draft, letter.responseId ?? null, null);
                     await api(`letters/${letter.id}/skip`, {});
                     setDraft("");
+                    setReplyExpanded(false);
                     await reload();
                     setScreen("home");
                   })
@@ -497,83 +635,106 @@ export default function Home() {
                 这次先不回
               </button>
             </form>
+          ) : (
+            <div className="e3-read-actions">
+              <button type="button" className={s.primary} disabled={busy} onClick={() => setReplyExpanded(true)}>给它回信</button>
+              <button type="button" className={s.secondary} disabled={busy} onClick={() => run(async () => {
+                await draftSavePending.current.catch(() => {});
+                if (draft) await saveDraft(state.participant.id, letter.id, "reply", draft, letter.responseId ?? null, null);
+                await api(`letters/${letter.id}/skip`, {});
+                setReplyExpanded(false);
+                setDraft("");
+                await reload();
+                setScreen("home");
+              })}>这次先不回</button>
+            </div>
           )}
         </main>
+      ) : screen === "responses" ? (
+        <main className="e3-inbox-page">
+          <button className={s.quiet} onClick={() => setScreen("inbox")}>← 返回来信盒</button>
+          <h1>管理我的回应</h1>
+          <p className="e3-inbox-subtitle">送给小猫的话，都可以在这里回看。</p>
+          {state.letters.filter((l) => l.type === "DEMAND" && !!l.responseId).length ?
+            state.letters.filter((l) => l.type === "DEMAND" && !!l.responseId).map((l) =>
+              <button key={l.id} className={s.row} onClick={() => openManaged(l)}>
+                <span className={s.meta}>送给{l.snapshot.catName}的回应{l.response ? "" : " · 已删除"}</span>
+                <strong>{l.snapshot.title}</strong>
+                <span className={s.meta}>收到：{new Date(l.delivered_at).toLocaleDateString("zh-CN")}</span>
+              </button>) : <p className={s.empty}>还没有送出的回应。</p>}
+        </main>
       ) : screen === "inbox" ? (
-        <main>
-          <h1>来信盒</h1>
+        <main className="e3-inbox-page">
+          <div className="e3-inbox-heading"><h1>来信盒</h1><button type="button" className={s.quiet} onClick={() => setScreen("responses")}>管理我的回应</button></div>
+          <p className="e3-inbox-subtitle">它写过的小事，都收在这里。</p>
           <div className={s.tabs}>
-            {["全部", "在家时", "旅行时"].map((f) => (
+            {["全部", "小猫来信", "旅行来信"].map((f) => (
               <button
                 className={filter === f ? s.active : ""}
                 key={f}
                 onClick={() => setFilter(f)}
+                aria-pressed={filter === f}
               >
                 {f}
               </button>
             ))}
+            <label className="e3-unread-toggle"><input type="checkbox" checked={unreadOnly} onChange={(e) => setUnreadOnly(e.target.checked)} />只看未读</label>
           </div>
-          {state.letters.length === 0 ? (
-            <p className={s.empty}>这里还没有来信。</p>
+          {visibleLetters.length === 0 ? (
+            <section className="e3-inbox-empty">
+              <h2>{state.letters.length ? "没有符合筛选的来信" : "来信盒里还没有信。"}</h2>
+              <p>{state.letters.length ? "换一个筛选，以前的信都还在。" : "小猫写给你的信，会收在这里。"}</p>
+              {state.letters.length > 0 && <button type="button" className={s.quiet} onClick={() => { setFilter("全部"); setUnreadOnly(false); }}>查看全部</button>}
+            </section>
           ) : (
-            state.letters
-              .filter(
-                (l) =>
-                  filter === "全部" ||
-                  l.type === (filter === "在家时" ? "DEMAND" : "POSTCARD"),
-              )
-              .map((l) => (
+            visibleLetters.map((l) => (
                 <button key={l.id} className={s.row} onClick={() => open(l)}>
+                  <span className="e3-inbox-kind">{l.type === "POSTCARD" ? "旅行来信" : "小猫来信"}<span>{l.read_at ? "已读" : "● 未读"}</span></span>
                   <strong>
-                    {l.type === "POSTCARD"
-                      ? l.snapshot.title
-                      : `${l.snapshot.catName}的来信 · ${l.snapshot.title}`}
+                    {l.snapshot.title}
                   </strong>
                   <span className={s.meta}>
-                    {new Date(l.delivered_at).toLocaleDateString("zh-CN")} ·{" "}
-                    {l.type === "POSTCARD" ? "明信片" : "在家时"}
-                    {!l.read_at ? " · 未读" : ""}
+                    收到：{new Date(l.delivered_at).toLocaleDateString("zh-CN")}
+                    {state.drafts[l.id]?.kind === "reply" ? " · 有一份未写完的回应" : ""}
                   </span>
                 </button>
               ))
           )}
         </main>
       ) : (
-        <main>
+        <main className="e3-home-page">
           <h1>
             {cat}{" "}
             <small className={s.meta}>{state.trip ? "旅行中" : "在家"}</small>
           </h1>
-          <div className={s.scene}>
-            {state.trip ? "旅行画面" : "小猫小场景"} · 内部占位
-          </div>
+          <HomeScene key={`${appearanceId}:${!!state.trip}:${homePose.current?.pose}`} appearance={appearanceId} name={cat} trip={!!state.trip} pose={homePose.current?.pose ?? "sit"} />
           {state.trip ? (
-            <>
+            <div className="e3-life-copy">
               <h2>{cat}出去旅行啦 🐾</h2>
               <p className={s.meta}>它什么时候寄信回来？不知道呢。</p>
-            </>
+            </div>
           ) : null}
           {latest ? (
-            <>
+            <section className="e3-new-letter">
               <h2>
                 {latest.type === "POSTCARD"
-                  ? "远方来了一封信！"
-                  : "今天有一封来信"}
+                  ? state.trip ? "旅行中寄来一封信" : "旅行时寄来的信，还没打开"
+                  : "有一封来信，还没打开"}
               </h2>
+              <p className={s.meta}>收到：{new Date(latest.delivered_at).toLocaleDateString("zh-CN")}</p>
               {latest.type === "DEMAND" && (
                 <p className={s.story}>{latest.snapshot.body}</p>
               )}
               <button className={s.primary} onClick={() => open(latest)}>
                 {latest.type === "POSTCARD" ? "打开看看" : "看看来信"}
               </button>
-            </>
+            </section>
+          ) : state.trip ? (
+            <p className="e3-empty-letter">暂时没有新来信。</p>
           ) : (
-            <>
-              <h2>
-                {state.trip ? `${cat}还在外面转悠呢。` : "今天没有新来信。"}
-              </h2>
-              {!state.trip && <p>{cat}正在窗边追一块光。</p>}
-            </>
+            <div className="e3-life-copy">
+              <h2>今天没有新来信。</h2>
+            </div>
           )}
           <button className={s.secondary} onClick={() => setScreen("inbox")}>
             看看以前的来信
@@ -594,7 +755,7 @@ export default function Home() {
       {!controlOpen &&
         state?.participant.status === "ACTIVE" &&
         !intercepted &&
-        (screen === "home" || screen === "inbox") && (
+        (screen === "home" || screen === "inbox" || screen === "responses") && (
           <nav aria-label="主要导航" className={s.nav}>
             <button
               className={screen === "home" ? s.selected : ""}
@@ -603,7 +764,7 @@ export default function Home() {
               {cat}
             </button>
             <button
-              className={screen === "inbox" ? s.selected : ""}
+              className={screen === "inbox" || screen === "responses" ? s.selected : ""}
               onClick={() => setScreen("inbox")}
             >
               来信盒

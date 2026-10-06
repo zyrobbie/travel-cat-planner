@@ -19,8 +19,20 @@ export async function snapshot(page: Page) {
   });
 }
 export async function name(page: Page, value: string) {
-  await page.getByLabel("给它起个名字吧").fill(value);
-  await page.getByRole("button", { name: "开始一起生活", exact: true }).click();
+  const appearance = page.getByRole("radio", { name: "选择橘白猫" });
+  const nameField = page.getByLabel("给它起个名字吧");
+  await expect(appearance.or(nameField).first()).toBeVisible();
+  if (await appearance.isVisible()) {
+    await appearance.check();
+    await page.getByRole("button", { name: "继续", exact: true }).click();
+  }
+  await nameField.fill(value);
+  if (await page.getByRole("button", { name: "开始一起生活", exact: true }).count())
+    await page.getByRole("button", { name: "开始一起生活", exact: true }).click();
+  else {
+    await page.getByRole("button", { name: "继续", exact: true }).click();
+    await page.getByRole("button", { name: "确认领养", exact: true }).click();
+  }
   await expect(
     page.getByText("今天没有新来信。", { exact: true }),
   ).toBeVisible();
@@ -38,6 +50,11 @@ export async function openControl(page: Page) {
 export async function enter(page: Page) {
   await page.getByRole("button", { name: "进入此体验", exact: true }).click();
 }
+export async function expand(page: Page) {
+  const button = page.getByRole("button", { name: "给它回信", exact: true });
+  await expect(button.or(page.getByLabel("你想跟它说什么？")).first()).toBeVisible();
+  if (await button.isVisible()) await button.click();
+}
 export async function act(page: Page, label: string) {
   await page.getByRole("button", { name: label, exact: true }).click();
   await expect(
@@ -49,6 +66,7 @@ export async function demand(page: Page, text: string) {
   await act(page, "投递下一需求卡");
   await enter(page);
   await page.getByRole("button", { name: "看看来信", exact: true }).click();
+  await expand(page);
   await page.getByLabel("你想跟它说什么？").fill(text);
   await page.getByRole("button", { name: "送出去", exact: true }).click();
   await expect(page.getByRole("status")).toHaveText("送出去啦。");
@@ -70,6 +88,8 @@ export async function mark(
       .check();
 }
 export async function openDemandHistory(page: Page, title = "阿橘") {
+  const cancel = page.getByRole("button", { name: "取消管理", exact: true });
+  if (await cancel.isVisible()) await cancel.click();
   await page
     .getByRole("button", { name: /^(← )?来信盒$/ })
     .first()

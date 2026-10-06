@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-const base = "http://127.0.0.1:4173/travel-cat-planner/app/";
+const base = `http://127.0.0.1:${process.env.PAGES_TEST_PORT ?? 4173}/travel-cat-planner/app/`;
 async function data(page: Page) {
   return page.evaluate(async () => {
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
@@ -19,8 +19,11 @@ async function data(page: Page) {
   });
 }
 async function name(page: Page, value: string) {
+  await page.getByRole("radio", { name: "选择橘白猫" }).check();
+  await page.getByRole("button", { name: "继续", exact: true }).click();
   await page.getByLabel("给它起个名字吧").fill(value);
-  await page.getByRole("button", { name: "开始一起生活" }).click();
+  await page.getByRole("button", { name: "继续", exact: true }).click();
+  await page.getByRole("button", { name: "确认领养", exact: true }).click();
   await expect(
     page.getByText("今天没有新来信。", { exact: true }),
   ).toBeVisible();
@@ -34,6 +37,11 @@ async function consoleOpen(page: Page) {
 async function enter(page: Page) {
   await page.getByRole("button", { name: "进入此体验", exact: true }).click();
 }
+async function expand(page: Page) {
+  const button = page.getByRole("button", { name: "给它回信", exact: true });
+  await expect(button.or(page.getByLabel("你想跟它说什么？")).first()).toBeVisible();
+  if (await button.isVisible()) await button.click();
+}
 
 test("Static P1–P6, refresh persistence, double tabs, zero response travel and local partitions", async ({
   browser,
@@ -46,7 +54,7 @@ test("Static P1–P6, refresh persistence, double tabs, zero response travel and
     external: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("request", (r) => {
-    if (!r.url().startsWith("http://127.0.0.1:4173")) external.push(r.url());
+    if (!r.url().startsWith(new URL(base).origin)) external.push(r.url());
   });
   await page.goto(base);
   await expect(
@@ -68,6 +76,7 @@ test("Static P1–P6, refresh persistence, double tabs, zero response travel and
   await expect.poll(async () => (await data(page))[0].letters.length).toBe(1);
   await page.getByRole("button", { name: "回到体验", exact: true }).click();
   await page.getByRole("button", { name: "看看来信", exact: true }).click();
+  await expand(page);
   await page.getByLabel("你想跟它说什么？").fill("合成回应甲");
   await expect(page.getByText("草稿已保存在本机，尚未发送。")).toBeVisible();
   const second = await ctx.newPage();
@@ -77,6 +86,7 @@ test("Static P1–P6, refresh persistence, double tabs, zero response travel and
     Object.defineProperty(window, "BroadcastChannel", { value: undefined });
   });
   await second.goto(urlA);
+  await expand(second);
   await expect(second.getByLabel("你想跟它说什么？")).toHaveValue("合成回应甲");
   await second.getByLabel("你想跟它说什么？").fill("合成回应甲");
   await Promise.all([
@@ -107,6 +117,7 @@ test("Static P1–P6, refresh persistence, double tabs, zero response travel and
   await page.getByRole("button", { name: "刷新演示状态" }).click();
   await enter(page);
   await page.getByRole("button", { name: "看看来信", exact: true }).click();
+  await expand(page);
   await page.getByLabel("你想跟它说什么？").fill("合成回应乙");
   await page.getByRole("button", { name: "送出去", exact: true }).click();
   await expect(page.getByRole("status")).toHaveText("送出去啦。");
@@ -123,6 +134,7 @@ test("Static P1–P6, refresh persistence, double tabs, zero response travel and
     .click();
   await enter(page);
   await page.getByRole("button", { name: "看看来信", exact: true }).click();
+  await expand(page);
   await expect(page.getByLabel("你想跟它说什么？")).toBeVisible();
   await page.screenshot({
     path: "/tmp/catletters-pages-evidence/p3-mobile.png",
@@ -217,6 +229,7 @@ test("Unavailable storage and aborted writes never report success", async ({
   await page.getByRole("button", { name: "投递下一需求卡" }).click();
   await enter(page);
   await page.getByRole("button", { name: "看看来信", exact: true }).click();
+  await expand(page);
   await page.getByLabel("你想跟它说什么？").fill("不会保存的合成内容");
   await page.evaluate(() => {
     IDBObjectStore.prototype.put = function () {
@@ -285,6 +298,7 @@ test("Delayed reads cannot select the wrong participant; pending sends cannot sw
   expect(rows.find((x) => x.participant.id === idB).letters).toHaveLength(0);
   await enter(page);
   await page.getByRole("button", { name: "看看来信", exact: true }).click();
+  await expand(page);
   await page.getByLabel("你想跟它说什么？").fill("延迟合成发送");
   await page.evaluate(() => {
     const original = IDBObjectStore.prototype.put;

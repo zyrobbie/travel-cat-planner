@@ -9,6 +9,7 @@ import {
   demand,
   storeCall,
   mark,
+  expand,
 } from "./helpers";
 const T0 = Date.UTC(2026, 8, 13),
   DAY = 86400000;
@@ -22,6 +23,7 @@ test("Reply and edit drafts survive hard refresh, remain non-sources, and deleti
   await act(page, "投递下一需求卡");
   await enter(page);
   await page.getByRole("button", { name: "看看来信", exact: true }).click();
+  await expand(page);
   await page.getByLabel("你想跟它说什么？").fill("尚未发送的独有草稿");
   await expect(
     page.getByText("草稿已保存在本机，尚未发送。", { exact: true }),
@@ -386,6 +388,7 @@ test("Unread mail takes priority on cold return, while reply/edit drafts persist
       }
       const label = kind === "edit" ? "更正后的回应" : "你想跟它说什么？",
         text = `${kind}返回仍保留的合成草稿`;
+      if (kind === "reply") await expand(p);
       await p.getByLabel(label).fill(text);
       await expect(
         p.getByText(
@@ -414,7 +417,7 @@ test("Unread mail takes priority on cold return, while reply/edit drafts persist
           .click();
       }
       await expect(
-        p.getByRole("heading", { name: "今天有一封来信", exact: true }),
+        p.getByRole("heading", { name: "有一封来信，还没打开", exact: true }),
       ).toBeVisible();
       const after = (await snapshot(p)).rows[0];
       expect(after.drafts).toEqual(before.drafts);

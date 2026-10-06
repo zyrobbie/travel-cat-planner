@@ -9,6 +9,12 @@ import type {
   Letter as PreviousLetter,
 } from "../src/app/client-api";
 export class LocalError extends Error {}
+export const APPEARANCES = ["cat-01", "cat-02", "cat-03", "cat-04"] as const;
+export type AppearanceId = (typeof APPEARANCES)[number];
+export const isAppearanceId = (value: unknown): value is AppearanceId =>
+  typeof value === "string" && APPEARANCES.some((id) => id === value);
+export const countCatName = (value: string) =>
+  [...new Intl.Segmenter("zh", { granularity: "grapheme" }).segment(value.trim())].length;
 export type Claim = "rest" | "companionship" | "care_value" | "new_friends";
 export const stories = [
   {
@@ -63,7 +69,11 @@ export type Review = {
   sources: Evidence[];
   reason: string;
 };
-export type Letter = PreviousLetter & {
+export type Letter = Omit<PreviousLetter, "snapshot"> & {
+  snapshot: PreviousLetter["snapshot"] & {
+    contentId?: string;
+    contentVersion?: string;
+  };
   tripId?: string;
   responseId?: string;
   sourceRefs?: Evidence[];
@@ -76,7 +86,8 @@ export type Draft = {
   revision: number | null;
   updatedAt: string;
 };
-export type LocalState = Omit<PreviousAppState, "letters"> & {
+export type LocalState = Omit<PreviousAppState, "letters" | "participant"> & {
+  participant: PreviousAppState["participant"] & { appearanceId?: AppearanceId };
   schema: 3;
   calendar: Calendar;
   drafts: Record<string, Draft>;
@@ -102,6 +113,8 @@ const letterSchema = z
       .object({
         title: z.string(),
         body: z.string(),
+        contentId: z.string().optional(),
+        contentVersion: z.string().optional(),
         catName: z.string(),
         tip: z.string().nullable(),
         scene: z.string().nullable(),
@@ -118,7 +131,8 @@ const base = z
     participant: z
       .object({
         id: z.string().uuid(),
-        cat_name: z.string().min(1).max(12),
+        cat_name: z.string().min(1).refine((value) => countCatName(value) <= 12),
+        appearanceId: z.enum(APPEARANCES).optional(),
         status: z.literal("ACTIVE"),
         safety_state: z.enum(["CLEAR", "INTERCEPTED"]),
       })

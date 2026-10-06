@@ -1,4 +1,5 @@
 import frozen from "../src/content/frozen.json";
+import { contentById, LIGHT_DEMAND } from "./content";
 import {
   LocalError,
   type LocalState,
@@ -21,7 +22,7 @@ export function deliverContent(
   assertVacancy(state);
   if (state.participant.safety_state !== "CLEAR")
     throw new LocalError("合成安全路径中不能投递。");
-  const c = frozen.items.find((c) => c.id === contentId);
+  const c = contentById(contentId);
   if (!c || !["DEMAND", "ORDINARY", "LINKED"].includes(c.type))
     throw new LocalError("没有可用的冻结正文。");
   if (
@@ -49,9 +50,11 @@ export function deliverContent(
     snapshot: {
       title: c.title,
       body: c.body,
+      contentId: c.id,
+      contentVersion: c.version,
       catName: state.participant.cat_name!,
       tip:
-        frozen.items.find((t) => t.id === c.id.replace("D-", "TIPS-"))?.body ??
+        (c.id === LIGHT_DEMAND.id ? LIGHT_DEMAND.tip : frozen.items.find((t) => t.id === c.id.replace("D-", "TIPS-"))?.body) ??
         null,
       scene: c.sceneId,
       season: c.narrativeSeason,
