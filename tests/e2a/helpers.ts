@@ -88,8 +88,13 @@ export async function mark(
       .check();
 }
 export async function openDemandHistory(page: Page, title = "阿橘") {
+  // A reload may restore an edit draft after navigation has already completed.
+  await expect(page.locator("main")).toBeVisible();
   const cancel = page.getByRole("button", { name: "取消管理", exact: true });
-  if (await cancel.isVisible()) await cancel.click();
+  if (await cancel.isVisible()) {
+    await cancel.click();
+    await expect(cancel).toBeHidden();
+  }
   await page
     .getByRole("button", { name: /^(← )?来信盒$/ })
     .first()
