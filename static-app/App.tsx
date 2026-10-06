@@ -410,9 +410,8 @@ export default function Home() {
                   return <label key={id} className={`e3-adoption-card${appearance === id ? " is-selected" : ""}`}>
                     <input type="radio" name="cat-appearance" value={id} checked={appearance === id} onChange={() => setAppearance(id)} aria-label={`选择${catNames[id]}猫`} />
                     <img src={source.src} srcSet={source.srcSet} sizes="(max-width:600px) 42vw, 180px" alt={`${catNames[id]}猫完整全身像`} />
-                    <strong>{catNames[id]}</strong>
+                    <span className="e3-card-meta"><strong>{catNames[id]}</strong><span className="e3-choice-control">{appearance === id ? "◉ 已选择" : "○ 想认识它"}</span></span>
                     <span className="e3-choice-line"><span>{catLines[id][0]}</span><span>{catLines[id][1]}</span></span>
-                    <span className="e3-choice-control">{appearance === id ? "◉ 已选择" : "○ 想认识它"}</span>
                   </label>;
                 })}
               </fieldset>

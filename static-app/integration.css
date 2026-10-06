@@ -97,12 +97,13 @@ body{background:var(--e3-bg);color:var(--e3-ink)}
 /* Accepted compact A/B/C adoption composition. */
 .e3-app-shell .e3-adoption-page{width:100%;max-width:430px;margin:0 auto;padding-top:14px}
 .e3-app-shell .e3-adoption-page .e3-adoption-cats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;max-width:none;margin:12px 0 0}
-.e3-app-shell .e3-adoption-card{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:152px 6px 28px 4px 42px;align-content:start;gap:0;height:250px;min-height:0;padding:8px 10px;text-align:left}
+.e3-app-shell .e3-adoption-card{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:152px 6px minmax(28px,auto) 4px minmax(42px,auto);align-content:start;gap:0;height:auto;min-height:250px;padding:8px 10px;text-align:left}
 .e3-app-shell .e3-adoption-card img{grid-column:1/-1;grid-row:1;width:100%;height:152px;margin:0;object-fit:contain}
-.e3-app-shell .e3-adoption-card strong{grid-column:1;grid-row:3;white-space:nowrap;font:600 20px/28px var(--e3-story)}
+.e3-app-shell .e3-adoption-card .e3-card-meta{grid-column:1;grid-row:3;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0 8px;min-width:0}
+.e3-app-shell .e3-adoption-card strong{min-width:0;overflow-wrap:anywhere;font:600 20px/28px var(--e3-story)}
 .e3-app-shell .e3-adoption-card .e3-choice-line{grid-column:1/-1;grid-row:5;color:var(--e3-muted);font-size:14px;line-height:21px;min-width:0;overflow-wrap:break-word;text-wrap:pretty}
-.e3-app-shell .e3-adoption-card .e3-choice-line span{display:block;white-space:nowrap}
-.e3-app-shell .e3-adoption-card .e3-choice-control{grid-column:2;grid-row:3;align-self:center;white-space:nowrap;color:var(--e3-muted);font-size:12px;line-height:20px}
+.e3-app-shell .e3-adoption-card .e3-choice-line span{display:block}
+.e3-app-shell .e3-adoption-card .e3-choice-control{min-width:0;margin-left:auto;overflow-wrap:anywhere;text-align:right;color:var(--e3-muted);font-size:12px;line-height:20px}
 .e3-app-shell .e3-adoption-card.is-selected .e3-choice-control{color:var(--e3-accent)}
 .e3-app-shell .e3-adoption-page>.e3-adoption-cats+button{width:100%;margin-top:12px}
 .e3-app-shell .e3-adoption-page>.e3-adoption-cats+button+p{text-align:center;margin-top:8px;font-size:12px}
@@ -117,7 +118,7 @@ body{background:var(--e3-bg);color:var(--e3-ink)}
 .e3-app-shell .e3-detail-page .e3-demand-title{font:600 21px/1.5 var(--e3-story);margin:0 0 14px}
 .e3-app-shell .e3-detail-page .e3-read-actions{display:flex;justify-content:space-between;gap:10px;margin:20px 0 0}
 .e3-app-shell .e3-detail-page .e3-read-actions button{flex:1;margin:0;min-width:0}
-@media(max-width:359px){.e3-app-shell .e3-adoption-page .e3-adoption-cats{gap:8px}.e3-app-shell .e3-adoption-card{height:268px;grid-template-rows:145px 5px 28px 4px 70px;padding:8px 8px}.e3-app-shell .e3-adoption-card img{height:145px}.e3-app-shell .e3-adoption-card .e3-choice-control{grid-column:1/-1;grid-row:5;align-self:start}.e3-app-shell .e3-adoption-card .e3-choice-line{grid-row:5;margin-top:23px;font-size:13px;line-height:18px}}
+@media(max-width:359px){.e3-app-shell .e3-adoption-page .e3-adoption-cats{gap:8px}.e3-app-shell .e3-adoption-card{min-height:268px;grid-template-rows:145px 5px minmax(28px,auto) 4px minmax(70px,auto);padding:8px 8px}.e3-app-shell .e3-adoption-card img{height:145px}.e3-app-shell .e3-adoption-card .e3-choice-line{font-size:13px;line-height:18px}}
 
 .e3-app-shell .e3-inbox-heading{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .e3-app-shell .e3-inbox-heading h1{font:500 28px/1.45 var(--e3-story);margin:0}

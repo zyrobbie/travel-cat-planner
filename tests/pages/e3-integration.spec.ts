@@ -381,6 +381,47 @@ test("E3 narrow phone and desktop keep the adoption and home layouts within the 
   }
 });
 
+test("E3 adoption cards grow without text overlap at 200% text size", async ({ browser }) => {
+  for (const width of [320, 390, 1280]) {
+    const context = await browser.newContext({ viewport: { width, height: 900 } });
+    const page = await context.newPage();
+    await page.goto(`${base}?product=1`);
+    await expect(page.getByRole("radio")).toHaveCount(4);
+    await page.evaluate(() => {
+      for (const element of document.querySelectorAll<HTMLElement>("body *")) {
+        const style = getComputedStyle(element);
+        element.style.fontSize = `${parseFloat(style.fontSize) * 2}px`;
+        if (style.lineHeight !== "normal") element.style.lineHeight = `${parseFloat(style.lineHeight) * 2}px`;
+      }
+    });
+    await page.locator(".e3-adoption-card").first().scrollIntoViewIfNeeded();
+    await page.screenshot({ path: `${shots}/adoption-text200-${width}.png` });
+    const geometry = await page.locator(".e3-adoption-card").evaluateAll((cards) => cards.map((card) => {
+      const bounds = card.getBoundingClientRect();
+      const name = card.querySelector("strong")!.getBoundingClientRect();
+      const choice = card.querySelector(".e3-choice-control")!.getBoundingClientRect();
+      const lines = card.querySelector(".e3-choice-line")!.getBoundingClientRect();
+      const image = card.querySelector("img")!.getBoundingClientRect();
+      return {
+        imageClear: image.bottom <= Math.min(name.top, choice.top) + 1,
+        labelsSeparate: name.right <= choice.left + 1 || name.bottom <= choice.top + 1,
+        descriptionClear: Math.max(name.bottom, choice.bottom) <= lines.top + 1,
+        textContained: lines.bottom <= bounds.bottom - 1,
+        horizontalContained: bounds.left >= -1 && bounds.right <= innerWidth + 1,
+      };
+    }));
+    for (const card of geometry) expect(card).toEqual({
+      imageClear: true,
+      labelsSeparate: true,
+      descriptionClear: true,
+      textContained: true,
+      horizontalContained: true,
+    });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await context.close();
+  }
+});
+
 test("E3 skip and cancel management preserve reply and correction drafts", async ({ page }) => {
   await page.goto(base);
   await adopt(page, "选择橘白猫", "草稿合成猫");
