@@ -158,6 +158,8 @@ body{background:var(--e3-bg);color:var(--e3-ink)}
 .e3-app-shell .e3-edit-response [class*="count"]{text-align:right;margin:6px 0}
 .e3-app-shell .e3-edit-response>button:last-child{margin-top:12px}
 .e3-app-shell .e3-delete-confirm h3{font:600 20px/1.5 var(--e3-story);margin:0 0 12px}
+.e3-app-shell .e3-delete-confirm>p{text-wrap:balance}
+.e3-app-shell .e3-delete-confirm .e3-confirm-actions button{flex:1 1 max-content;white-space:nowrap}
 .e3-app-shell .e3-confirm-object{font-weight:600}
 .e3-app-shell .e3-source-note p{margin:8px 0}
 .e3-app-shell .e3-source-note button{min-height:44px;margin-top:8px}
