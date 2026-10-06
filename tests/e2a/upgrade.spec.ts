@@ -67,6 +67,7 @@ test("Real published old UI → atomic multi-participant upgrade → reload/edit
   await enter(page);
   await openDemandHistory(page);
   await page.getByRole("button", { name: "管理这条回应" }).click();
+  await page.getByRole("button", { name: "更正这条回应" }).click();
   await page
     .getByLabel("更正后的回应")
     .fill("升级后合成更正：可以在累时歇一会儿。");

@@ -44,11 +44,14 @@ test("Reply and edit drafts survive hard refresh, remain non-sources, and deleti
   await page.getByRole("button", { name: "来信盒", exact: true }).click();
   await page.getByRole("button", { name: /阿橘/ }).click();
   await page.getByRole("button", { name: "管理这条回应" }).click();
+  await page.getByRole("button", { name: "更正这条回应" }).click();
   await page.getByLabel("更正后的回应").fill("未提交更正的独有草稿");
   await expect(
     page.getByText("更正草稿已保存在本机，尚未提交。"),
   ).toBeVisible();
   await page.reload();
+  await expect(page.getByLabel("更正后的回应")).toHaveCount(0);
+  await page.getByRole("button", { name: "更正这条回应" }).click();
   await expect(page.getByLabel("更正后的回应")).toHaveValue(
     "未提交更正的独有草稿",
   );
@@ -380,6 +383,7 @@ test("Unread mail takes priority on cold return, while reply/edit drafts persist
         await p.getByRole("button", { name: "来信盒", exact: true }).click();
         await p.getByRole("button", { name: /阿橘/ }).click();
         await p.getByRole("button", { name: "管理这条回应" }).click();
+        await p.getByRole("button", { name: "更正这条回应" }).click();
       } else {
         await openControl(p);
         await act(p, "投递下一需求卡");
@@ -425,6 +429,7 @@ test("Unread mail takes priority on cold return, while reply/edit drafts persist
       expect(after.letters.filter((l: any) => !l.read_at)).toHaveLength(1);
       await p.getByRole("button", { name: "来信盒", exact: true }).click();
       await p.getByRole("button", { name: /阿橘/ }).click();
+      if (kind === "edit") await p.getByRole("button", { name: "更正这条回应" }).click();
       await expect(p.getByLabel(label)).toHaveValue(text);
       expect(
         (await snapshot(p)).rows[0].letters.filter((l: any) => !l.read_at),
