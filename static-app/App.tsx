@@ -17,8 +17,9 @@ import { responsiveCat } from "./assets";
 import { HomeScene, EventScene, PostcardScene, type HomePose } from "./Scenes";
 import { homePoseForNavigation } from "../ui-daily-core-v1/home-poses.mjs";
 import { effectiveTime } from "./calendar-plan";
-const REVIEW_MODE = ["localhost", "127.0.0.1"].includes(location.hostname) &&
-  !new URLSearchParams(location.search).has("product");
+const query = new URLSearchParams(location.search);
+const REVIEW_MODE = !query.has("product") &&
+  (query.get("review") === "1" || ["localhost", "127.0.0.1"].includes(location.hostname));
 const ORIGINAL_PREVIEW_URL = "https://zyrobbie.github.io/travel-cat-planner/ui-daily-core-v1/index.html";
 const catNames: Record<AppearanceId, string> = {
   "cat-01": "橘白", "cat-02": "狸花", "cat-03": "奶油白", "cat-04": "三花",
@@ -332,7 +333,7 @@ export default function Home() {
         </button>}
       </header>
       {REVIEW_MODE && <details className={s.note}>
-        <summary>本机体验与数据说明</summary>
+        <summary>测试工具 · 演示快进会改变这份本机测试日历</summary>
         <p>
           数据仅保存在此浏览器，清除浏览器数据后可能丢失。没有云端账号或跨设备同步。演示推进中的不同体验仅做本机数据分区，不构成安全隔离；请使用合成内容。不接
           AI 或真实安全识别服务。

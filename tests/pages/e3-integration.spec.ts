@@ -2,7 +2,8 @@ import { test, expect, type Page } from "@playwright/test";
 import { mkdirSync } from "node:fs";
 
 const base = `http://127.0.0.1:${process.env.PAGES_TEST_PORT ?? 4173}/travel-cat-planner/app/`;
-const shots = "/Users/zhihu/Documents/ChatGPT/有猫来信/outputs/E3-app-integration-2026-10-05/qa";
+const shots = "/tmp/e3-visual-qa";
+mkdirSync(shots, { recursive: true });
 
 async function row(page: Page) {
   return page.evaluate(async () => {
@@ -179,7 +180,6 @@ test("new adoption schedules one persisted welcome letter and settles it only wh
 });
 
 test("E3 product shows only the approved tip and centers the sent confirmation", async ({ browser }) => {
-  mkdirSync("/tmp/e3-visual-qa", { recursive: true });
   for (const width of [390, 1280]) {
     const context = await browser.newContext({
       viewport: { width, height: width === 390 ? 844 : 900 },
@@ -199,7 +199,7 @@ test("E3 product shows only the approved tip and centers the sent confirmation",
     await page.getByText("看看小提示").click();
     await expect(page.locator(".e3-detail-page details")).toContainText(tip);
     await expect(page.getByText("内部草案，尚未专业审核")).toHaveCount(0);
-    await page.screenshot({ path: `/tmp/e3-visual-qa/tip-${width}.png` });
+    await page.screenshot({ path: `${shots}/tip-${width}.png` });
     await page.getByLabel("你想跟它说什么？").fill("合成回应，只验证成功界面。");
     await page.getByRole("button", { name: "送出去", exact: true }).click();
     await expect(page.getByRole("status")).toHaveText("送出去啦。");
@@ -225,12 +225,26 @@ test("E3 product shows only the approved tip and centers the sent confirmation",
     expect(layout.titleAboveButton).toBe(true);
     expect(layout.buttonInViewport).toBe(true);
     expect(layout.overflow).toBe(false);
-    await page.screenshot({ path: `/tmp/e3-visual-qa/success-${width}.png` });
+    await page.screenshot({ path: `${shots}/success-${width}.png` });
     await page.getByRole("button", { name: /回到.*身边/ }).click();
     await expect(page.locator(".e3-home-page")).toBeVisible();
     expect(errors).toEqual([]);
     await context.close();
   }
+});
+
+test("explicit review entry exposes existing local controls while product entry stays clean", async ({ page }) => {
+  await page.goto(`${base}?review=1`);
+  await expect(page.getByRole("button", { name: "演示推进", exact: true })).toBeVisible();
+  await expect(page.getByText("测试工具 · 演示快进会改变这份本机测试日历")).toBeVisible();
+  await adopt(page, "选择狸花猫", "入口合成猫");
+  const id = new URL(page.url()).hash.slice(1);
+  await control(page, "投递下一需求卡");
+  expect((await row(page)).letters).toHaveLength(1);
+  await page.goto(`${base}?product=1#${id}`);
+  await expect(page.getByRole("button", { name: "演示推进" })).toHaveCount(0);
+  await expect(page.getByText("测试工具 · 演示快进会改变这份本机测试日历")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "看看来信", exact: true })).toBeVisible();
 });
 
 test("E3 preview and new IDB experience stay independent, with both entries available", async ({ browser }) => {

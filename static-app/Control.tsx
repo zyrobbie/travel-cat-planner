@@ -91,7 +91,7 @@ export default function LocalControl({
     <main>
       <h1>本机演示控制台</h1>
       <p className={s.meta}>
-        这里可人工演示，也可按本机日历结算来信与旅行。所有体验都保存在此浏览器，没有密码保护或服务端账号。
+        这是测试工具。人工投递和演示快进会改变这份本机测试日历，只操作当前浏览器的新版体验记录；请使用合成内容。没有密码保护或服务端账号。
       </p>
       {error && (
         <p role="alert" className={s.error}>
