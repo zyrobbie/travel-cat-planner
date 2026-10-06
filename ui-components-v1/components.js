@@ -1,4 +1,4 @@
-import {cats,choice,updateChoiceGroup} from './cat-selection-card.mjs?v=cat-card-wrap-20261005';
+import {cats,choice,updateChoiceGroup} from './cat-selection-card.mjs?v=cat-card-nowrap-20261006';
 import {daily,composer,icon,resetComposerIds} from './daily-components.mjs';
 
 (() => {
