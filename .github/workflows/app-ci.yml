@@ -15,7 +15,7 @@ jobs:
           POSTGRES_USER: catletters
           POSTGRES_PASSWORD: synthetic-ci-only
           POSTGRES_DB: catletters
-        ports: ['5432:5432']
+        ports: ["5432:5432"]
         options: >-
           --health-cmd "pg_isready -U catletters"
           --health-interval 5s
@@ -27,7 +27,7 @@ jobs:
       ADMIN_SECRET: synthetic-ci-admin-only-not-production-credential
       APP_MODE: INTERNAL
       SAFETY_ADAPTER: synthetic-v1
-      COOKIE_SECURE: 'false'
+      COOKIE_SECURE: "false"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -37,6 +37,15 @@ jobs:
       - run: npm ci
       - run: npm run db:migrate
       - run: npm test
+      - name: E4-A isolated PostgreSQL and synthetic OTP HTTP checks
+        run: node scripts/test-e4-account.mjs --from-env --evidence-dir .local/e4-account-evidence
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e4-account-evidence
+          path: .local/e4-account-evidence
+          include-hidden-files: true
+          if-no-files-found: ignore
       - run: |
           node ui-adoption-flow-v1/checks/flow-state.test.mjs
           node ui-adoption-flow-v1/checks/preview-identity.test.mjs
