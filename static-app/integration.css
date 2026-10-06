@@ -46,15 +46,18 @@ body{background:var(--e3-bg);color:var(--e3-ink)}
 .e3-app-shell .e3-life-copy h2{font:500 21px/1.6 var(--e3-story);text-wrap:balance}
 .e3-app-shell .e3-life-copy p{font-size:14px;color:var(--e3-muted);margin-top:6px}
 .e3-app-shell .e3-empty-letter{padding:24px 10px 28px;border-top:1px solid var(--e3-line);text-align:center;color:var(--e3-muted);font-size:15px;margin:0}
-.e3-app-shell .e3-new-letter{border:1px solid var(--e3-line);border-radius:16px;background:var(--e3-paper);padding:22px;margin:24px 0 20px;box-shadow:0 3px 12px #493d340b}
-.e3-app-shell .e3-new-letter h2{font:500 17px/1.65 system-ui,sans-serif;margin:0 0 7px}
-.e3-app-shell .e3-new-letter .story{font-size:15px;line-height:1.8;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:normal;color:var(--e3-muted)}
+.e3-app-shell .e3-new-letter{border:1px solid var(--e3-line);border-radius:16px;background:var(--e3-paper);padding:24px;margin:24px 0 20px;box-shadow:0 3px 12px #493d340b}
+.e3-app-shell .e3-new-letter h2{font:500 16px/1.75 system-ui,sans-serif;margin:0;overflow-wrap:anywhere}
+.e3-app-shell .e3-new-letter-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 12px}
+.e3-app-shell .e3-new-letter-status{display:inline-flex;align-items:center;gap:6px;color:var(--e3-muted);font:13px/1.6 system-ui,sans-serif;white-space:nowrap}
+.e3-app-shell .e3-new-letter-status>span{width:6px;height:6px;border-radius:50%;background:var(--e3-accent)}
 .e3-app-shell main button{border-color:#94816f;color:var(--e3-ink)}
 .e3-app-shell main button:hover{background:var(--e3-soft)}
 .e3-app-shell main button[class*="primary"]{background:var(--e3-accent);border-color:var(--e3-accent);color:var(--e3-paper)}
 .e3-app-shell main button[class*="primary"]:hover{background:#884124}
 .e3-app-shell main button[class*="primary"]:disabled{background:#e8dfd1;border-color:#e8dfd1;color:#857665}
-.e3-app-shell .e3-new-letter button{width:100%;margin-top:14px}
+.e3-app-shell .e3-new-letter-actions{display:flex;justify-content:flex-end;margin-top:20px}
+.e3-app-shell .e3-new-letter button{width:auto;max-width:100%;margin:0;overflow-wrap:anywhere}
 .e3-app-shell .e3-home-page>.e3-life-copy+button{border:0;background:none;color:var(--e3-accent);font-size:14px;text-decoration:underline;margin:0 auto;display:block;width:auto}
 .e3-app-shell .e3-home-page>button[class*="quiet"]{display:block;margin:12px auto;color:var(--e3-muted);font-size:13px}
 .e3-app-shell nav{background:var(--e3-bg);border-color:var(--e3-line);padding:8px 16px max(12px,env(safe-area-inset-bottom));gap:8px}
