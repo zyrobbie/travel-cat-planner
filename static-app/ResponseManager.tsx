@@ -15,7 +15,7 @@ export default function ResponseManager({
   initialDraft?: Draft;
   onBusy: (value: boolean) => void;
   onDone: (result: { message?: string; safety?: string }) => void;
-  onCancel: () => void;
+  onCancel: () => Promise<void>;
 }) {
   const [text, setText] = useState(
       initialDraft?.kind === "edit"
@@ -36,6 +36,7 @@ export default function ResponseManager({
     initialDraft ? "已恢复更正草稿，尚未保存为回应。" : "",
   );
   const draftWrite = useRef(0);
+  const draftSavePending = useRef<Promise<unknown>>(Promise.resolve());
   async function run(fn: () => Promise<{ message?: string; safety?: string }>) {
     if (pending.current) return;
     pending.current = true;
@@ -108,7 +109,7 @@ export default function ResponseManager({
               const text = e.target.value,
                 sequence = ++draftWrite.current;
               setDraftStatus("正在保存草稿…");
-              saveDraft(
+              draftSavePending.current = saveDraft(
                 participantId,
                 response.letterId,
                 "edit",
@@ -156,17 +157,23 @@ export default function ResponseManager({
       <button
         className={s.quiet}
         disabled={busy}
-        onClick={() => {
-          setText("");
-          saveDraft(
-            participantId,
-            response.letterId,
-            "edit",
-            "",
-            response.id,
-            expected,
-          ).catch(() => {});
-          onCancel();
+        onClick={async () => {
+          if (pending.current) return;
+          setBusy(true);
+          onBusy(true);
+          setError("");
+          try {
+            if (draftWrite.current > 0 || initialDraft?.kind === "edit") {
+              await draftSavePending.current.catch(() => {});
+              await saveDraft(participantId, response.letterId, "edit", text, response.id, expected);
+            }
+            await onCancel();
+          } catch (e) {
+            setError(`更正草稿尚未保存：${(e as Error).message}`);
+          } finally {
+            setBusy(false);
+            onBusy(false);
+          }
         }}
       >
         取消管理

@@ -9,6 +9,7 @@ import {
   act,
   mark,
   openDemandHistory,
+  expand,
 } from "./helpers";
 const full =
   "合成完整来源：累了可以歇一会儿。陪在身边就是关心，心意本身就是礼物。遇到新伙伴可以先看看，慢慢来。";
@@ -240,6 +241,7 @@ test("Deleting another local participant does not erase unrelated draft; failed 
   await act(a, "投递下一需求卡");
   await enter(a);
   await a.getByRole("button", { name: "看看来信", exact: true }).click();
+  await expand(a);
   await a.getByLabel("你想跟它说什么？").fill("甲未发送的草稿必须保留");
   const b = await ctx.newPage();
   await b.goto(base);
@@ -279,7 +281,7 @@ test("Deleting another local participant does not erase unrelated draft; failed 
   await ctx.close();
 });
 
-test("Delete before send invalidates; stale edit cannot resurrect; a new response has a new identity", async ({
+test("Delete before send invalidates; stale edit cannot resurrect; deleted response stays visible", async ({
   browser,
 }) => {
   const ctx = await browser.newContext(),
@@ -329,21 +331,31 @@ test("Delete before send invalidates; stale edit cannot resurrect; a new respons
     { id, full },
   );
   expect(replay).toContain("记录已变化");
+  const replayWithDeletedId = await p.evaluate(async ({ id, full, rid }) => {
+    const store = await import(/* @vite-ignore */ location.pathname + "store-test.js");
+    const current = await store.readState(id);
+    try {
+      await store.letterAction(id, current.letters[0].id, "respond", full, rid);
+      return "unexpected success";
+    } catch (e) {
+      return (e as Error).message;
+    }
+  }, { id, full, rid });
+  expect(replayWithDeletedId).toContain("已删除");
 
   await control.getByRole("button", { name: "寄出已选旅行信" }).click();
   await expect(control.locator("p[role=alert]")).toContainText("失效");
   await stale.getByLabel("更正后的回应").fill("旧页面禁止复活");
   await stale.getByRole("button", { name: "保存更正" }).click();
   await expect(stale.locator("p[role=alert]")).toContainText("已删除");
-  await p.getByLabel("你想跟它说什么？").fill("重新发送的合成回应");
-  await p.getByRole("button", { name: "送出去", exact: true }).dblclick();
-  await expect(p.getByRole("status")).toHaveText("送出去啦。");
+  await expect(p.getByText("这条回应已删除。原来的来信和已寄出的旅行信仍保留。")).toBeVisible();
+  await expect(p.getByLabel("你想跟它说什么？")).toHaveCount(0);
   row = (await snapshot(p)).rows[0];
   expect(row.responses[rid].status).toBe("DELETED");
-  expect(row.letters[0].responseId).not.toBe(rid);
+  expect(row.letters[0].responseId).toBe(rid);
   expect(
     Object.values(row.responses).filter((r: any) => r.status === "ACTIVE"),
-  ).toHaveLength(1);
+  ).toHaveLength(0);
   await stale.getByRole("button", { name: "保存更正" }).click();
   expect((await snapshot(p)).rows[0]).toEqual(row);
   await control.getByRole("button", { name: "刷新演示状态" }).click();

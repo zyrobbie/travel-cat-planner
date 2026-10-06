@@ -1,4 +1,5 @@
 import frozen from "../src/content/frozen.json";
+import { MANUAL_DEMAND_IDS } from "./content";
 import {
   LocalError,
   eligible,
@@ -7,10 +8,13 @@ import {
   type LocalState,
   type Evidence,
   type Review,
+  type AppearanceId,
+  countCatName,
 } from "./model";
 import { write } from "./database";
 import {
   initializeCalendar,
+  appendWelcome,
   appendTrip,
   effectiveTime,
   type Scene,
@@ -22,23 +26,26 @@ export { listParticipants, subscribe } from "./database";
 export const readState = settleCalendar;
 export { LocalError } from "./model";
 export type { LocalState } from "./model";
-export async function createParticipant(name: string) {
-  if (!name.trim() || name.trim().length > 12)
+export async function createParticipant(name: string, appearanceId?: AppearanceId) {
+  if (!name.trim() || countCatName(name) > 12)
     throw new LocalError("名字请填写 1–12 个字。");
   const id = crypto.randomUUID();
   return write(id, () => {
+    const calendar = initializeCalendar(
+      { trip: null, letters: [], reviews: [] },
+      Date.now(),
+    );
+    appendWelcome(calendar);
     const state: LocalState = {
       schema: 3,
       drafts: {},
-      calendar: initializeCalendar(
-        { trip: null, letters: [], reviews: [] },
-        Date.now(),
-      ),
+      calendar,
       responses: {},
       reviews: [],
       participant: {
         id,
         cat_name: name.trim(),
+        ...(appearanceId ? { appearanceId } : {}),
         status: "ACTIVE",
         safety_state: "CLEAR",
       },
@@ -85,7 +92,6 @@ export async function letterAction(
     if (l.type !== "DEMAND") throw new LocalError("这不是需求卡。");
     if (action === "skip") {
       settleInPlace(state);
-      delete state.drafts[l.id];
       if (!l.skipped_at) {
         l.skipped_at = now;
         event(state, "SKIPPED");
@@ -103,6 +109,8 @@ export async function letterAction(
     }
     if ((l.responseId ?? null) !== expectedResponseId)
       throw new LocalError("回应记录已变化，请重新载入后再发送。");
+    if (l.responseId)
+      throw new LocalError("这条回应已删除，不能从原信再次寄出。");
     if (state.participant.safety_state !== "CLEAR")
       throw new LocalError("当前处于独立合成测试路径。");
     if (value === "[SYNTHETIC:UNAVAILABLE]")
@@ -173,13 +181,11 @@ export async function control(
       );
       event(state, "TRIP_STARTED");
     } else if (action === "deliver-demand") {
-      const c = frozen.items.find(
-        (c) =>
-          c.type === "DEMAND" &&
-          !state.letters.some((l) => l.id.endsWith(":" + c.id)),
+      const contentId = MANUAL_DEMAND_IDS.find(
+        (candidate) => !state.letters.some((l) => l.id.endsWith(":" + candidate)),
       );
-      if (!c) throw new LocalError("六张需求卡已全部寄出。");
-      deliverContent(state, c.id, now);
+      if (!contentId) throw new LocalError("七张需求卡已全部寄出。");
+      deliverContent(state, contentId, now);
     } else if (action === "deliver-postcard") {
       if (!state.trip) throw new LocalError("请先独立开始旅行。");
       if (

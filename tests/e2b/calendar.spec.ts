@@ -8,6 +8,7 @@ import {
   act,
   storeCall,
   replaceRows,
+  expand,
 } from "./helpers";
 const DAY = 86400000,
   T0 = Date.UTC(2026, 8, 13, 0, 0, 0);
@@ -73,7 +74,7 @@ test("Short absence does not write; one jump equals incremental settlement with 
     expect(semantic(stepped)).toEqual(semantic(batch));
     expect(batch.letters.filter((l: any) => !l.read_at)).toHaveLength(1);
     expect(batch.trip).toBeNull();
-    expect(batch.calendar.processedCount).toBe(12);
+    expect(batch.calendar.processedCount).toBe(13);
     const stable = await at(q, id, T0);
     expect(stable).toEqual(batch);
     await at(q, id, T0 + 1000 * DAY);
@@ -98,7 +99,7 @@ test("Read first settles missed nodes; read or skip never replays skipped mail a
   await storeCall(page, "letterAction", [id, letter.id, "read"]);
   row = (await snapshot(page)).rows[0];
   expect(row.letters).toHaveLength(1);
-  expect(row.calendar.processedCount).toBe(3);
+  expect(row.calendar.processedCount).toBe(4);
   expect(row.letters[0].read_at).not.toBeNull();
   await storeCall(page, "readState", [id]);
   expect((await snapshot(page)).rows[0].letters).toHaveLength(1);
@@ -132,7 +133,7 @@ test("Real close/reopen uses persisted calendar and actual write time, not a bac
   const id = await name(p, "关页合成猫"),
     row = (await snapshot(p)).rows[0];
   const due = Date.now() + 1500,
-    shift = due - row.calendar.nodes[0].at;
+    shift = due - row.calendar.nodes.find((n: any) => n.id === "welcome:d0").at;
   row.calendar.baseAt += shift;
   row.calendar.nodes.forEach((n: any) => (n.at += shift));
   await replaceRows(p, [row]);
@@ -163,6 +164,7 @@ test("Visible timer and repeated focus settle once without clearing an unsent dr
   await act(page, "投递下一需求卡");
   await enter(page);
   await page.getByRole("button", { name: "看看来信", exact: true }).click();
+  await expand(page);
   await page.getByLabel("你想跟它说什么？").fill("不会自动发送的草稿");
   await page.clock.setFixedTime(T0 + DAY);
   await page.clock.runFor(16000);
@@ -176,7 +178,7 @@ test("Visible timer and repeated focus settle once without clearing an unsent dr
     "不会自动发送的草稿",
   );
   const row = (await snapshot(page)).rows[0];
-  expect(row.calendar.processedCount).toBe(1);
+  expect(row.calendar.processedCount).toBe(2);
   expect(Object.keys(row.responses)).toHaveLength(0);
   expect(row.letters.filter((l: any) => !l.read_at)).toHaveLength(1);
 });
@@ -206,7 +208,7 @@ test("Two returning pages and read/delivery race obey the shared unread slot and
   ]);
   const row = (await snapshot(p)).rows[0];
   expect(row.letters).toHaveLength(1);
-  expect(row.calendar.processedCount).toBe(5);
+  expect(row.calendar.processedCount).toBe(6);
   expect(row.letters[0].read_at).not.toBeNull();
   await p.clock.setFixedTime(T0 + 14 * DAY);
   const before = await snapshot(p);
@@ -219,7 +221,7 @@ test("Two returning pages and read/delivery race obey the shared unread slot and
   expect(await snapshot(p)).toEqual(before);
   await q.clock.setFixedTime(T0 + 14 * DAY);
   const after = await storeCall(q, "readState", [id]);
-  expect(after.calendar.processedCount).toBe(12);
+  expect(after.calendar.processedCount).toBe(13);
   expect(after.letters.filter((l: any) => !l.read_at)).toHaveLength(1);
   await ctx.close();
 });

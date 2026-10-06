@@ -1,5 +1,7 @@
 import { z } from "zod";
 export const DAY = 86_400_000;
+export const WELCOME_MIN_DELAY_MS = 5 * 60_000;
+export const WELCOME_MAX_DELAY_MS = 10 * 60_000;
 export type Scene = "RHINE" | "FIREFLY" | "LIGHTHOUSE";
 const time = z.number().int().nonnegative().max(8_000_000_000_000_000);
 export const calendarSchema = z.object({
@@ -128,6 +130,20 @@ export function appendTrip(
       origin,
       result: null,
     });
+}
+export function appendWelcome(cal: Calendar) {
+  const delay =
+    WELCOME_MIN_DELAY_MS +
+    Math.floor(Math.random() * (WELCOME_MAX_DELAY_MS - WELCOME_MIN_DELAY_MS + 1));
+  cal.nodes.push({
+    id: "welcome:d0",
+    at: cal.initializedAt + delay,
+    order: cal.nodes.length,
+    kind: "DEMAND",
+    contentId: "D-07",
+    origin: "FIXED",
+    result: null,
+  });
 }
 export const effectiveTime = (cal: Calendar, wall: number) =>
   Math.max(cal.lastEffectiveAt, wall + cal.offsetMs);
