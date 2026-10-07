@@ -166,7 +166,7 @@ async function deliver(
     );
     if (sent.rows[0]) return skip("这次旅行已经寄过明信片。");
   }
-  const id = `${cat.catId}:${content.id}`;
+  const id = `${cat.logicalCatId ?? cat.catId}:${content.id}`;
   const snapshot = {
     title: content.title,
     body: content.body,

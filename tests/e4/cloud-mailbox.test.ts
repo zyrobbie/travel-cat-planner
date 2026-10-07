@@ -263,12 +263,14 @@ test("B1-02 two sessions: private summaries, one first-read transition, complete
   assert.equal(before.unread.id, letter.id);
   const list = await json(await b.client.get(api("letters")));
   assert.equal(list.letters[0].id, letter.id);
+  assert.equal(list.letters[0].title, "有一封来信，还没打开");
+  assert.equal(JSON.stringify(before).includes('"title"'), false);
   for (const summary of [before, list]) {
     const serialized = JSON.stringify(summary);
     assert.equal(serialized.includes(letter.snapshot.body), false);
     assert.equal(serialized.includes(letter.snapshot.title), false);
     assert.equal(
-      /"(?:body|title|snapshot|image|illustration|contentId)"/.test(serialized),
+      /"(?:body|snapshot|image|illustration|contentId)"/.test(serialized),
       false,
     );
   }

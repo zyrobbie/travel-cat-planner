@@ -37,6 +37,7 @@ jobs:
       - run: npm ci
       - run: npm run db:migrate
       - run: npm test
+      - run: npx playwright install --with-deps chromium
       - name: E4-A isolated PostgreSQL and synthetic OTP HTTP checks
         run: node scripts/test-e4-account.mjs --from-env --evidence-dir .local/e4-account-evidence
       - uses: actions/upload-artifact@v4
@@ -64,6 +65,15 @@ jobs:
           path: .local/e4-calendar-evidence
           include-hidden-files: true
           if-no-files-found: ignore
+      - name: E4-B3 isolated legacy binding, HTTP and Chromium checks
+        run: node scripts/test-e4-binding.mjs --from-env --evidence-dir .local/e4-binding-evidence
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e4-binding-evidence
+          path: .local/e4-binding-evidence
+          include-hidden-files: true
+          if-no-files-found: ignore
       - run: |
           node ui-adoption-flow-v1/checks/flow-state.test.mjs
           node ui-adoption-flow-v1/checks/preview-identity.test.mjs
@@ -71,6 +81,5 @@ jobs:
           node ui-daily-core-v1/checks/g2r-state.test.mjs
           node ui-components-v1/checks/daily-components.test.mjs
       - run: npm run build
-      - run: npx playwright install --with-deps chromium
       - run: node scripts/start-local.mjs
       - run: npm run test:e2e

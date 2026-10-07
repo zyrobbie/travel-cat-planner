@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev --hostname 127.0.0.1 -p 3100",
-    "build": "next build",
+    "build": "npm run account:build && next build",
     "start": "next start --hostname 0.0.0.0 -p ${PORT:-3100}",
     "db:migrate": "tsx scripts/migrate.ts",
     "content:check": "tsx scripts/content-check.ts",
@@ -16,6 +16,7 @@
     "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit",
     "pages:build": "vite build --config static-app/vite.config.ts",
+    "account:build": "vite build --config static-app/account-app/vite.config.ts",
     "pages:preview": "vite preview --config static-app/vite.config.ts",
     "pages:test": "playwright test --config static-app/playwright.config.ts",
     "pages:test:e2a": "node scripts/prepare-e2a-baseline.mjs && playwright test --config static-app/e2a.playwright.config.ts",

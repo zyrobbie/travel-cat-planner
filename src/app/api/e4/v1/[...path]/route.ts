@@ -8,11 +8,13 @@ import {
 import { originCheck } from "@/server/auth";
 import { HttpError, ensure } from "@/server/errors";
 import { assertInternal } from "@/server/safety";
+import { assertAccountContext } from "@/server/account-context";
 import {
   cloudRequestResult,
   cloudState,
   listCloudLetters,
   readCloudLetter,
+  readCloudLetterDetail,
   skipCloudLetter,
 } from "@/server/cloud-repository";
 import {
@@ -20,7 +22,11 @@ import {
   editCloudResponse,
   sendCloudResponse,
 } from "@/server/cloud-responses";
-import { readCloudResponse, readCloudSources } from "@/server/cloud-sources";
+import {
+  listCloudResponses,
+  readCloudResponse,
+  readCloudSources,
+} from "@/server/cloud-sources";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -69,12 +75,15 @@ async function handler(req: NextRequest) {
     const accountId = await accountIdentity(
       req.cookies.get(ACCOUNT_COOKIE)?.value,
     );
+    assertAccountContext(req, accountId);
     const body: unknown = write ? await boundedBody(req) : {};
     if (!write && path.length === 1 && path[0] === "state")
       return json(await cloudState(accountId));
     if (!write && path.length === 1 && path[0] === "letters")
       return json(await listCloudLetters(accountId));
     if (path[0] === "letters" && path.length === 3) {
+      if (!write && path[2] === "detail")
+        return json(await readCloudLetterDetail(accountId, path[1]));
       if (write && path[2] === "read") {
         z.strictObject({}).parse(body);
         return json(await readCloudLetter(accountId, path[1]));
@@ -89,6 +98,8 @@ async function handler(req: NextRequest) {
         return json(await readCloudSources(accountId, path[1]));
     }
     if (path[0] === "responses") {
+      if (!write && path.length === 1)
+        return json(await listCloudResponses(accountId));
       if (!write && path.length === 2)
         return json(await readCloudResponse(accountId, path[1]));
       if (write && path.length === 3 && path[2] === "edit")

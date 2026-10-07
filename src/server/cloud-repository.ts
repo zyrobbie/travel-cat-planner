@@ -15,6 +15,7 @@ export interface CloudCat {
   accountId: string;
   catId: string;
   participantId: string;
+  logicalCatId?: string;
   name: string;
   appearanceId: string;
   safety: "CLEAR" | "INTERCEPTED";
@@ -47,10 +48,15 @@ export async function lockCloudCat(
     "SELECT revision FROM cloud_state WHERE cat_id=$1 AND account_id=$2 FOR UPDATE",
     [row.id, accountId],
   );
+  const binding = await db.query(
+    "SELECT source_experience_id FROM legacy_bindings WHERE cat_id=$1 AND account_id=$2",
+    [row.id, accountId],
+  );
   return {
     accountId,
     catId: row.id,
     participantId: row.participant_id,
+    logicalCatId: binding.rows[0]?.source_experience_id,
     name: row.name,
     appearanceId: row.appearance_id,
     safety: p.rows[0].safety_state,
@@ -74,9 +80,10 @@ async function settleBeforeRead(db: PoolClient, cat: CloudCat) {
 
 export async function bumpCloudRevision(db: PoolClient, cat: CloudCat) {
   const r = await db.query(
-    "UPDATE cloud_state SET revision=revision+1 WHERE cat_id=$1 AND account_id=$2 RETURNING revision",
+    "UPDATE cloud_state SET revision=revision+1 WHERE cat_id=$1 AND account_id=$2 AND revision < 9007199254740991 RETURNING revision",
     [cat.catId, cat.accountId],
   );
+  ensure(r.rows[0], 409, "记录版本已达安全上限，操作未保存，请联系维护者。");
   cat.stateRevision = Number(r.rows[0].revision);
   return cat.stateRevision;
 }
@@ -120,7 +127,12 @@ export async function cloudState(accountId: string) {
     const t = trip.rows[0],
       l = unread.rows[0];
     return {
-      cat: { id: cat.catId, name: cat.name, appearanceId: cat.appearanceId },
+      cat: {
+        id: cat.catId,
+        logicalId: cat.logicalCatId ?? cat.catId,
+        name: cat.name,
+        appearanceId: cat.appearanceId,
+      },
       world: {
         status: t ? "TRAVEL" : "HOME",
         tripId: t?.id ?? null,
@@ -140,8 +152,11 @@ export async function listCloudLetters(accountId: string) {
     await settleBeforeRead(db, cat);
     const r = await db.query(
       `SELECT l.id,l.type,l.delivered_at,l.read_at,l.skipped_at,
-      EXISTS(SELECT 1 FROM cloud_responses r WHERE r.cat_id=l.cat_id AND r.account_id=l.account_id AND r.letter_id=l.id AND r.status='ACTIVE') AS has_response
-      FROM cloud_letters l WHERE l.cat_id=$1 AND l.account_id=$2 ORDER BY l.delivered_at DESC,l.id`,
+      CASE WHEN l.read_at IS NOT NULL THEN l.snapshot->>'title' ELSE '有一封来信，还没打开' END AS title,
+      r.id AS response_id,r.status AS response_status
+      FROM cloud_letters l LEFT JOIN cloud_responses r
+        ON (r.cat_id,r.account_id,r.letter_id)=(l.cat_id,l.account_id,l.id)
+      WHERE l.cat_id=$1 AND l.account_id=$2 ORDER BY l.delivered_at DESC,l.id`,
       [cat.catId, cat.accountId],
     );
     return {
@@ -151,7 +166,10 @@ export async function listCloudLetters(accountId: string) {
         deliveredAt: l.delivered_at,
         readAt: l.read_at,
         skippedAt: l.skipped_at,
-        hasResponse: l.has_response,
+        hasResponse: l.response_status === "ACTIVE",
+        title: l.title,
+        responseId: l.response_id,
+        responseStatus: l.response_status,
       })),
       stateRevision: cat.stateRevision,
     };
@@ -172,40 +190,62 @@ export async function readCloudLetter(accountId: string, letterId: string) {
       l = r.rows[0];
       await bumpCloudRevision(db, cat);
     }
-    const r = await db.query(
-      `SELECT r.id,r.status,r.current_revision,v.text,v.at FROM cloud_responses r
+    return cloudLetterView(db, cat, l, firstRead);
+  });
+}
+
+/** Restore an already-read view without consuming an unread letter. */
+export async function readCloudLetterDetail(
+  accountId: string,
+  letterId: string,
+) {
+  cloudId.parse(letterId);
+  return withCloudCat(accountId, async (db, cat) => {
+    const letter = await ownedCloudLetter(db, cat, letterId);
+    ensure(letter.read_at !== null, 409, "请先打开这封来信。");
+    return cloudLetterView(db, cat, letter, false);
+  });
+}
+
+async function cloudLetterView(
+  db: PoolClient,
+  cat: CloudCat,
+  l: Awaited<ReturnType<typeof ownedCloudLetter>>,
+  firstRead: boolean,
+) {
+  const r = await db.query(
+    `SELECT r.id,r.status,r.current_revision,v.text,v.at FROM cloud_responses r
       JOIN cloud_response_revisions v ON (v.account_id,v.cat_id,v.response_id,v.revision)=(r.account_id,r.cat_id,r.id,r.current_revision)
       WHERE r.cat_id=$1 AND r.account_id=$2 AND r.letter_id=$3`,
-      [cat.catId, cat.accountId, letterId],
-    );
-    const response = r.rows[0];
-    return {
-      letter: {
-        id: l.id,
-        type: l.type,
-        snapshot: l.snapshot,
-        deliveredAt: l.delivered_at,
-        plannedAt: l.planned_at,
-        effectiveAt: l.effective_at,
-        readAt: l.read_at,
-        skippedAt: l.skipped_at,
-        tripId: l.trip_id,
-        storyId: l.story_id,
-        response:
-          response?.status === "ACTIVE"
-            ? {
-                id: response.id,
-                revision: response.current_revision,
-                text: response.text,
-                at: response.at,
-              }
-            : null,
-        responseStatus: response?.status ?? null,
-      },
-      firstRead,
-      stateRevision: cat.stateRevision,
-    };
-  });
+    [cat.catId, cat.accountId, l.id],
+  );
+  const response = r.rows[0];
+  return {
+    letter: {
+      id: l.id,
+      type: l.type,
+      snapshot: l.snapshot,
+      deliveredAt: l.delivered_at,
+      plannedAt: l.planned_at,
+      effectiveAt: l.effective_at,
+      readAt: l.read_at,
+      skippedAt: l.skipped_at,
+      tripId: l.trip_id,
+      storyId: l.story_id,
+      response:
+        response?.status === "ACTIVE"
+          ? {
+              id: response.id,
+              revision: response.current_revision,
+              text: response.text,
+              at: response.at,
+            }
+          : null,
+      responseStatus: response?.status ?? null,
+    },
+    firstRead,
+    stateRevision: cat.stateRevision,
+  };
 }
 
 export async function skipCloudLetter(accountId: string, letterId: string) {
