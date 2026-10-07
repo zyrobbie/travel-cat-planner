@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { assertInternal } from "@/server/safety";
 import { originCheck } from "@/server/auth";
+import { assertAccountContext } from "@/server/account-context";
 import { HttpError, ensure } from "@/server/errors";
 import {
   ACCOUNT_COOKIE,
@@ -77,6 +78,11 @@ async function handler(req: NextRequest) {
       return response;
     }
     if (path === "auth/logout" && write) {
+      if (req.headers.has("x-catletters-account"))
+        assertAccountContext(
+          req,
+          await accountIdentity(req.cookies.get(ACCOUNT_COOKIE)?.value),
+        );
       await logoutAccount(req.cookies.get(ACCOUNT_COOKIE)?.value);
       const response = json({ ok: true });
       response.cookies.set(ACCOUNT_COOKIE, "", {
@@ -91,6 +97,7 @@ async function handler(req: NextRequest) {
     const accountId = await accountIdentity(
       req.cookies.get(ACCOUNT_COOKIE)?.value,
     );
+    assertAccountContext(req, accountId);
     if (path === "account" && !write)
       return json(await accountState(accountId));
     if (path === "cat/adopt" && write)

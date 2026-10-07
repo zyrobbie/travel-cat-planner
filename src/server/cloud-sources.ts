@@ -81,3 +81,32 @@ export async function readCloudResponse(accountId: string, responseId: string) {
     };
   });
 }
+
+export async function listCloudResponses(accountId: string) {
+  return withCloudCat(accountId, async (db, cat) => {
+    const r = await db.query(
+      `SELECT r.id,r.letter_id,r.current_revision,r.status,v.at,
+      CASE WHEN r.status='ACTIVE' THEN v.text ELSE NULL END AS text,
+      CASE WHEN l.read_at IS NOT NULL THEN l.snapshot->>'title' ELSE '有一封来信，还没打开' END AS title
+      FROM cloud_responses r
+      JOIN cloud_response_revisions v
+        ON (v.account_id,v.cat_id,v.response_id,v.revision)=(r.account_id,r.cat_id,r.id,r.current_revision)
+      JOIN cloud_letters l ON (l.account_id,l.cat_id,l.id)=(r.account_id,r.cat_id,r.letter_id)
+      WHERE r.account_id=$1 AND r.cat_id=$2
+      ORDER BY v.at DESC NULLS LAST,r.id`,
+      [cat.accountId, cat.catId],
+    );
+    return {
+      responses: r.rows.map((row) => ({
+        id: row.id,
+        letterId: row.letter_id,
+        currentRevision: row.current_revision,
+        status: row.status,
+        title: row.title,
+        text: row.text,
+        at: row.at,
+      })),
+      stateRevision: cat.stateRevision,
+    };
+  });
+}
