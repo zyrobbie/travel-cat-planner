@@ -80,6 +80,22 @@ export async function adoptCat(accountId: string, input: unknown) {
        VALUES($1,$2,$3,$4,$5) RETURNING *`,
       [catId, accountId, participantId, appearanceId, name],
     );
+    // A new cat and its one-time welcome/calendar schedule commit together.
+    // Existing idempotent adoption results never reset or backfill a calendar.
+    await db.query("INSERT INTO cloud_state(cat_id,account_id) VALUES($1,$2)", [
+      catId,
+      accountId,
+    ]);
+    const { initializeCloudCalendar } = await import("./cloud-calendar");
+    await initializeCloudCalendar(db, {
+      accountId,
+      catId,
+      participantId,
+      name,
+      appearanceId,
+      safety: "CLEAR",
+      stateRevision: 0,
+    });
     // Serialize once so first response and later idempotent results are identical.
     const result = JSON.parse(JSON.stringify({ cat: r.rows[0] }));
     await db.query(

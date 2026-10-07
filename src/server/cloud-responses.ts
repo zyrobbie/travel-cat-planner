@@ -137,6 +137,10 @@ export async function sendCloudResponse(
         hash,
         await intercept(db, cat),
       );
+    // A successful send also marks this letter read. Resolve due nodes first so
+    // the unread slot cannot cause skipped calendar items to be backfilled.
+    const { settleCloudCalendar } = await import("./cloud-calendar");
+    await settleCloudCalendar(db, cat);
     const id = randomUUID();
     await db.query(
       "INSERT INTO cloud_responses(id,cat_id,account_id,letter_id,current_revision,status) VALUES($1,$2,$3,$4,1,'ACTIVE')",
