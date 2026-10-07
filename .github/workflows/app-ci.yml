@@ -55,6 +55,15 @@ jobs:
           path: .local/e4-cloud-evidence
           include-hidden-files: true
           if-no-files-found: ignore
+      - name: E4-B2 isolated calendar and background worker checks
+        run: node scripts/test-e4-calendar.mjs --from-env --evidence-dir .local/e4-calendar-evidence
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e4-calendar-evidence
+          path: .local/e4-calendar-evidence
+          include-hidden-files: true
+          if-no-files-found: ignore
       - run: |
           node ui-adoption-flow-v1/checks/flow-state.test.mjs
           node ui-adoption-flow-v1/checks/preview-identity.test.mjs

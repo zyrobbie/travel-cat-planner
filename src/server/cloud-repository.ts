@@ -24,40 +24,52 @@ export interface CloudCat {
 /** Every business read and mutation uses account -> cat -> state lock order.
  * A successful identity lookup alone is insufficient if account deletion races it.
  */
+export async function lockCloudCat(
+  db: PoolClient,
+  accountId: string,
+): Promise<CloudCat> {
+  await lockActiveAccount(db, accountId);
+  const c = await db.query(
+    "SELECT * FROM cat_profiles WHERE account_id=$1 FOR UPDATE",
+    [accountId],
+  );
+  ensure(c.rows[0], 409, "请先领养一只小猫。");
+  const row = c.rows[0];
+  const p = await db.query(
+    "SELECT safety_state FROM participants WHERE id=$1 FOR UPDATE",
+    [row.participant_id],
+  );
+  await db.query(
+    "INSERT INTO cloud_state(cat_id,account_id) VALUES($1,$2) ON CONFLICT(cat_id) DO NOTHING",
+    [row.id, accountId],
+  );
+  const state = await db.query(
+    "SELECT revision FROM cloud_state WHERE cat_id=$1 AND account_id=$2 FOR UPDATE",
+    [row.id, accountId],
+  );
+  return {
+    accountId,
+    catId: row.id,
+    participantId: row.participant_id,
+    name: row.name,
+    appearanceId: row.appearance_id,
+    safety: p.rows[0].safety_state,
+    stateRevision: Number(state.rows[0].revision),
+  };
+}
+
 export function withCloudCat<T>(
   accountId: string,
   fn: (db: PoolClient, cat: CloudCat) => Promise<T>,
 ) {
-  return transaction(async (db) => {
-    await lockActiveAccount(db, accountId);
-    const c = await db.query(
-      "SELECT * FROM cat_profiles WHERE account_id=$1 FOR UPDATE",
-      [accountId],
-    );
-    ensure(c.rows[0], 409, "请先领养一只小猫。");
-    const row = c.rows[0];
-    const p = await db.query(
-      "SELECT safety_state FROM participants WHERE id=$1 FOR UPDATE",
-      [row.participant_id],
-    );
-    await db.query(
-      "INSERT INTO cloud_state(cat_id,account_id) VALUES($1,$2) ON CONFLICT(cat_id) DO NOTHING",
-      [row.id, accountId],
-    );
-    const state = await db.query(
-      "SELECT revision FROM cloud_state WHERE cat_id=$1 AND account_id=$2 FOR UPDATE",
-      [row.id, accountId],
-    );
-    return fn(db, {
-      accountId,
-      catId: row.id,
-      participantId: row.participant_id,
-      name: row.name,
-      appearanceId: row.appearance_id,
-      safety: p.rows[0].safety_state,
-      stateRevision: Number(state.rows[0].revision),
-    });
-  });
+  return transaction(async (db) => fn(db, await lockCloudCat(db, accountId)));
+}
+
+// Settlement is explicit: read/skip must settle before releasing the unread slot,
+// while edit/delete can invalidate pending sources before a worker acquires the cat.
+async function settleBeforeRead(db: PoolClient, cat: CloudCat) {
+  const { settleCloudCalendar } = await import("./cloud-calendar");
+  await settleCloudCalendar(db, cat);
 }
 
 export async function bumpCloudRevision(db: PoolClient, cat: CloudCat) {
@@ -96,6 +108,7 @@ export async function ownedCloudResponse(
 
 export async function cloudState(accountId: string) {
   return withCloudCat(accountId, async (db, cat) => {
+    await settleBeforeRead(db, cat);
     const trip = await db.query(
       "SELECT id,scene FROM cloud_trips WHERE cat_id=$1 AND account_id=$2 AND status='ACTIVE'",
       [cat.catId, cat.accountId],
@@ -124,6 +137,7 @@ export async function cloudState(accountId: string) {
 
 export async function listCloudLetters(accountId: string) {
   return withCloudCat(accountId, async (db, cat) => {
+    await settleBeforeRead(db, cat);
     const r = await db.query(
       `SELECT l.id,l.type,l.delivered_at,l.read_at,l.skipped_at,
       EXISTS(SELECT 1 FROM cloud_responses r WHERE r.cat_id=l.cat_id AND r.account_id=l.account_id AND r.letter_id=l.id AND r.status='ACTIVE') AS has_response
@@ -147,6 +161,7 @@ export async function listCloudLetters(accountId: string) {
 export async function readCloudLetter(accountId: string, letterId: string) {
   cloudId.parse(letterId);
   return withCloudCat(accountId, async (db, cat) => {
+    await settleBeforeRead(db, cat);
     let l = await ownedCloudLetter(db, cat, letterId);
     const firstRead = l.read_at === null;
     if (firstRead) {
@@ -196,6 +211,7 @@ export async function readCloudLetter(accountId: string, letterId: string) {
 export async function skipCloudLetter(accountId: string, letterId: string) {
   cloudId.parse(letterId);
   return withCloudCat(accountId, async (db, cat) => {
+    await settleBeforeRead(db, cat);
     const l = await ownedCloudLetter(db, cat, letterId);
     ensure(l.type === "DEMAND", 409, "这封信不需要回应。");
     if (!l.skipped_at || !l.read_at) {
