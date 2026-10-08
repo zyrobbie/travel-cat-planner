@@ -52,10 +52,12 @@ export default function Home({
   client = localClient,
   accountControls,
   adoptionIntro,
+  onBindSelected,
 }: {
   client?: AppClient;
   accountControls?: ReactNode;
   adoptionIntro?: ReactNode;
+  onBindSelected?: () => void;
 }) {
   const { api, selectedId, listParticipants, subscribe, saveDraft } = client;
   const reviewMode = client.mode === "local" && REVIEW_MODE;
@@ -438,21 +440,14 @@ export default function Home({
       <header className={s.header}>
         <span className={s.brand}>有猫来信</span>
         {accountControls}
-        {client.mode === "local" && state && (
+        {client.mode === "local" && state && onBindSelected && (
           <button
             type="button"
             className={s.quiet}
             disabled={busy}
-            onClick={() =>
-              run(async () => {
-                await client.exportSelected?.();
-                setMessage(
-                  "已导出当前小猫的记录，草稿未包含。原本机记录保留。",
-                );
-              })
-            }
+            onClick={onBindSelected}
           >
-            导出这只小猫
+            登录并保存这只小猫
           </button>
         )}
         {reviewMode && (
@@ -479,6 +474,23 @@ export default function Home({
             数据仅保存在此浏览器，清除浏览器数据后可能丢失。没有云端账号或跨设备同步。演示推进中的不同体验仅做本机数据分区，不构成安全隔离；请使用合成内容。不接
             AI 或真实安全识别服务。
           </p>
+          {state && (
+            <button
+              type="button"
+              className={s.quiet}
+              disabled={busy}
+              onClick={() =>
+                run(async () => {
+                  await client.exportSelected?.();
+                  setMessage(
+                    "已导出当前小猫的记录，草稿未包含。原本机记录保留。",
+                  );
+                })
+              }
+            >
+              导出这只小猫
+            </button>
+          )}
         </details>
       )}
       {client.mode === "local" && message && screen !== "letter" && (

@@ -105,7 +105,6 @@ try {
   }
   await run(["node_modules/tsx/dist/cli.mjs", "scripts/migrate.ts"]);
   await run(["node_modules/tsx/dist/cli.mjs", "scripts/migrate.ts"]);
-  if (!apiOnly) await run(["run", "account:build"], "npm");
   const port = await new Promise((accept, reject) => {
     const socket = createServer();
     socket.once("error", reject);
@@ -116,6 +115,9 @@ try {
   });
   env.APP_ORIGIN = `http://127.0.0.1:${port}`;
   env.E4_TEST_ORIGIN = env.APP_ORIGIN;
+  env.VITE_ACCOUNT_APP_URL = `${env.APP_ORIGIN}/account-app/`;
+  env.VITE_LEGACY_SOURCE_ORIGINS = "http://127.0.0.1:18994";
+  if (!apiOnly) await run(["run", "account:build"], "npm");
   server = spawn(
     process.execPath,
     [
@@ -229,6 +231,10 @@ try {
         realHttp: true,
         workerChildProcess: true,
         browserExecuted: !apiOnly,
+        browserSourceOrigin: apiOnly ? null : "http://127.0.0.1:18994",
+        browserAccountOrigin: apiOnly ? null : env.E4_TEST_ORIGIN,
+        browserPlugin:
+          "Browser plugin not available; existing Playwright harness used",
         deviceCoverage: apiOnly
           ? "HTTP API cookie jars only; browser checks explicitly skipped"
           : "HTTP API cookie jars and isolated Chromium; no real-device claim",

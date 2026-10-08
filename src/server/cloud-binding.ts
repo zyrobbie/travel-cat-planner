@@ -311,10 +311,19 @@ export async function confirmLegacyBinding(accountId: string, input: unknown) {
   ensure(
     bundleHash === p.bundleHash,
     409,
-    "转移文件在预检后已改变，请重新预检。",
+    "小猫记录在检查后已改变，请重新检查。",
   );
   return transaction(async (db) => {
     await lockActiveAccount(db, accountId);
+    const cancelled = await db.query(
+      "SELECT 1 FROM legacy_binding_cancellations WHERE account_id=$1 AND key=$2",
+      [accountId, key],
+    );
+    ensure(
+      !cancelled.rowCount,
+      409,
+      "这次保存已取消，请从原小猫页面重新开始。",
+    );
     const prior = await db.query(
       "SELECT bundle_hash,result FROM legacy_binding_requests WHERE account_id=$1 AND key=$2",
       [accountId, key],
@@ -540,6 +549,51 @@ export async function legacyBindingResult(accountId: string, key: string) {
       "SELECT result FROM legacy_binding_requests WHERE account_id=$1 AND key=$2",
       [accountId, key],
     );
-    return r.rows[0]?.result ?? { pending: true };
+    if (r.rows[0]) return r.rows[0].result;
+    const cancelled = await db.query(
+      "SELECT bundle_hash FROM legacy_binding_cancellations WHERE account_id=$1 AND key=$2",
+      [accountId, key],
+    );
+    return cancelled.rows[0]
+      ? { cancelled: true, key, bundleHash: cancelled.rows[0].bundle_hash }
+      : { pending: true };
+  });
+}
+
+export async function cancelLegacyBinding(accountId: string, input: unknown) {
+  const { key, bundleHash } = z
+    .strictObject({
+      key: z.uuid(),
+      bundleHash: z.string().regex(/^[a-f0-9]{64}$/),
+    })
+    .parse(input);
+  return transaction(async (db) => {
+    await lockActiveAccount(db, accountId);
+    const prior = await db.query(
+      "SELECT bundle_hash,result FROM legacy_binding_requests WHERE account_id=$1 AND key=$2",
+      [accountId, key],
+    );
+    if (prior.rows[0]) {
+      ensure(
+        prior.rows[0].bundle_hash === bundleHash,
+        409,
+        "这次请求属于另一份记录。",
+      );
+      return prior.rows[0].result;
+    }
+    const cancelled = await db.query(
+      "SELECT bundle_hash FROM legacy_binding_cancellations WHERE account_id=$1 AND key=$2",
+      [accountId, key],
+    );
+    ensure(
+      !cancelled.rows[0] || cancelled.rows[0].bundle_hash === bundleHash,
+      409,
+      "这次请求属于另一份记录。",
+    );
+    await db.query(
+      "INSERT INTO legacy_binding_cancellations(account_id,key,bundle_hash) VALUES($1,$2,$3) ON CONFLICT DO NOTHING",
+      [accountId, key, bundleHash],
+    );
+    return { cancelled: true as const, key, bundleHash };
   });
 }

@@ -55,6 +55,7 @@ test("Short absence does not write; one jump equals incremental settlement with 
     await q.clock.install({ time: T0 });
     await q.clock.setFixedTime(T0);
     await q.goto(base);
+    await expect(q.getByRole("radio", { name: "选择橘白猫", exact: true })).toBeVisible();
     await replaceRows(q, [initial]);
     await p.evaluate(() => {
       (window as any).__calendarPutCount = 0;
