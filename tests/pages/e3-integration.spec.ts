@@ -170,6 +170,7 @@ test("new adoption schedules one persisted welcome letter and settles it only wh
   await page.clock.install({ time: startedAt });
   await page.clock.setFixedTime(startedAt);
   await page.goto(base);
+  await expect(page.getByRole("radio", { name: "选择橘白猫", exact: true })).toBeVisible();
   expect(await participantCount(page)).toBe(0);
   await adopt(page, "选择橘白猫", "欢迎合成猫");
   const first = await row(page);

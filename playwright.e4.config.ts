@@ -12,7 +12,7 @@ const evidence = resolve(
 );
 export default defineConfig({
   testDir: "tests/e4",
-  testMatch: "account-client.spec.ts",
+  testMatch: ["account-client.spec.ts", "binding-storage.spec.ts"],
   workers: 1,
   retries: 0,
   timeout: 120_000,
@@ -31,7 +31,11 @@ export default defineConfig({
     url: "http://127.0.0.1:18994/",
     reuseExistingServer: false,
     timeout: 30_000,
-    env: { PAGES_BASE: "/" },
+    env: {
+      PAGES_BASE: "/",
+      VITE_ACCOUNT_APP_URL: process.env.VITE_ACCOUNT_APP_URL!,
+      VITE_LEGACY_SOURCE_ORIGINS: process.env.VITE_LEGACY_SOURCE_ORIGINS!,
+    },
   },
   reporter: [
     ["list"],

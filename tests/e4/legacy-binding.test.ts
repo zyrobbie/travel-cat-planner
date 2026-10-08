@@ -381,6 +381,150 @@ async function worker() {
   assert.equal(code, 0, output);
 }
 
+test("B3 cancellation fence: cancel-first rejects delayed confirmation and original request lookup stays cancelled", async () => {
+  const login = await newAccount(),
+    client = await clientFor(login);
+  const bundle = buildLegacyTransfer(complexLegacyState());
+  const checked = await preflight(client, bundle),
+    key = randomUUID();
+  const payload = { key, bundleHash: checked.bundleHash };
+  const cancellation = await json(
+    await client.post("/api/e4/legacy/cancel", { data: payload }),
+  );
+  assert.deepEqual(cancellation, { cancelled: true, ...payload });
+  assert.deepEqual(
+    await json(await client.post("/api/e4/legacy/cancel", { data: payload })),
+    cancellation,
+  );
+  assert.deepEqual(
+    await json(await client.get(`/api/e4/legacy/requests/${key}`)),
+    cancellation,
+  );
+  await json(
+    await client.post("/api/e4/legacy/confirm", {
+      data: { ...payload, bundle },
+    }),
+    409,
+  );
+  await json(
+    await client.post("/api/e4/legacy/cancel", {
+      data: { ...payload, bundleHash: "0".repeat(64) },
+    }),
+    409,
+  );
+  assert.equal(
+    (
+      await one(
+        "SELECT count(*)::int AS n FROM cat_profiles WHERE account_id=$1",
+        [login.accountId],
+      )
+    ).n,
+    0,
+  );
+  const foreign = await clientFor(await newAccount());
+  assert.deepEqual(
+    await json(await foreign.get(`/api/e4/legacy/requests/${key}`)),
+    { pending: true },
+  );
+  await json(
+    await client.post("/api/e4/legacy/cancel", {
+      data: payload,
+      headers: { Origin: "https://not-authorized.example" },
+    }),
+    403,
+  );
+  await json(
+    await client.post("/api/e4/legacy/cancel", {
+      data: payload,
+      headers: { "X-Catletters-Account": randomUUID() },
+    }),
+    401,
+  );
+  // A new user decision may use a new key. The cancelled key can never revive.
+  const saved = await confirm(client, bundle);
+  assert.equal(saved.logicalCatId, bundle.sourceExperienceId);
+  await json(
+    await client.post("/api/e4/legacy/confirm", {
+      data: { ...payload, bundle },
+    }),
+    409,
+  );
+});
+
+test("B3 cancellation fence: committed confirmation wins and cancellation returns its exact receipt", async () => {
+  const login = await newAccount(),
+    client = await clientFor(login);
+  const state = complexLegacyState(),
+    bundle = buildLegacyTransfer(state);
+  const checked = await preflight(client, bundle),
+    key = randomUUID();
+  const payload = { key, bundleHash: checked.bundleHash };
+  const receipt = await json(
+    await client.post("/api/e4/legacy/confirm", {
+      data: { ...payload, bundle },
+    }),
+  );
+  assert.deepEqual(
+    await json(await client.post("/api/e4/legacy/cancel", { data: payload })),
+    receipt,
+  );
+  assert.deepEqual(
+    await json(await client.get(`/api/e4/legacy/requests/${key}`)),
+    receipt,
+  );
+  assert.equal(
+    (
+      await one(
+        "SELECT count(*)::int AS n FROM legacy_binding_cancellations WHERE account_id=$1 AND key=$2",
+        [login.accountId, key],
+      )
+    ).n,
+    0,
+  );
+  await assertArchivePreserved(receipt.catId, login.accountId, state);
+});
+
+test("B3 cancellation fence: simultaneous real HTTP confirm/cancel serialize to one durable outcome", async () => {
+  const login = await newAccount(),
+    client = await clientFor(login);
+  const bundle = buildLegacyTransfer(complexLegacyState());
+  const checked = await preflight(client, bundle),
+    key = randomUUID();
+  const payload = { key, bundleHash: checked.bundleHash };
+  const [sent, stopped] = await Promise.all([
+    client.post("/api/e4/legacy/confirm", { data: { ...payload, bundle } }),
+    client.post("/api/e4/legacy/cancel", { data: payload }),
+  ]);
+  const cancelResult = await json(stopped);
+  const receipt = await json(
+    await client.get(`/api/e4/legacy/requests/${key}`),
+  );
+  assert.deepEqual(cancelResult, receipt);
+  if (receipt.cancelled) {
+    await json(sent, 409);
+    assert.equal(
+      (
+        await one(
+          "SELECT count(*)::int AS n FROM cat_profiles WHERE account_id=$1",
+          [login.accountId],
+        )
+      ).n,
+      0,
+    );
+  } else {
+    assert.deepEqual(await json(sent), receipt);
+    assert.equal(
+      (
+        await one(
+          "SELECT count(*)::int AS n FROM cat_profiles WHERE account_id=$1",
+          [login.accountId],
+        )
+      ).n,
+      1,
+    );
+  }
+});
+
 test("B3 export: one explicit schema3 archive is projected without drafts, old requests, events or local mutation keys", () => {
   const state = complexLegacyState(),
     before = digest(state);

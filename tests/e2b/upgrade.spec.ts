@@ -88,7 +88,7 @@ test("Real v2 records retain every old field, invalidated destination and old tr
     current.getByRole("button", { name: "打开看看", exact: true }),
   ).toBeVisible();
   const after = await snapshot(current);
-  expect(after.version).toBe(3);
+  expect(after.version).toBe(4);
   for (const was of before.rows) {
     const now = after.rows.find((r) => r.participant.id === was.participant.id);
     const { schema, calendar, drafts, ...rest } = now,
@@ -183,7 +183,7 @@ test("v2 migration update failure leaves all rows and version intact; retry pres
     page.getByRole("heading", { name: "继续已有体验" }),
   ).toBeVisible();
   const after = await snapshot(page);
-  expect(after.version).toBe(3);
+  expect(after.version).toBe(4);
   expect(JSON.stringify(after)).not.toContain("待删除的独有合成原文");
   for (const old of before.rows)
     expect(

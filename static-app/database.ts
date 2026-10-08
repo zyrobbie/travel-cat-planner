@@ -1,6 +1,6 @@
 import { LocalError, migrateRecord, type LocalState } from "./model";
 const DB = "cat-letters-pages-v1";
-const VERSION = 3;
+const VERSION = 4;
 let opened: Promise<IDBDatabase> | null = null;
 export type Change = { participantId: string; redacted?: string };
 const listeners = new Set<(change: Change) => void>();
@@ -28,7 +28,7 @@ function storedRecord(value: unknown): LocalState {
     );
   return migrateRecord(value);
 }
-function database(): Promise<IDBDatabase> {
+export function openLocalDatabase(): Promise<IDBDatabase> {
   if (!opened)
     opened = new Promise<IDBDatabase>((resolve, reject) => {
       let req: IDBOpenDBRequest,
@@ -57,6 +57,12 @@ function database(): Promise<IDBDatabase> {
           tx.abort();
           return;
         }
+        // Version 4 adds only the binding gate. Existing schema-3 rows, including
+        // unknown fields, are not rewritten or enumerated by this upgrade.
+        if (!req.result.objectStoreNames.contains("accountBindings"))
+          req.result.createObjectStore("accountBindings", {
+            keyPath: "sourceId",
+          });
         if (!req.result.objectStoreNames.contains("participants")) {
           if (event.oldVersion !== 0) {
             problem = new LocalError(
@@ -70,6 +76,7 @@ function database(): Promise<IDBDatabase> {
           });
           return;
         }
+        if (event.oldVersion >= 3) return;
         const cursor = tx.objectStore("participants").openCursor();
         cursor.onsuccess = () => {
           const row = cursor.result;
@@ -101,6 +108,14 @@ function database(): Promise<IDBDatabase> {
           req.result.close();
           return;
         }
+        if (
+          !req.result.objectStoreNames.contains("participants") ||
+          !req.result.objectStoreNames.contains("accountBindings")
+        ) {
+          req.result.close();
+          reject(new LocalError("本机存储结构不完整，原记录已保留。"));
+          return;
+        }
         req.result.onversionchange = () => {
           req.result.close();
           opened = null;
@@ -122,14 +137,14 @@ export async function write<T>(
   },
   redacted?: string,
 ): Promise<T> {
-  const db = await database();
+  const db = await openLocalDatabase();
   return new Promise((resolve, reject) => {
     let tx: IDBTransaction,
       result: T,
       problem: unknown,
       didWrite = false;
     try {
-      tx = db.transaction("participants", "readwrite");
+      tx = db.transaction(["participants", "accountBindings"], "readwrite");
     } catch {
       reject(new LocalError("无法写入本机数据，本次操作尚未保存。"));
       return;
@@ -147,18 +162,39 @@ export async function write<T>(
       );
     tx.onerror = () => {};
     const store = tx.objectStore("participants"),
-      req = store.get(id);
-    req.onsuccess = () => {
+      gate = tx.objectStore("accountBindings").get(id);
+    gate.onsuccess = () => {
       try {
-        const changed = change(
-          req.result ? storedRecord(req.result) : undefined,
-        );
-        migrateRecord(changed.state);
-        result = changed.result;
-        if (changed.changed !== false) {
-          store.put(changed.state);
-          didWrite = true;
-        }
+        if (gate.result !== undefined)
+          throw new LocalError(
+            gate.result?.phase === "BOUND"
+              ? "这只小猫已绑定账号，请从账号继续；本机记录和草稿已保留。"
+              : "这只小猫的账号绑定尚待确认，本机写入已暂停；原记录和草稿已保留，请继续确认绑定结果。",
+          );
+        const req = store.get(id);
+        req.onsuccess = () => {
+          try {
+            const changed = change(
+              req.result ? storedRecord(req.result) : undefined,
+            );
+            migrateRecord(changed.state);
+            if (changed.state.participant.id !== id)
+              throw new LocalError("本机写入不属于当前小猫，原记录未改写。");
+            result = changed.result;
+            if (changed.changed !== false) {
+              store.put(changed.state);
+              didWrite = true;
+            }
+          } catch (e) {
+            problem =
+              e instanceof LocalError
+                ? e
+                : new LocalError(
+                    "本机保存失败，本次操作尚未保存。请检查存储空间后重试。",
+                  );
+            tx.abort();
+          }
+        };
       } catch (e) {
         problem =
           e instanceof LocalError
@@ -172,7 +208,7 @@ export async function write<T>(
   });
 }
 export async function listParticipants(): Promise<LocalState[]> {
-  const db = await database();
+  const db = await openLocalDatabase();
   return new Promise((resolve, reject) => {
     const tx = db.transaction("participants", "readonly"),
       r = tx.objectStore("participants").getAll();
@@ -187,7 +223,22 @@ export async function listParticipants(): Promise<LocalState[]> {
   });
 }
 export async function readState(id: string) {
-  const row = (await listParticipants()).find((p) => p.participant.id === id);
-  if (!row) throw new LocalError("此本机体验不存在，请在控制台选择已有体验。");
-  return row;
+  const db = await openLocalDatabase();
+  return new Promise<LocalState>((resolve, reject) => {
+    const tx = db.transaction("participants", "readonly"),
+      req = tx.objectStore("participants").get(id);
+    tx.oncomplete = () => {
+      try {
+        if (!req.result)
+          throw new LocalError("此本机体验不存在，请在控制台选择已有体验。");
+        const row = storedRecord(req.result);
+        if (row.participant.id !== id)
+          throw new LocalError("本机小猫标识不一致，原记录未改写。");
+        resolve(row);
+      } catch (error) {
+        reject(error);
+      }
+    };
+    tx.onabort = () => reject(new LocalError("无法读取本机体验，请重试。"));
+  });
 }

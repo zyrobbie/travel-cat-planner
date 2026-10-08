@@ -13,6 +13,7 @@ import {
   confirmLegacyBinding,
   legacyBindingResult,
   preflightLegacyBinding,
+  cancelLegacyBinding,
 } from "@/server/cloud-binding";
 import { LEGACY_TRANSFER_MAX_BYTES } from "@/shared/legacy-transfer";
 
@@ -75,6 +76,8 @@ async function handler(req: NextRequest) {
     }
     if (write && path.length === 1 && path[0] === "confirm")
       return json(await confirmLegacyBinding(accountId, await body(req)));
+    if (write && path.length === 1 && path[0] === "cancel")
+      return json(await cancelLegacyBinding(accountId, await body(req)));
     throw new HttpError(404, "没有此接口。");
   } catch (error) {
     const status =

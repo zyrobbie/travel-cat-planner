@@ -29,7 +29,7 @@ test("Real published old UI → atomic multi-participant upgrade → reload/edit
     other.getByRole("button", { name: "打开看看", exact: true }),
   ).toBeVisible();
   const after = await snapshot(page);
-  expect(after.version).toBe(3);
+  expect(after.version).toBe(4);
   expect(after.rows).toHaveLength(before.rows.length);
   for (const old of before.rows) {
     const next = after.rows.find(
@@ -123,7 +123,7 @@ test("Upgrade abort is atomic; unknown record survives; retry upgrades same data
   await expect(
     page.getByRole("heading", { name: "继续已有体验" }),
   ).toBeVisible();
-  expect((await snapshot(page)).version).toBe(3);
+  expect((await snapshot(page)).version).toBe(4);
   await ctx.close();
   const other = await browser.newContext(),
     p = await other.newPage();

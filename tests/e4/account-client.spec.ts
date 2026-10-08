@@ -44,8 +44,57 @@ async function browserGet(page: Page, path: string) {
   return result.data;
 }
 
-async function login(page: Page, email: string) {
-  await page.goto(`${origin}/account-app/`);
+function watchFiles(page: Page, events: string[]) {
+  page.on("download", () => events.push("download"));
+  page.on("filechooser", () => events.push("filechooser"));
+}
+async function localRows(page: Page) {
+  return page.evaluate(async () => {
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open("cat-letters-pages-v1");
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    return new Promise<unknown[]>((resolve, reject) => {
+      const tx = database.transaction("participants", "readonly"),
+        rows = tx.objectStore("participants").getAll();
+      tx.oncomplete = () => {
+        resolve(rows.result);
+        database.close();
+      };
+      tx.onabort = () => {
+        reject(tx.error);
+        database.close();
+      };
+    });
+  });
+}
+async function gate(page: Page, id: string) {
+  return page.evaluate(async (id) => {
+    const path = "/binding-storage.ts",
+      storage = await import(/* @vite-ignore */ path);
+    return storage.readBindingGate(id);
+  }, id);
+}
+async function openBinding(page: Page, label = "登录并保存这只小猫") {
+  await page.evaluate(() => {
+    if ((window as any).__bindingOpenCapture) return;
+    (window as any).__bindingOpenCapture = true;
+    const original = window.open;
+    window.open = function (...args: Parameters<typeof window.open>) {
+      (window as any).__lastBindingUrl = String(args[0]);
+      return original.apply(window, args);
+    };
+  });
+  const opened = page.waitForEvent("popup");
+  await page.getByRole("button", { name: label, exact: true }).click();
+  const popup = await opened;
+  await expect.poll(() => new URL(popup.url()).origin).toBe(origin);
+  return popup;
+}
+
+async function login(page: Page, email: string, navigate = true) {
+  if (navigate) await page.goto(`${origin}/account-app/`);
   await page.getByLabel("邮箱", { exact: true }).fill(email);
   const pending = page.waitForResponse(
     (r) =>
@@ -97,7 +146,7 @@ async function navBoundary(page: Page) {
     ),
   ).toBe(true);
 }
-async function fixtureAndExport(page: Page, path: string) {
+async function localFixture(page: Page) {
   await page.goto(`${local}?product=1`);
   await adopt(page, "合成绑定猫");
   const info = await page.evaluate(async () => {
@@ -197,59 +246,62 @@ async function fixtureAndExport(page: Page, path: string) {
   });
   await page.reload();
   await expect(page.locator(".e3-home-page")).toBeVisible();
-  const readOriginal = () =>
-    page.evaluate(async () => {
-      const path = "/database.ts";
-      const database = await import(/* @vite-ignore */ path);
-      return JSON.stringify(await database.readState(location.hash.slice(1)));
-    });
-  const beforeExport = await readOriginal();
-  const download = page.waitForEvent("download");
-  await page.getByRole("button", { name: "导出这只小猫", exact: true }).click();
-  await (await download).saveAs(path);
-  expect(await readOriginal()).toBe(beforeExport);
-  const bundle = JSON.parse(await readFile(path, "utf8"));
-  expect(bundle.sourceExperienceId).toBe(info.id);
-  expect(bundle.letters).toHaveLength(3);
-  expect(bundle).not.toHaveProperty("drafts");
-  expect(bundle).not.toHaveProperty("events");
-  expect(bundle).not.toHaveProperty("requests");
-  expect(JSON.stringify(bundle)).not.toContain("LOCAL_ONLY_DRAFT");
+
   return info;
 }
 
-test("E4-B3 actual local export, confirmed import, cloud UI, source management and two-device sync", async ({
+test("E4-B3 current-browser popup binding, cloud UI, source management and two-context sync", async ({
   browser,
-}, testInfo) => {
+}) => {
   const context = await browser.newContext({
     viewport: { width: 390, height: 844 },
     acceptDownloads: true,
   });
-  const page = await context.newPage(),
-    errors: string[] = [];
+  let page = await context.newPage();
+  const errors: string[] = [];
   collectErrors(page, errors);
-  const file = testInfo.outputPath("synthetic-single-cat.json");
-  const info = await fixtureAndExport(page, file);
+  await page.clock.setFixedTime(new Date());
+  const info = await localFixture(page);
+  const source = page;
+  const before = await localRows(source);
+  const handoffs: string[] = [];
+  context.on("page", (p) => watchFiles(p, handoffs));
+  watchFiles(source, handoffs);
   const email = `browser-${randomUUID()}@example.test`;
-  await login(page, email);
-  await page.getByText("已有本机小猫？导入选定记录", { exact: true }).click();
-  await page
-    .getByLabel("选择小猫记录文件", { exact: true })
-    .setInputFiles(file);
-  await page.getByRole("button", { name: "检查这份记录", exact: true }).click();
+  let popup = await openBinding(source);
+  collectErrors(popup, errors);
+  await login(popup, email, false);
   await expect(
-    page.getByRole("heading", { name: "确认带回 合成绑定猫" }),
+    popup.getByRole("button", { name: "确认保存这只小猫", exact: true }),
   ).toBeVisible();
-  expect((await browserGet(page, "/api/e4/account")).cat).toBeNull();
-  await page.getByRole("button", { name: "取消导入", exact: true }).click();
-  expect((await browserGet(page, "/api/e4/account")).cat).toBeNull();
-  await page
-    .getByLabel("选择小猫记录文件", { exact: true })
-    .setInputFiles(file);
-  await page.getByRole("button", { name: "检查这份记录", exact: true }).click();
-  await page
-    .getByRole("button", { name: "确认导入这只小猫", exact: true })
+  expect((await browserGet(popup, "/api/e4/account")).cat).toBeNull();
+  await popup.screenshot({
+    path: join(shots, "mobile-binding-confirmation.png"),
+  });
+  await popup.setViewportSize({ width: 1280, height: 900 });
+  await popup.screenshot({
+    path: join(shots, "desktop-binding-confirmation.png"),
+  });
+  await popup.setViewportSize({ width: 390, height: 844 });
+  expect(await gate(source, info.id)).toBeNull();
+  await popup.getByRole("button", { name: "暂不保存", exact: true }).click();
+  await expect.poll(() => popup.isClosed()).toBe(true);
+  expect(await localRows(source)).toEqual(before);
+  expect(await gate(source, info.id)).toBeNull();
+  popup = await openBinding(source);
+  collectErrors(popup, errors);
+  await expect(
+    popup.getByRole("button", { name: "确认保存这只小猫", exact: true }),
+  ).toBeVisible();
+  await popup
+    .getByRole("button", { name: "确认保存这只小猫", exact: true })
     .click();
+  await expect
+    .poll(async () => (await gate(source, info.id))?.phase)
+    .toBe("BOUND");
+  expect(await localRows(source)).toEqual(before);
+  expect(handoffs).toEqual([]);
+  page = popup;
   await expect(page.locator(".e3-home-page")).toBeVisible();
   await expect(page.locator(".e3-home-scene.is-ready")).toBeVisible();
   await expect(page.locator(".e3-new-letter")).not.toContainText(
@@ -399,6 +451,9 @@ test("E4-B3 actual local export, confirmed import, cloud UI, source management a
     page.getByRole("heading", { name: "选一只你喜欢的小猫吧", exact: true }),
   ).toBeVisible();
   await expect(page.locator("body")).not.toContainText("BROWSER_ONLY_DRAFT");
+  expect(await localRows(source)).toEqual(before);
+  expect(handoffs).toEqual([]);
+  await expect(page.locator('input[type="file"]')).toHaveCount(0);
   expect(errors).toEqual([]);
   await other.close();
   await context.close();
@@ -430,5 +485,504 @@ test("new cloud adoption persists and an expired session clears the visible cat"
   await expect(page.getByLabel("邮箱", { exact: true })).toBeVisible();
   await expect(page.locator("body")).not.toContainText("合成新账号猫");
   expect(errors).toEqual([]);
+  await context.close();
+});
+
+async function bindingFixture(
+  browser: import("@playwright/test").Browser,
+  prefix: string,
+  dropCompleteAck = false,
+) {
+  const context = await browser.newContext({
+      viewport: { width: 390, height: 844 },
+    }),
+    source = await context.newPage();
+  if (dropCompleteAck)
+    await context.addInitScript(() => {
+      (window as any).__droppedCompleteAck = false;
+      window.addEventListener(
+        "message",
+        (event) => {
+          if (
+            !(window as any).__droppedCompleteAck &&
+            event.data?.protocol === "catletters-binding-v1" &&
+            event.data?.ok === true &&
+            event.data?.value?.complete === true
+          ) {
+            (window as any).__droppedCompleteAck = true;
+            event.stopImmediatePropagation();
+          }
+        },
+        true,
+      );
+    });
+  await source.clock.setFixedTime(new Date());
+  const info = await localFixture(source),
+    before = await localRows(source);
+  const popup = await openBinding(source),
+    email = `${prefix}-${randomUUID()}@example.test`;
+  const preflight = popup.waitForResponse(
+    (r) =>
+      r.url().endsWith("/api/e4/legacy/preflight") &&
+      r.request().method() === "POST",
+  );
+  await login(popup, email, false);
+  const response = await preflight;
+  expect(response.status()).toBe(200);
+  const checked = await response.json();
+  await expect(
+    popup.getByRole("button", { name: "确认保存这只小猫", exact: true }),
+  ).toBeVisible();
+  return { context, source, info, before, popup, email, checked };
+}
+async function browserPost(page: Page, path: string, body: unknown) {
+  return page.evaluate(
+    async ({ path, body }) => {
+      const me = await fetch("/api/e4/account", {
+        credentials: "same-origin",
+      }).then((r) => r.json());
+      const r = await fetch(path, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "x-catletters-account": me.id,
+        },
+        body: JSON.stringify(body),
+      });
+      return { status: r.status, data: await r.json() };
+    },
+    { path, body },
+  );
+}
+async function neutralPopup(source: Page, url: string) {
+  await source.context().route(url, (route) =>
+    route.fulfill({
+      contentType: "text/html",
+      body: "<!doctype html><title>Untrusted bridge sender</title>",
+    }),
+  );
+  const opened = source.waitForEvent("popup");
+  await source.evaluate((url) => window.open(url, "_blank"), url);
+  const page = await opened;
+  await page.waitForURL(url);
+  return page;
+}
+async function postToSource(sender: Page, message: unknown) {
+  await sender.evaluate(
+    ({ message, target }) => window.opener.postMessage(message, target),
+    { message, target: new URL(local).origin },
+  );
+}
+
+test("real wrong-origin/window/nonce messages cannot freeze a cat; stale preflight cannot bind changed history", async ({
+  browser,
+}) => {
+  const { context, source, info, before, popup, checked } =
+    await bindingFixture(browser, "bridge");
+  const account = await browserGet(popup, "/api/e4/account");
+  const openingUrl = await source.evaluate(
+    () => (window as any).__lastBindingUrl,
+  );
+  const nonce = new URLSearchParams(new URL(openingUrl).hash.slice(1)).get(
+    "binding",
+  );
+  expect(nonce).toBeTruthy();
+  const message = {
+    protocol: "catletters-binding-v1",
+    nonce,
+    requestId: randomUUID(),
+    op: "FREEZE",
+    payload: {
+      accountId: account.id,
+      key: randomUUID(),
+      bundleHash: checked.bundleHash,
+    },
+  };
+  const wrongOrigin = await neutralPopup(
+    source,
+    "http://localhost:18994/__bridge-untrusted",
+  );
+  await postToSource(wrongOrigin, message);
+  const wrongWindow = await neutralPopup(
+    source,
+    `${origin}/__bridge-wrong-window`,
+  );
+  await postToSource(wrongWindow, { ...message, requestId: randomUUID() });
+  await postToSource(popup, {
+    ...message,
+    nonce: randomUUID(),
+    requestId: randomUUID(),
+  });
+  await postToSource(popup, {
+    ...message,
+    protocol: "unexpected-protocol",
+    requestId: randomUUID(),
+  });
+  await source.evaluate(
+    () =>
+      new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve)),
+      ),
+  );
+  expect(await gate(source, info.id)).toBeNull();
+  expect(await localRows(source)).toEqual(before);
+  expect((await browserGet(popup, "/api/e4/account")).cat).toBeNull();
+  // A real local business change after the preview invalidates that preview.
+  await source.evaluate(async (id) => {
+    const p = "/store.ts",
+      s = await import(/* @vite-ignore */ p),
+      state = await s.readState(id);
+    await s.control(
+      id,
+      "start-trip",
+      "O-RHINE-01",
+      state.controlRevision,
+      crypto.randomUUID(),
+    );
+  }, info.id);
+  const changed = await localRows(source);
+  await popup
+    .getByRole("button", { name: "确认保存这只小猫", exact: true })
+    .click();
+  await expect(popup.getByRole("alert")).toContainText(/变化|重新/);
+  expect(await gate(source, info.id)).toBeNull();
+  expect(await localRows(source)).toEqual(changed);
+  expect((await browserGet(popup, "/api/e4/account")).cat).toBeNull();
+  await context.close();
+});
+
+test("lost confirm response and refreshed source recover the original committed binding without files or a second cat", async ({
+  browser,
+}) => {
+  const { context, source, info, before, popup } = await bindingFixture(
+    browser,
+    "recover",
+  );
+  let committed = false,
+    sentBody: Record<string, unknown> | null = null;
+  await popup.route("**/api/e4/legacy/confirm", async (route) => {
+    sentBody = route.request().postDataJSON();
+    const response = await route.fetch();
+    expect(response.status()).toBe(200);
+    committed = true;
+    await route.abort("failed");
+  });
+  await popup
+    .getByRole("button", { name: "确认保存这只小猫", exact: true })
+    .click();
+  await expect.poll(() => committed).toBe(true);
+  await expect
+    .poll(async () => (await gate(source, info.id))?.phase)
+    .toBe("PENDING");
+  const pending = await gate(source, info.id);
+  expect(pending.key).toBe((sentBody as any).key);
+  await popup.close();
+  await source.reload();
+  const recovered = await openBinding(source, "继续确认保存结果");
+  await expect
+    .poll(async () => (await gate(source, info.id))?.phase)
+    .toBe("BOUND");
+  await expect(recovered.locator(".e3-home-page")).toBeVisible();
+  expect((await gate(source, info.id)).key).toBe(pending.key);
+  expect(await localRows(source)).toEqual(before);
+  const account = await browserGet(recovered, "/api/e4/account");
+  const cats = await db.query(
+    "SELECT count(*)::int AS n FROM cat_profiles WHERE account_id=$1",
+    [account.id],
+  );
+  expect(cats.rows[0].n).toBe(1);
+  await source.screenshot({ path: join(shots, "source-bound-recovery.png") });
+  await context.close();
+});
+
+test("unknown confirmation can be cancelled safely and a delayed original confirm remains rejected", async ({
+  browser,
+}) => {
+  const { context, source, info, before, popup } = await bindingFixture(
+    browser,
+    "cancel",
+  );
+  let sentBody: unknown;
+  await popup.route("**/api/e4/legacy/confirm", async (route) => {
+    sentBody = route.request().postDataJSON();
+    await route.abort("failed");
+  });
+  await popup
+    .getByRole("button", { name: "确认保存这只小猫", exact: true })
+    .click();
+  await expect
+    .poll(async () => (await gate(source, info.id))?.phase)
+    .toBe("PENDING");
+  const pending = await gate(source, info.id);
+  await popup.getByRole("button", { name: "取消保存", exact: true }).click();
+  await expect.poll(() => gate(source, info.id)).toBeNull();
+  expect(await localRows(source)).toEqual(before);
+  const accountPage = await context.newPage();
+  await accountPage.goto(`${origin}/account-app/`);
+  const result = await browserGet(
+    accountPage,
+    `/api/e4/legacy/requests/${pending.key}`,
+  );
+  expect(result.cancelled).toBe(true);
+  expect(result.key).toBe(pending.key);
+  expect(result.bundleHash).toBe(pending.bundleHash);
+  const late = await browserPost(
+    accountPage,
+    "/api/e4/legacy/confirm",
+    sentBody,
+  );
+  expect(late.status).toBe(409);
+  expect((await browserGet(accountPage, "/api/e4/account")).cat).toBeNull();
+  expect(await localRows(source)).toEqual(before);
+  await context.close();
+});
+
+test("occupied account, blocked popup and closed popup leave the selected local archive unchanged", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({
+      viewport: { width: 390, height: 844 },
+    }),
+    cloud = await context.newPage();
+  await login(cloud, `occupied-${randomUUID()}@example.test`);
+  await adopt(cloud, "账号原有猫");
+  const account = await browserGet(cloud, "/api/e4/account"),
+    source = await context.newPage();
+  await source.clock.setFixedTime(new Date());
+  const info = await localFixture(source),
+    before = await localRows(source);
+  await source.evaluate(() => {
+    (window as any).realOpen = window.open;
+    window.open = () => null;
+  });
+  await source
+    .getByRole("button", { name: "登录并保存这只小猫", exact: true })
+    .click();
+  await expect(source.getByRole("alert")).toContainText(/窗口|弹窗|浏览器/);
+  expect(await gate(source, info.id)).toBeNull();
+  expect(await localRows(source)).toEqual(before);
+  await source.evaluate(() => {
+    window.open = (window as any).realOpen;
+  });
+  const popup = await openBinding(source, "继续确认保存结果");
+  await expect(popup.getByRole("alert")).toContainText(/已有|已经|一只/);
+  await expect(
+    popup.getByRole("button", { name: "确认保存这只小猫", exact: true }),
+  ).toHaveCount(0);
+  expect((await browserGet(popup, "/api/e4/account")).cat.id).toBe(
+    account.cat.id,
+  );
+  expect(await gate(source, info.id)).toBeNull();
+  await popup.close();
+  await expect(source.getByRole("alert")).toContainText(/关闭|重试|窗口/);
+  expect(await localRows(source)).toEqual(before);
+  await context.close();
+});
+
+test("a different logged-in account cannot confirm the original account preview", async ({
+  browser,
+}) => {
+  const { context, source, info, before, popup } = await bindingFixture(
+    browser,
+    "account-a",
+  );
+  const original = await browserGet(popup, "/api/e4/account");
+  const other = await context.newPage();
+  await other.goto(`${origin}/account-app/`);
+  await other.getByRole("button", { name: "退出账号", exact: true }).click();
+  await login(other, `account-b-${randomUUID()}@example.test`);
+  const switched = await browserGet(other, "/api/e4/account");
+  expect(switched.id).not.toBe(original.id);
+  // The current UI must either invalidate the old preview or safely reject its stale confirmation.
+  const confirm = popup.getByRole("button", {
+    name: "确认保存这只小猫",
+    exact: true,
+  });
+  if (await confirm.isVisible()) await confirm.click();
+  await expect(popup.getByRole("alert")).toContainText(/账号|登录|会话|变化/);
+  expect((await browserGet(other, "/api/e4/account")).cat).toBeNull();
+  const binding = await gate(source, info.id);
+  expect(binding?.phase).not.toBe("BOUND");
+  if (binding) expect(binding.accountId).toBe(original.id);
+  expect(await localRows(source)).toEqual(before);
+  expect(
+    (
+      await db.query(
+        "SELECT count(*)::int AS n FROM cat_profiles WHERE account_id=ANY($1::uuid[])",
+        [[original.id, switched.id]],
+      )
+    ).rows[0].n,
+  ).toBe(0);
+  await context.close();
+});
+
+test("switching the selected local cat invalidates an already opened binding window", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({
+      viewport: { width: 390, height: 844 },
+    }),
+    source = await context.newPage();
+  await source.clock.setFixedTime(new Date());
+  const info = await localFixture(source);
+  const otherId = await source.evaluate(async () => {
+    const p = "/store.ts",
+      s = await import(/* @vite-ignore */ p);
+    return (await s.createParticipant("不可串入的另一猫", "cat-04")).participant
+      .id;
+  });
+  const before = await localRows(source),
+    popup = await openBinding(source);
+  let uploads = 0;
+  popup.on("request", (r) => {
+    if (r.url().includes("/api/e4/legacy/preflight")) uploads++;
+  });
+  await source.evaluate((id) => {
+    location.hash = id;
+  }, otherId);
+  await login(popup, `selection-${randomUUID()}@example.test`, false);
+  await expect(popup.getByRole("alert")).toContainText(/页面已变化|重新开始/);
+  expect(uploads).toBe(0);
+  expect((await browserGet(popup, "/api/e4/account")).cat).toBeNull();
+  expect(await gate(source, info.id)).toBeNull();
+  expect(await gate(source, otherId)).toBeNull();
+  expect(await localRows(source)).toEqual(before);
+  await context.close();
+});
+
+test("expired preview cannot submit a binding and retains the source for original-account recovery", async ({
+  browser,
+}) => {
+  const { context, source, info, before, popup } = await bindingFixture(
+    browser,
+    "expired-preview",
+  );
+  const account = await browserGet(popup, "/api/e4/account");
+  const revoked = await db.query(
+    "UPDATE account_sessions SET revoked_at=now() WHERE account_id=$1",
+    [account.id],
+  );
+  expect(revoked.rowCount).toBeGreaterThan(0);
+  await popup
+    .getByRole("button", { name: "确认保存这只小猫", exact: true })
+    .click();
+  await expect(popup.getByLabel("邮箱", { exact: true })).toBeVisible();
+  expect(
+    (
+      await db.query(
+        "SELECT count(*)::int AS n FROM cat_profiles WHERE account_id=$1",
+        [account.id],
+      )
+    ).rows[0].n,
+  ).toBe(0);
+  const pending = await gate(source, info.id);
+  expect(pending?.phase).not.toBe("BOUND");
+  if (pending) expect(pending.accountId).toBe(account.id);
+  expect(await localRows(source)).toEqual(before);
+  await context.close();
+});
+
+test("a lost COMPLETE acknowledgement recovers in the same source window when receipt key order changes", async ({
+  browser,
+}) => {
+  const { context, source, info, before, popup } = await bindingFixture(
+    browser,
+    "lost-ack",
+    true,
+  );
+  const committed = popup.waitForResponse(
+    (r) =>
+      r.url().endsWith("/api/e4/legacy/confirm") &&
+      r.request().method() === "POST",
+  );
+  await popup
+    .getByRole("button", { name: "确认保存这只小猫", exact: true })
+    .click();
+  const confirmation = await committed;
+  expect(confirmation.status()).toBe(200);
+  const originalReceipt = await confirmation.json();
+  await expect
+    .poll(() => popup.evaluate(() => (window as any).__droppedCompleteAck))
+    .toBe(true);
+  await expect
+    .poll(async () => (await gate(source, info.id))?.phase)
+    .toBe("BOUND");
+  await expect(popup.getByRole("alert")).toContainText(/响应|重试|超时/, {
+    timeout: 20000,
+  });
+  await expect(popup.locator(".e3-home-page")).toHaveCount(0);
+  const pending = await gate(source, info.id);
+  let orderChanged = false;
+  await popup.route(
+    `**/api/e4/legacy/requests/${pending.key}`,
+    async (route) => {
+      const actual = await route.fetch();
+      expect(actual.status()).toBe(200);
+      const receipt = await actual.json();
+      expect(receipt).toEqual(originalReceipt);
+      // Only JSON object key order changes; all fields come from this real committed receipt.
+      const reordered = Object.fromEntries(
+        Object.keys(originalReceipt)
+          .reverse()
+          .map((key) => [key, receipt[key]]),
+      );
+      orderChanged =
+        JSON.stringify(Object.keys(reordered)) !==
+        JSON.stringify(Object.keys(originalReceipt));
+      await route.fulfill({
+        response: actual,
+        body: JSON.stringify(reordered),
+      });
+    },
+  );
+  await popup
+    .getByRole("button", { name: "重试确认保存结果", exact: true })
+    .click();
+  await expect(popup.locator(".e3-home-page")).toBeVisible();
+  expect(orderChanged).toBe(true);
+  expect((await gate(source, info.id)).key).toBe(pending.key);
+  expect(await localRows(source)).toEqual(before);
+  await context.close();
+});
+
+test("cancelling an already committed unknown result shows the saved cat instead of claiming cancellation", async ({
+  browser,
+}) => {
+  const { context, source, info, before, popup } = await bindingFixture(
+    browser,
+    "committed-cancel",
+  );
+  let committed = false;
+  await popup.route("**/api/e4/legacy/confirm", async (route) => {
+    const response = await route.fetch();
+    expect(response.status()).toBe(200);
+    committed = true;
+    await route.abort("failed");
+  });
+  await popup
+    .getByRole("button", { name: "确认保存这只小猫", exact: true })
+    .click();
+  await expect.poll(() => committed).toBe(true);
+  await expect
+    .poll(async () => (await gate(source, info.id))?.phase)
+    .toBe("PENDING");
+  const cancellation = popup.waitForResponse((r) =>
+    r.url().endsWith("/api/e4/legacy/cancel"),
+  );
+  await popup.getByRole("button", { name: "取消保存", exact: true }).click();
+  const response = await cancellation;
+  expect(response.status()).toBe(200);
+  const receipt = await response.json();
+  expect(receipt.logicalCatId).toBe(info.id);
+  expect(receipt).not.toHaveProperty("cancelled");
+  await expect
+    .poll(async () => (await gate(source, info.id))?.phase)
+    .toBe("BOUND");
+  await expect(popup.locator(".e3-home-page")).toBeVisible();
+  await expect(
+    popup.getByRole("heading", { name: "已取消保存", exact: true }),
+  ).toHaveCount(0);
+  expect(await localRows(source)).toEqual(before);
   await context.close();
 });
