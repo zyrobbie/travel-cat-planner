@@ -28,10 +28,11 @@ jobs:
       APP_MODE: INTERNAL
       SAFETY_ADAPTER: synthetic-v1
       COOKIE_SECURE: "false"
-      E4_LIFECYCLE_DIR: ${{ runner.temp }}/catletters-ci-private-lifecycle
       E4_LEDGER_SECRET: synthetic-ci-only-ledger-secret-not-a-production-key
       E4_LIFECYCLE_BOOTSTRAP: "true"
     steps:
+      - name: Configure private lifecycle directory
+        run: printf 'E4_LIFECYCLE_DIR=%s/catletters-ci-private-lifecycle\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
