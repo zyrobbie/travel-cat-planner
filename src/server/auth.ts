@@ -7,6 +7,7 @@ import {
 import type { NextRequest } from "next/server";
 import { pool, transaction } from "./db";
 import { ensure } from "./errors";
+import { assertLifecycleReady } from "./lifecycle-ledger";
 export const digest = (value: string) =>
   createHash("sha256").update(value).digest("hex");
 export const token = () => randomBytes(32).toString("hex");
@@ -17,16 +18,19 @@ export async function identity(
   req: NextRequest,
   role: "USER" | "ADMIN" = "USER",
 ) {
+  await assertLifecycleReady();
   const raw = req.cookies.get(
     role === "ADMIN" ? "cat_admin" : "cat_session",
   )?.value;
   ensure(raw, 401, "请重新登录。");
-  const result = await pool.query(
-    "SELECT participant_id,role FROM sessions WHERE token_hash=$1 AND expires_at>now() AND role=$2",
-    [digest(raw), role],
-  );
-  ensure(result.rows[0], 401, "会话已过期，请重新登录。");
-  return result.rows[0] as { participant_id: string | null; role: string };
+  return transaction(async (db) => {
+    const result = await db.query(
+      "SELECT participant_id,role FROM sessions WHERE token_hash=$1 AND expires_at>now() AND role=$2",
+      [digest(raw), role],
+    );
+    ensure(result.rows[0], 401, "会话已过期，请重新登录。");
+    return result.rows[0] as { participant_id: string | null; role: string };
+  });
 }
 export function originCheck(req: NextRequest) {
   ensure(
@@ -62,6 +66,11 @@ export async function newParticipant() {
 export async function reissueInvite(pid: string) {
   const raw = token();
   await transaction(async (db) => {
+    const owner=await db.query("SELECT account_id FROM cat_profiles WHERE participant_id=$1",[pid]);
+    if(owner.rows[0]) {
+      const a=await db.query("SELECT status FROM accounts WHERE id=$1 FOR UPDATE",[owner.rows[0].account_id]);
+      ensure(a.rows[0]?.status==='ACTIVE',401,"账号当前不可用。");
+    }
     const p = await db.query(
       "SELECT id FROM participants WHERE id=$1 FOR UPDATE",
       [pid],

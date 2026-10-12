@@ -10,6 +10,7 @@ import {
 import { transaction } from "./db";
 import { ensure } from "./errors";
 import { lockActiveAccount } from "./account-service";
+import { sourceFingerprint } from "./lifecycle-ledger";
 import {
   cloudContentHash,
   getCloudContent,
@@ -273,6 +274,8 @@ function prepare(input: unknown) {
 }
 
 async function ensureVacancy(db: PoolClient, accountId: string, p: Prepared) {
+  const erased=await db.query("SELECT 1 FROM erased_legacy_sources WHERE source_hash=$1",[sourceFingerprint(p.bundle.sourceNamespace,p.bundle.sourceExperienceId)]);
+  ensure(!erased.rows[0],409,"这份旧体验已随原账号注销，不能重新迁入。原本机记录仍保留。");
   const cat = await db.query(
     "SELECT id FROM cat_profiles WHERE account_id=$1",
     [accountId],

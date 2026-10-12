@@ -1,9 +1,11 @@
 import { createHmac, randomInt, randomUUID } from "node:crypto";
 import { z } from "zod";
+import type { PoolClient } from "pg";
 import { pool, transaction } from "./db";
 import { digest, sameSecret, token } from "./auth";
 import { ensure, HttpError } from "./errors";
 import { configuredOtpDelivery, type OtpDelivery } from "./otp-delivery";
+import { assertLifecycleReady, guardedLifecycleTx, withLifecycleReadLock } from "./lifecycle-ledger";
 
 export const ACCOUNT_COOKIE = "cat_account_session";
 export const SESSION_SECONDS = 7 * 24 * 60 * 60;
@@ -44,8 +46,8 @@ function codeDigest(id: string, email: string, code: string) {
 }
 
 /** A separate committed statement: rejecting a request must not undo its limit. */
-export async function accountRateLimit(key: string, maximum: number) {
-  const r = await pool.query(
+export async function accountRateLimit(key: string, maximum: number,connection?:PoolClient) {
+  const r = await (connection??pool).query(
     `INSERT INTO account_rate_limits(key) VALUES($1)
      ON CONFLICT(key) DO UPDATE SET
        attempts=CASE WHEN account_rate_limits.window_at < now()-interval '1 minute'
@@ -58,13 +60,16 @@ export async function accountRateLimit(key: string, maximum: number) {
 }
 
 export async function requestCode(input: string, delivery?: OtpDelivery) {
+  return withLifecycleReadLock(db=>requestCodeWithinLock(input,delivery,db));
+}
+async function requestCodeWithinLock(input:string,delivery:OtpDelivery|undefined,connection:PoolClient) {
   const email = normalizeEmail(input);
   const id = randomUUID();
   const code = randomInt(0, 1_000_000).toString().padStart(6, "0");
   const hash = codeDigest(id, email, code);
   const adapter = delivery ?? configuredOtpDelivery();
-  await accountRateLimit(`request:${digest(email)}`, 10);
-  const challenge = await transaction(async (db) => {
+  await accountRateLimit(`request:${digest(email)}`, 10,connection);
+  const challenge = await guardedLifecycleTx(connection,async (db) => {
     await db.query("SELECT pg_advisory_xact_lock(hashtextextended($1, 4))", [
       email,
     ]);
@@ -80,9 +85,10 @@ export async function requestCode(input: string, delivery?: OtpDelivery) {
       "验证码请求过于频繁，请稍后再试。",
     );
     const account = await db.query(
-      "SELECT id FROM accounts WHERE email_normalized=$1 AND status <> 'DELETED' FOR UPDATE",
+      "SELECT id,status FROM accounts WHERE email_normalized=$1 AND status <> 'DELETED' FOR UPDATE",
       [email],
     );
+    ensure(!account.rows[0] || account.rows[0].status==='ACTIVE',409,"账号正在注销，请先查看处理结果。");
     await db.query(
       "UPDATE email_challenges SET revoked_at=now() WHERE email_normalized=$1 AND consumed_at IS NULL AND revoked_at IS NULL",
       [email],
@@ -96,13 +102,13 @@ export async function requestCode(input: string, delivery?: OtpDelivery) {
   });
   try {
     await adapter.send({ challengeId: id, email, code, ...challenge });
-    await pool.query(
+    await connection.query(
       "UPDATE email_challenges SET delivery_status='SENT' WHERE id=$1",
       [id],
     );
   } catch {
     // No automatic resend after an unknown outcome; this challenge cannot verify.
-    await pool.query(
+    await connection.query(
       "UPDATE email_challenges SET delivery_status='FAILED',revoked_at=COALESCE(revoked_at,now()) WHERE id=$1",
       [id],
     );
@@ -172,8 +178,8 @@ export async function verifyCode(id: string, input: string, code: string) {
       );
     }
     await db.query(
-      "UPDATE email_challenges SET consumed_at=now() WHERE id=$1",
-      [id],
+      "UPDATE email_challenges SET consumed_at=now(),subject_account_id=$2 WHERE id=$1",
+      [id,account.id],
     );
     await db.query(
       "INSERT INTO account_sessions(token_hash,account_id,expires_at) VALUES($1,$2,now()+interval '7 days')",
@@ -186,14 +192,16 @@ export async function verifyCode(id: string, input: string, code: string) {
 }
 
 export async function accountIdentity(raw: string | undefined) {
+ return transaction(async db=> {
   ensure(raw && /^[a-f0-9]{64}$/.test(raw), 401, "请重新登录。");
-  const r = await pool.query(
+  const r = await db.query(
     `SELECT a.id FROM account_sessions s JOIN accounts a ON a.id=s.account_id
      WHERE s.token_hash=$1 AND s.revoked_at IS NULL AND s.expires_at>now() AND a.status='ACTIVE'`,
     [digest(raw)],
   );
   ensure(r.rows[0], 401, "会话已过期，请重新登录。");
   return r.rows[0].id as string;
+ });
 }
 
 export async function logoutAccount(raw: string | undefined) {

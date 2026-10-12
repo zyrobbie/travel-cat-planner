@@ -1,5 +1,5 @@
 // Only a disposable, explicitly named loopback database may be reset by this harness.
-import { readFile, mkdir, mkdtemp, writeFile, rm } from "node:fs/promises";
+import { readFile, mkdir, mkdtemp, writeFile, rm, realpath } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { randomBytes } from "node:crypto";
@@ -32,6 +32,7 @@ const evidence = resolve(
 );
 await mkdir(evidence, { recursive: true });
 const mailbox = await mkdtemp(join(tmpdir(), "catletters-e4-mailbox-"));
+const privacyDir = await realpath(await mkdtemp(join(tmpdir(), "catletters-e4-account-privacy-")));
 const env = {
   ...process.env,
   ...values,
@@ -41,6 +42,9 @@ const env = {
   OTP_ADAPTER: "synthetic-v1",
   OTP_HASH_SECRET: randomBytes(32).toString("hex"),
   E4_SYNTHETIC_MAILBOX_DIR: mailbox,
+  E4_LIFECYCLE_DIR: privacyDir,
+  E4_LEDGER_SECRET: randomBytes(32).toString("hex"),
+  E4_LIFECYCLE_BOOTSTRAP: "true",
   COOKIE_SECURE: "true",
 };
 let log = "E4-A isolated PostgreSQL test database: catletters_e4_test\n";
@@ -100,6 +104,7 @@ try {
   }
   await run(["node_modules/tsx/dist/cli.mjs", "scripts/migrate.ts"]);
   await run(["node_modules/tsx/dist/cli.mjs", "scripts/migrate.ts"]);
+  await run(["node_modules/tsx/dist/cli.mjs", "scripts/lifecycle.ts", "reconcile"]);
   const port = await new Promise((accept, reject) => {
     const socket = createServer();
     socket.once("error", reject);
@@ -208,6 +213,7 @@ try {
   await stopServer();
   await admin.end();
   await rm(mailbox, { recursive: true, force: true });
+  await rm(privacyDir, { recursive: true, force: true });
   log += `E4-A ${passed ? "PASS" : "FAIL"}; private synthetic OTP files removed\n`;
   await writeFile(join(evidence, "test.log"), log);
   await writeFile(

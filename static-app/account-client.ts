@@ -12,7 +12,7 @@ export class AccountError extends Error {
 export type AccountSession = {
   id: string;
   email_normalized: string;
-  cat: { id: string } | null;
+  cat: { id: string; name: string } | null;
 };
 export async function accountRequest<T>(
   path: string,

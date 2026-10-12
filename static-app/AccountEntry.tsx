@@ -1,5 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import App from "./App";
+import AccountSettings from "./account-settings";
+import AccountDeletion from "./account-deletion";
+import {
+  readDeletionIntent,
+  forgetDeletionIntent,
+  rememberDeletionIntent,
+  type AccountMessage,
+  type DeletionProgress,
+  type DeletionTask,
+} from "./account-lifecycle";
 import {
   AccountError,
   accountRequest,
@@ -57,6 +67,17 @@ export default function AccountEntry() {
     [bindingCancelled, setBindingCancelled] = useState(false),
     [connecting, setConnecting] = useState(false);
   const [logoutPending, setLogoutPending] = useState<string | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false),
+    [viewRevision, setViewRevision] = useState(0);
+  const [deletion, setDeletion] = useState<{
+    task: DeletionProgress;
+    confirmOnMount: boolean;
+  } | null>(null);
+  const currentAccount = useRef<AccountSession | null>(null),
+    currentDeletion = useRef(deletion),
+    currentClient = useRef<ReturnType<typeof createAccountClient> | null>(null);
+  currentAccount.current = account;
+  currentDeletion.current = deletion;
   const epoch = useRef(0),
     channel = useRef<BroadcastChannel | null>(null),
     importKey = useRef(crypto.randomUUID()),
@@ -66,6 +87,8 @@ export default function AccountEntry() {
     currentBundle = useRef<LegacyTransfer | null>(null);
   const clear = useCallback(() => {
     epoch.current++;
+    currentClient.current?.dispose();
+    currentAccount.current = null;
     attemptedAccount.current = "";
     running.current = false;
     currentGate.current = null;
@@ -79,29 +102,85 @@ export default function AccountEntry() {
     setBusy(false);
     setLoading(false);
     setConnecting(false);
+    setSettingsOpen(false);
+    setLogoutPending(null);
   }, []);
   const expired = useCallback(() => {
     clear();
     setError("登录状态已变化，请重新登录。保存中的本机记录仍然保留。");
   }, [clear]);
-  const client = useMemo(
-    () => (account ? createAccountClient(account, expired) : null),
-    [account, expired],
-  );
+  const client = useMemo(() => {
+    const token = epoch.current;
+    return account
+      ? createAccountClient(account, () => {
+          if (
+            token === epoch.current &&
+            currentAccount.current?.id === account.id
+          )
+            expired();
+        })
+      : null;
+  }, [account, expired, viewRevision]);
+  currentClient.current = client;
   useEffect(() => () => client?.dispose(), [client]);
   useEffect(() => () => launch.bridge?.dispose(), [launch]);
   useEffect(() => {
     const token = epoch.current;
-    accountRequest<AccountSession>("account")
-      .then((value) => {
-        if (token === epoch.current) setAccount(value);
-      })
-      .catch((e) => {
+    const intent = readDeletionIntent();
+    Promise.allSettled([
+      accountRequest<AccountSession>("account"),
+      accountRequest<{ deletion: DeletionTask | null }>(
+        "privacy/deletions/status",
+      ),
+    ])
+      .then(([session, recovery]) => {
+        if (token !== epoch.current) return;
+        const active = session.status === "fulfilled" ? session.value : null;
+        const receipt =
+          recovery.status === "fulfilled" ? recovery.value.deletion : null;
+        // A recovery cookie belongs to one old identity. It never takes over a
+        // different account that subsequently logged in on this browser.
+        const sameIdentity = (id: string) => !active || active.id === id;
+        const finished =
+          receipt?.status === "COMPLETE" && receipt.finished === true;
         if (
-          token === epoch.current &&
-          (!(e instanceof AccountError) || e.status !== 401)
+          finished &&
+          intent?.accountId === receipt.accountId &&
+          intent.requestId === receipt.requestId
+        ) {
+          // The server's completed recovery decision wins over stale local metadata.
+          try {
+            forgetDeletionIntent(receipt.requestId);
+          } catch {
+            /* No account data is being accessed or deleted. */
+          }
+        }
+        if (
+          receipt &&
+          !finished &&
+          sameIdentity(receipt.accountId) &&
+          (receipt.status !== "PREPARED" ||
+            (intent?.accountId === receipt.accountId &&
+              intent.requestId === receipt.requestId))
+        ) {
+          setDeletion({ task: receipt, confirmOnMount: false });
+          return;
+        }
+        if (intent && sameIdentity(intent.accountId) && !receipt) {
+          setDeletion({ task: intent, confirmOnMount: false });
+          return;
+        }
+        if (active) setAccount(active);
+        else if (
+          session.status === "rejected" &&
+          (!(session.reason instanceof AccountError) ||
+            session.reason.status !== 401)
         )
-          setError(e.message);
+          setError(session.reason.message);
+        else if (recovery.status === "rejected")
+          setError(
+            "暂时无法查询注销进度。若刚确认过注销，请保留原浏览器并刷新重试。",
+          );
       })
       .finally(() => {
         if (token === epoch.current) setLoading(false);
@@ -111,9 +190,60 @@ export default function AccountEntry() {
         ? new BroadcastChannel("cat-letters:account-session:v1")
         : null;
     channel.current = c;
-    if (c) c.onmessage = () => expired();
+    if (c)
+      c.onmessage = (event: MessageEvent<AccountMessage | string>) => {
+        const message = event.data;
+        if (message === "changed") {
+          expired();
+          return;
+        }
+        if (!message || typeof message !== "object") return;
+        const id = currentAccount.current?.id;
+        if (message.type === "SESSION_CHANGED") {
+          if (
+            !id ||
+            id !== message.accountId ||
+            (currentDeletion.current &&
+              currentDeletion.current.task.accountId !== message.accountId)
+          ) {
+            setDeletion(null);
+            expired();
+          }
+        } else if (
+          message.type === "ACCOUNT_LOGOUT" &&
+          id === message.accountId
+        )
+          expired();
+        else if (
+          message.type === "DRAFTS_CLEARED" &&
+          id === message.accountId
+        ) {
+          currentClient.current?.dispose();
+          setViewRevision((value) => value + 1);
+        } else if (
+          message.type === "ACCOUNT_DELETING" &&
+          id === message.accountId &&
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+            message.requestId,
+          )
+        ) {
+          clear();
+          setDeletion({
+            task: {
+              requestId: message.requestId,
+              accountId: message.accountId,
+              status: "UNKNOWN",
+              requestedAt: null,
+              completedAt: null,
+              error: null,
+              finished: false,
+            },
+            confirmOnMount: false,
+          });
+        }
+      };
     return () => c?.close();
-  }, [expired]);
+  }, [clear, expired]);
 
   function alive(token: number) {
     if (token !== epoch.current)
@@ -147,23 +277,54 @@ export default function AccountEntry() {
     );
     alive(token);
     setAccount(fresh);
+    return fresh;
   }
   async function logout(id: string) {
     client?.dispose();
     clear();
+    const token = epoch.current;
     setLogoutPending(id);
     setBusy(true);
     try {
       await accountRequest("auth/logout", {}, id);
+      if (token !== epoch.current) return;
       setLogoutPending(null);
-      channel.current?.postMessage("changed");
+      channel.current?.postMessage({
+        type: "ACCOUNT_LOGOUT",
+        accountId: id,
+      } satisfies AccountMessage);
       setError("");
     } catch (e) {
+      if (token !== epoch.current) return;
       if (e instanceof AccountError && e.status === 401) setLogoutPending(null);
       setError(`退出结果尚未确认：${(e as Error).message}`);
     } finally {
-      setBusy(false);
+      if (token === epoch.current) setBusy(false);
     }
+  }
+
+  async function beginDeletion(task: DeletionTask) {
+    if (
+      task.accountId !== currentAccount.current?.id ||
+      task.status !== "PREPARED"
+    )
+      throw new Error("账号状态已变化，请重新打开账号设置。");
+    // Save only the task identity before sending any irreversible decision. If
+    // browser storage fails, leave the confirmation screen intact and stop.
+    try {
+      rememberDeletionIntent(task);
+    } catch {
+      throw new Error(
+        "浏览器暂时无法保留注销请求，请检查存储设置后再确认。尚未提交注销。",
+      );
+    }
+    clear();
+    setDeletion({ task: { ...task, status: "UNKNOWN" }, confirmOnMount: true });
+    channel.current?.postMessage({
+      type: "ACCOUNT_DELETING",
+      accountId: task.accountId,
+      requestId: task.requestId,
+    } satisfies AccountMessage);
   }
 
   async function acceptResult(
@@ -368,6 +529,23 @@ export default function AccountEntry() {
       退出账号
     </button>
   );
+  const renderEpoch = epoch.current;
+  if (deletion)
+    return (
+      <AccountDeletion
+        key={deletion.task.requestId}
+        initial={deletion.task}
+        confirmOnMount={deletion.confirmOnMount}
+        onRegister={() => {
+          if (renderEpoch !== epoch.current) return;
+          clear();
+          setDeletion(null);
+          setEmail("");
+          setError("");
+          setBindingDone(true);
+        }}
+      />
+    );
   if (launch.error)
     return (
       <div className={`${s.shell} e3-app-shell`}>
@@ -474,12 +652,46 @@ export default function AccountEntry() {
         </main>
       </div>
     );
+  if (account && client && settingsOpen)
+    return (
+      <AccountSettings
+        account={account}
+        onBack={() => setSettingsOpen(false)}
+        onLogout={() => void logout(account.id)}
+        onExpired={() => {
+          if (
+            renderEpoch === epoch.current &&
+            currentAccount.current?.id === account.id
+          )
+            expired();
+        }}
+        onDelete={beginDeletion}
+        onDraftsCleared={() => {
+          setViewRevision((value) => value + 1);
+          channel.current?.postMessage({
+            type: "DRAFTS_CLEARED",
+            accountId: account.id,
+          } satisfies AccountMessage);
+        }}
+      />
+    );
   if (account && client)
     return (
       <App
-        key={account.id + ":" + (account.cat?.id ?? "new")}
+        key={account.id + ":" + (account.cat?.id ?? "new") + ":" + viewRevision}
         client={client}
-        accountControls={logoutButton}
+        accountControls={
+          <span className="e4-account-controls">
+            <button
+              type="button"
+              className={s.quiet}
+              onClick={() => setSettingsOpen(true)}
+            >
+              账号设置
+            </button>
+            {logoutButton}
+          </span>
+        }
       />
     );
   return (
@@ -529,9 +741,12 @@ export default function AccountEntry() {
                     code,
                   });
                   alive(token);
-                  channel.current?.postMessage("changed");
                   setCode("");
-                  await refreshAccount(token);
+                  const fresh = await refreshAccount(token);
+                  channel.current?.postMessage({
+                    type: "SESSION_CHANGED",
+                    accountId: fresh.id,
+                  } satisfies AccountMessage);
                 }
               });
             }}

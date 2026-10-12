@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import type { PoolClient } from "pg";
-import { pool, transaction } from "./db";
+import { transaction } from "./db";
 import { digest } from "./auth";
 import { ensure } from "./errors";
 
@@ -37,14 +37,16 @@ export async function lockActiveAccount(db: PoolClient, id: string) {
 }
 
 export async function accountState(id: string) {
-  const r = await pool.query(
-    `SELECT a.id,a.email_normalized,a.status,to_jsonb(c) AS cat
+  return transaction(async (db) => {
+    const r = await db.query(
+      `SELECT a.id,a.email_normalized,a.status,to_jsonb(c) AS cat
      FROM accounts a LEFT JOIN cat_profiles c ON c.account_id=a.id
      WHERE a.id=$1 AND a.status='ACTIVE'`,
-    [id],
-  );
-  ensure(r.rows[0], 401, "账号当前不可用。");
-  return r.rows[0];
+      [id],
+    );
+    ensure(r.rows[0], 401, "账号当前不可用。");
+    return r.rows[0];
+  });
 }
 
 export async function adoptCat(accountId: string, input: unknown) {
@@ -108,55 +110,26 @@ export async function adoptCat(accountId: string, input: unknown) {
 
 export async function adoptionResult(accountId: string, key: string) {
   z.uuid().parse(key);
-  const r = await pool.query(
-    `SELECT r.result FROM account_requests r JOIN accounts a ON a.id=r.account_id
+  return transaction(async (db) => {
+    const r = await db.query(
+      `SELECT r.result FROM account_requests r JOIN accounts a ON a.id=r.account_id
      WHERE r.account_id=$1 AND r.operation='ADOPT' AND r.key=$2 AND a.status='ACTIVE'`,
-    [accountId, key],
-  );
-  return r.rows[0]?.result ?? { pending: true };
+      [accountId, key],
+    );
+    return r.rows[0]?.result ?? { pending: true };
+  });
 }
 
-/** Internal lifecycle primitive only. Export/erasure workflow belongs to E4-C. */
+/** Compatibility entry for old internal callers; no path may bypass the independent journal. */
 export async function freezeAccountForDeletion(
   accountId: string,
   requestId: string,
 ) {
   z.uuid().parse(requestId);
-  return transaction(async (db) => {
-    const email = await db.query(
-      "SELECT email_normalized FROM accounts WHERE id=$1",
-      [accountId],
-    );
-    ensure(email.rows[0], 404, "没有找到账号。");
-    await db.query("SELECT pg_advisory_xact_lock(hashtextextended($1, 4))", [
-      email.rows[0].email_normalized,
-    ]);
-    const a = await db.query(
-      "SELECT status FROM accounts WHERE id=$1 FOR UPDATE",
-      [accountId],
-    );
-    const old = await db.query(
-      "SELECT request_id,status FROM account_deletions WHERE account_id=$1",
-      [accountId],
-    );
-    if (old.rows[0])
-      return { requestId: old.rows[0].request_id, status: old.rows[0].status };
-    ensure(a.rows[0].status !== "DELETED", 409, "账号已注销。");
-    await db.query("UPDATE accounts SET status='DELETING' WHERE id=$1", [
-      accountId,
-    ]);
-    await db.query(
-      "UPDATE account_sessions SET revoked_at=COALESCE(revoked_at,now()) WHERE account_id=$1",
-      [accountId],
-    );
-    await db.query(
-      "UPDATE email_challenges SET revoked_at=COALESCE(revoked_at,now()) WHERE email_normalized=$1 AND consumed_at IS NULL",
-      [email.rows[0].email_normalized],
-    );
-    await db.query(
-      "INSERT INTO account_deletions(account_id,request_id,status) VALUES($1,$2,'PENDING')",
-      [accountId, requestId],
-    );
-    return { requestId, status: "PENDING" };
-  });
+  const old=await transaction(async db=>(await db.query("SELECT request_id,status FROM account_deletions WHERE account_id=$1",[accountId])).rows[0]);
+  if(old)return {requestId:old.request_id,status:old.status};
+  const {prepareAccountDeletion,confirmAccountDeletion}=await import("./account-lifecycle");
+  const prepared=await prepareAccountDeletion(accountId,requestId);
+  const result=await confirmAccountDeletion(accountId,prepared.deletion.requestId,prepared.receipt);
+  return {requestId:result.deletion.requestId,status:result.deletion.status};
 }

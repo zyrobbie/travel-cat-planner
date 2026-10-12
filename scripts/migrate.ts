@@ -41,7 +41,7 @@ try {
         [item.id, item.version, item.type, item, item.sha256],
       );
     }
-  });
+  }, { trustedMigration: true });
   console.log("Migrations + complete frozen content import PASS");
 } finally {
   await pool.end();

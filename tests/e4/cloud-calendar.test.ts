@@ -100,19 +100,36 @@ async function raceAtAccountLock(
   second: () => Promise<unknown>,
 ) {
   const blocker = await pool.connect();
+  const blockerPid = (await blocker.query("SELECT pg_backend_pid() AS pid")).rows[0]
+    .pid as number;
   const pending: Promise<PromiseSettledResult<unknown>>[] = [];
-  async function waitForBlocked(count: number) {
+  async function waitForBlocked(count: number, prior: number[] = []) {
     const deadline = Date.now() + 3000;
     do {
-      const row = await one(
-        `SELECT count(*)::int AS n FROM pg_stat_activity
-         WHERE datname=current_database() AND wait_event_type='Lock'
-         AND query='SELECT * FROM accounts WHERE id=$1 FOR UPDATE'`,
+      const waiters = await pool.query(
+        `WITH RECURSIVE blocking_chain AS (
+           SELECT activity.pid AS waiter_pid, blocker.pid AS blocking_pid,
+                  ARRAY[activity.pid, blocker.pid] AS path
+           FROM pg_stat_activity AS activity
+           CROSS JOIN LATERAL unnest(pg_blocking_pids(activity.pid)) AS blocker(pid)
+           WHERE activity.datname=current_database()
+             AND activity.pid<>$1 AND activity.wait_event_type='Lock'
+           UNION ALL
+           SELECT chain.waiter_pid, blocker.pid, chain.path || blocker.pid
+           FROM blocking_chain AS chain
+           CROSS JOIN LATERAL unnest(pg_blocking_pids(chain.blocking_pid)) AS blocker(pid)
+           WHERE NOT blocker.pid=ANY(chain.path)
+         )
+         SELECT DISTINCT waiter_pid FROM blocking_chain
+         WHERE blocking_pid=$1`,
+        [blockerPid],
       );
-      if (row.n >= count) return;
+      const pids = waiters.rows.map((row) => Number(row.waiter_pid));
+      if (pids.length >= count && prior.every((pid) => pids.includes(pid)))
+        return pids;
       await new Promise((resolve) => setTimeout(resolve, 10));
     } while (Date.now() < deadline);
-    assert.fail(`Expected ${count} actual PostgreSQL account-lock waiters`);
+    assert.fail(`Expected ${count} PostgreSQL lock waiters chained to blocker ${blockerPid}`);
   }
   function start(fn: () => Promise<unknown>) {
     pending.push(
@@ -128,9 +145,9 @@ async function raceAtAccountLock(
       cat.accountId,
     ]);
     start(first);
-    await waitForBlocked(1);
+    const firstWaiters = await waitForBlocked(1);
     start(second);
-    await waitForBlocked(2);
+    await waitForBlocked(2, firstWaiters);
     await blocker.query("COMMIT");
   } finally {
     await blocker.query("ROLLBACK");
