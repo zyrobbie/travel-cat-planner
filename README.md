@@ -1,5 +1,7 @@
 # 有猫来信 · GitHub Pages 本机体验版
 
+> E4-C 账号服务运行说明：私有导出、注销与备份恢复使用独立持久删除账本，仍只允许 INTERNAL 合成验证。启动和恢复前必须按 [E4-C 运行手册](docs/E4-C-data-lifecycle.md) 配置并核验；GitHub Pages 仍是本机体验，不提供这些服务端能力。下方 E0–E2 产品说明保留其原时点范围。
+
 [打开本机体验](https://zyrobbie.github.io/travel-cat-planner/app/)。E2-B 已发布：离开与返回、单封未读新信及本机日历；独立验收、远程 CI 和真实线上旧数据升级已通过，等待用户体验验收，见 [E2-B 验收记录](docs/E2-B_验收与发布记录.md)。原小猫、来信和回应在原浏览器升级后保留；新体验无需安装 Node 或 PostgreSQL，首次打开直接给小猫起名。
 
 最快确认新规则，不需要等满 14 天：
@@ -59,6 +61,9 @@ npm ci
 export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"
 node scripts/setup-local.mjs
 npm run db:migrate
+# 先按 E4-C 手册配置私有目录与稳定密钥；仅首次全新初始化才使用 true
+E4_LIFECYCLE_BOOTSTRAP=true npx tsx scripts/lifecycle.ts reconcile
+npx tsx scripts/lifecycle.ts check
 npm run build
 npm start
 ```
@@ -105,7 +110,7 @@ npm run test:e2e
 
 部署环境：`DATABASE_URL`、`APP_ORIGIN`（精确 HTTPS 来源，无尾斜杠）、至少 32 字符随机 `ADMIN_SECRET`、`APP_MODE=INTERNAL`、`SAFETY_ADAPTER=synthetic-v1`、`COOKIE_SECURE=true`、可选 `PORT`。
 
-发布过程：`npm ci` → `npm run db:migrate` → `npm run build` → `npm start`。迁移使用版本和校验和，事务锁防并发，已应用迁移不可改写。首次导入整包事务完成。健康检查 `/api/health` 会真实检查数据库；个人 API 均 `private, no-store`。
+发布过程：`npm ci` → `npm run db:migrate` → 按 E4-C 手册显式核验独立账本 → `npm run build` → `npm start`，并监督运行投递和隐私两个 worker。恢复数据库时必须先置持久恢复锁并重放删除记录，不能跳过核验直接启动。迁移使用版本和校验和，事务锁防并发，已应用迁移不可改写。首次导入整包事务完成。健康检查 `/api/health` 会真实检查数据库；个人 API 均 `private, no-store`。
 
 也提供 Dockerfile（同样运行 `npm start`）。迁移在发布步骤使用源码和开发依赖单独运行，再启动容器；数据库必须使用持久卷或独立托管实例，不能放在应用容器的临时磁盘。Docker 容器本轮尚未实际构建，因为本机未安装 Docker。
 

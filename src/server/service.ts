@@ -15,8 +15,18 @@ export async function audit(
     "INSERT INTO audit_events(participant_id,event,object_id,actor,simulation) VALUES($1,$2,$3,$4,$5)",
     [pid, event, object, actor, simulation],
   );
+  await invalidateLegacyExport(db,pid);
+}
+async function invalidateLegacyExport(db:PoolClient,pid:string) {
+ await db.query("UPDATE cloud_state s SET revision=revision+1 FROM cat_profiles c WHERE c.participant_id=$1 AND s.cat_id=c.id AND s.account_id=c.account_id",[pid]);
+ await db.query("UPDATE account_exports SET status='REVOKED' WHERE status='READY' AND account_id IN(SELECT account_id FROM cat_profiles WHERE participant_id=$1)",[pid]);
 }
 async function lockParticipant(db: PoolClient, pid: string) {
+  const owner=await db.query("SELECT account_id FROM cat_profiles WHERE participant_id=$1",[pid]);
+  if(owner.rows[0]){
+   const a=await db.query("SELECT status FROM accounts WHERE id=$1 FOR UPDATE",[owner.rows[0].account_id]);
+   ensure(a.rows[0]?.status==='ACTIVE',401,"账号当前不可用。");
+  }
   const r = await db.query(
     "SELECT * FROM participants WHERE id=$1 FOR UPDATE",
     [pid],
@@ -25,22 +35,25 @@ async function lockParticipant(db: PoolClient, pid: string) {
   return r.rows[0];
 }
 export async function state(pid: string) {
+ return transaction(async db=> {
+  await lockParticipant(db,pid);
   const [p, t, l] = await Promise.all([
-    pool.query(
+    db.query(
       "SELECT id,cat_name,relation_term,status,safety_state FROM participants WHERE id=$1",
       [pid],
     ),
-    pool.query(
+    db.query(
       "SELECT id,started_at FROM trips WHERE participant_id=$1 AND ended_at IS NULL",
       [pid],
     ),
-    pool.query(
+    db.query(
       `SELECT l.*,r.text AS response FROM letters l LEFT JOIN responses r ON r.letter_id=l.id AND r.participant_id=l.participant_id WHERE l.participant_id=$1 ORDER BY l.delivered_at DESC,l.id`,
       [pid],
     ),
   ]);
   ensure(p.rows[0], 404, "没有找到参与者。");
   return { participant: p.rows[0], trip: t.rows[0] ?? null, letters: l.rows };
+ });
 }
 export async function start(pid: string, name: string) {
   return transaction(async (db) => {
@@ -57,11 +70,13 @@ export async function start(pid: string, name: string) {
 }
 export async function readLetter(pid: string, id: string) {
   return transaction(async (db) => {
+    await lockParticipant(db,pid);
     const r = await db.query(
       "UPDATE letters SET read_at=COALESCE(read_at,now()) WHERE id=$1 AND participant_id=$2 RETURNING *",
       [id, pid],
     );
     ensure(r.rows[0], 404, "没有找到这封信。");
+    await invalidateLegacyExport(db,pid);
     return r.rows[0];
   });
 }

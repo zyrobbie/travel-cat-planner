@@ -7,7 +7,7 @@ permissions:
   contents: read
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:17.11
@@ -28,7 +28,11 @@ jobs:
       APP_MODE: INTERNAL
       SAFETY_ADAPTER: synthetic-v1
       COOKIE_SECURE: "false"
+      E4_LEDGER_SECRET: synthetic-ci-only-ledger-secret-not-a-production-key
+      E4_LIFECYCLE_BOOTSTRAP: "true"
     steps:
+      - name: Configure private lifecycle directory
+        run: printf 'E4_LIFECYCLE_DIR=%s/catletters-ci-private-lifecycle\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -36,6 +40,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run db:migrate
+      - run: npx tsx scripts/lifecycle.ts reconcile
       - run: npm test
       - run: npx playwright install --with-deps chromium
       - name: E4-A isolated PostgreSQL and synthetic OTP HTTP checks
@@ -72,6 +77,27 @@ jobs:
         with:
           name: e4-binding-evidence
           path: .local/e4-binding-evidence
+          include-hidden-files: true
+          if-no-files-found: ignore
+      - name: Install matching PostgreSQL 17 backup tools
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl --fail --silent --show-error https://www.postgresql.org/media/keys/ACCC4CF8.asc -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc
+          printf '%s\n' 'Types: deb' 'URIs: https://apt.postgresql.org/pub/repos/apt' 'Suites: noble-pgdg' 'Components: main' 'Signed-By: /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc' | sudo tee /etc/apt/sources.list.d/pgdg.sources > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends postgresql-client-17
+      - name: E4-C private export, deletion and backup restore checks
+        env:
+          PG_DUMP_BIN: /usr/lib/postgresql/17/bin/pg_dump
+          PG_RESTORE_BIN: /usr/lib/postgresql/17/bin/pg_restore
+        run: |
+          test -x "$PG_DUMP_BIN" && test -x "$PG_RESTORE_BIN"
+          node scripts/test-e4-lifecycle.mjs --from-env --evidence-dir .local/e4-lifecycle-evidence
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e4-lifecycle-evidence
+          path: .local/e4-lifecycle-evidence
           include-hidden-files: true
           if-no-files-found: ignore
       - run: |

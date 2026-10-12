@@ -85,6 +85,7 @@ export async function bumpCloudRevision(db: PoolClient, cat: CloudCat) {
   );
   ensure(r.rows[0], 409, "记录版本已达安全上限，操作未保存，请联系维护者。");
   cat.stateRevision = Number(r.rows[0].revision);
+  await db.query("UPDATE account_exports SET status='REVOKED' WHERE account_id=$1 AND status='READY'",[cat.accountId]);
   return cat.stateRevision;
 }
 

@@ -13,6 +13,7 @@ import {
 } from "@/server/auth";
 import { ensure, HttpError } from "@/server/errors";
 import { assertInternal, checkInput } from "@/server/safety";
+import { assertLifecycleReady } from "@/server/lifecycle-ledger";
 import * as service from "@/server/service";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,6 +30,7 @@ function cookie(res: NextResponse, name: string, value: string) {
 async function handler(req: NextRequest) {
   try {
     assertInternal();
+    await assertLifecycleReady();
     const path = req.nextUrl.pathname.slice(5);
     const write = req.method === "POST";
     if (write) originCheck(req);
@@ -65,9 +67,11 @@ async function handler(req: NextRequest) {
         "登录信息不正确。",
       );
       const raw = token();
-      await pool.query(
-        "INSERT INTO sessions(token_hash,role,expires_at) VALUES($1,'ADMIN',now()+interval '8 hours')",
-        [digest(raw)],
+      await transaction((db) =>
+        db.query(
+          "INSERT INTO sessions(token_hash,role,expires_at) VALUES($1,'ADMIN',now()+interval '8 hours')",
+          [digest(raw)],
+        ),
       );
       const res = NextResponse.json({ ok: true });
       cookie(res, "cat_admin", raw);
@@ -95,8 +99,14 @@ async function handler(req: NextRequest) {
     if (path.startsWith("admin/")) {
       await identity(req, "ADMIN");
       if (path === "admin/participants" && !write) {
-        const r = await pool.query(
-          "SELECT p.*,EXISTS(SELECT 1 FROM trips t WHERE t.participant_id=p.id AND ended_at IS NULL) AS traveling FROM participants p ORDER BY created_at DESC",
+        const r = await transaction((db) =>
+          db.query(
+            `SELECT p.*,EXISTS(SELECT 1 FROM trips t WHERE t.participant_id=p.id AND ended_at IS NULL) AS traveling
+           FROM participants p
+           WHERE NOT EXISTS(SELECT 1 FROM cat_profiles c JOIN accounts a ON a.id=c.account_id
+             WHERE c.participant_id=p.id AND a.status<>'ACTIVE')
+           ORDER BY p.created_at DESC`,
+          ),
         );
         return NextResponse.json(r.rows);
       }
@@ -108,9 +118,14 @@ async function handler(req: NextRequest) {
         const pid = uuid.parse(req.nextUrl.searchParams.get("id"));
         const [s, a] = await Promise.all([
           service.state(pid),
-          pool.query(
-            "SELECT * FROM audit_events WHERE participant_id=$1 ORDER BY id DESC",
-            [pid],
+          transaction((db) =>
+            db.query(
+              `SELECT e.* FROM audit_events e WHERE e.participant_id=$1
+               AND NOT EXISTS(SELECT 1 FROM cat_profiles c JOIN accounts a ON a.id=c.account_id
+                 WHERE c.participant_id=e.participant_id AND a.status<>'ACTIVE')
+               ORDER BY e.id DESC`,
+              [pid],
+            ),
           ),
         ]);
         return NextResponse.json({ ...s, events: a.rows });
@@ -162,9 +177,14 @@ async function handler(req: NextRequest) {
       );
     if (path === "response-result" && !write) {
       const key = uuid.parse(req.nextUrl.searchParams.get("key"));
-      const r = await pool.query(
-        "SELECT id,letter_id,text FROM responses WHERE participant_id=$1 AND idempotency_key=$2",
-        [pid, key],
+      const r = await transaction((db) =>
+        db.query(
+          `SELECT r.id,r.letter_id,r.text FROM responses r
+           WHERE r.participant_id=$1 AND r.idempotency_key=$2
+           AND NOT EXISTS(SELECT 1 FROM cat_profiles c JOIN accounts a ON a.id=c.account_id
+             WHERE c.participant_id=r.participant_id AND a.status<>'ACTIVE')`,
+          [pid, key],
+        ),
       );
       return NextResponse.json(
         r.rows[0]

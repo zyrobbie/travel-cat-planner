@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { assertInternal } from "@/server/safety";
+import { assertLifecycleReady } from "@/server/lifecycle-ledger";
 import { originCheck } from "@/server/auth";
 import { assertAccountContext } from "@/server/account-context";
 import { HttpError, ensure } from "@/server/errors";
@@ -33,6 +34,7 @@ function json(body: unknown, status = 200) {
 async function handler(req: NextRequest) {
   try {
     assertInternal();
+    await assertLifecycleReady();
     const secure = accountCookieSecure();
     const path = req.nextUrl.pathname.slice("/api/e4/".length);
     const write = req.method === "POST";

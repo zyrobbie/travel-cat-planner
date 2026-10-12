@@ -103,7 +103,11 @@ function setup() {
     route,
     client: (id = "account-a", expired = () => {}) =>
       createAccountClient(
-        { id, email_normalized: "synthetic@example.test", cat: { id: "cat" } },
+        {
+          id,
+          email_normalized: "synthetic@example.test",
+          cat: { id: "cat", name: "测试小猫" },
+        },
         expired,
       ),
   };

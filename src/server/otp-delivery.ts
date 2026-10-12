@@ -21,6 +21,10 @@ export class SyntheticMailbox implements OtpDelivery {
 }
 
 const memoryMailbox = new SyntheticMailbox();
+/** Only the configured in-process adapter is server data; injected test mailboxes belong to tests. */
+export function eraseInMemoryOtpRecords(ids:readonly string[]) {
+  for(const id of ids)memoryMailbox.messages.delete(id);
+}
 
 export function configuredOtpDelivery(): OtpDelivery {
   if (

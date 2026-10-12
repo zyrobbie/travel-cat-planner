@@ -220,32 +220,6 @@ export async function deleteCloudResponse(
   cloudId.parse(responseId);
   const value = deleteCloudInput.parse(input),
     hash = digest(JSON.stringify({ responseId, ...value }));
-  return withCloudCat(accountId, async (db, cat) => {
-    const old = await previous(db, cat, "DELETE_RESPONSE", value.key, hash);
-    if (old) return old;
-    const r = await ownedCloudResponse(db, cat, responseId);
-    ensure(
-      r.current_revision === value.expectedRevision,
-      409,
-      "回应已被更正，请重新载入。",
-    );
-    if (r.status !== "DELETED") {
-      await db.query(
-        "UPDATE cloud_response_revisions SET text=NULL WHERE cat_id=$1 AND account_id=$2 AND response_id=$3",
-        [cat.catId, cat.accountId, responseId],
-      );
-      await db.query(
-        "UPDATE cloud_responses SET status='DELETED',deleted_at=now() WHERE cat_id=$1 AND account_id=$2 AND id=$3",
-        [cat.catId, cat.accountId, responseId],
-      );
-      await invalidateReviews(db, cat, responseId);
-      await bumpCloudRevision(db, cat);
-    }
-    return remember(db, cat, "DELETE_RESPONSE", value.key, hash, {
-      message: "已删除。",
-      responseId,
-      revision: r.current_revision,
-      stateRevision: cat.stateRevision,
-    });
-  });
+  const { deleteResponseWithLedger }=await import("./response-erasure");
+  return deleteResponseWithLedger(accountId,responseId,value,hash);
 }
