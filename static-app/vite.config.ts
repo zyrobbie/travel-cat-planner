@@ -4,6 +4,12 @@ export default defineConfig({
   root: fileURLToPath(new URL(".", import.meta.url)),
   envDir: fileURLToPath(new URL("..", import.meta.url)),
   base: process.env.PAGES_BASE || "/travel-cat-planner/app/",
+  define: {
+    "import.meta.env.VITE_ACCOUNT_APP_URL": JSON.stringify(
+      process.env.VITE_ACCOUNT_APP_URL ??
+        "https://cat-letters-e4-test.netlify.app/account-app/",
+    ),
+  },
   build: {
     outDir: fileURLToPath(new URL("../dist/pages/app", import.meta.url)),
     emptyOutDir: true,
