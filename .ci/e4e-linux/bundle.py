@@ -232,10 +232,22 @@ def package(source, output, input_record, distro):
             info.uid = info.gid = 0
             info.uname = info.gname = ''
             info.mode &= 0o777
-            if info.isfile():
-                with (source / name).open('rb') as data:
+            if name in files:
+                # gettarinfo(dereference=False) deduplicates hard-linked regular
+                # files as LNKTYPE. The manifest/installer contract instead
+                # requires a complete regular-file entry at every such path.
+                # Keep real symlinks intact; never set global dereference=True.
+                require(info.isfile() or info.islnk(), 'RUNTIME_SOURCE_TYPE_CHANGED: ' + name)
+                fd = os.open(source / name, os.O_RDONLY | os.O_NOFOLLOW)
+                with os.fdopen(fd, 'rb') as data:
+                    current = os.fstat(data.fileno())
+                    require(stat.S_ISREG(current.st_mode), 'RUNTIME_SOURCE_TYPE_CHANGED: ' + name)
+                    info.type = tarfile.REGTYPE
+                    info.linkname = ''
+                    info.size = current.st_size
                     tar.addfile(info, data)
             else:
+                require(info.issym() and info.linkname == links[name], 'RUNTIME_SOURCE_LINK_CHANGED: ' + name)
                 tar.addfile(info)
     require(archive.stat().st_size <= 600 * 1024**2, 'RUNTIME_ARCHIVE_TOO_LARGE')
     (output / 'RUNTIME-MANIFEST.json').write_text(json.dumps({'filesSha256': files, 'symlinks': links}, sort_keys=True) + '\n')
@@ -277,8 +289,9 @@ def verify(directory):
                 normalized = os.path.normpath(str(PurePosixPath(name).parent / member.linkname))
                 require(not member.linkname.startswith('/') and not normalized.startswith('../'), 'RUNTIME_LINK_ESCAPE')
             else:
-                require(member.isfile() and hashlib.sha256(tar.extractfile(member).read()).hexdigest()
-                        == manifest['filesSha256'][name], 'RUNTIME_FILE_HASH_MISMATCH')
+                require(member.isfile(), 'RUNTIME_FILE_TYPE_MISMATCH: ' + name)
+                require(hashlib.sha256(tar.extractfile(member).read()).hexdigest()
+                        == manifest['filesSha256'][name], 'RUNTIME_FILE_HASH_MISMATCH: ' + name)
             require(not any(str(parent) in manifest['symlinks'] for parent in PurePosixPath(name).parents),
                     'RUNTIME_PARENT_IS_LINK')
     require(seen == expected, 'RUNTIME_MEMBER_MISSING')
