@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "candidateVersion": "v07",
+  "sourceArchiveSha256": "e9eab79192f9fe15b1538df7c7bcd92d06d91ff337f1d3d565201e862d3c996e",
+  "engineeringFreezeSha256": "9717f51c39a3cffa0bc1bf3cbdfe38a6b70f8484b66ebf7003f6f5dbc76affbf",
+  "sourceManifestSha256": "c884bfb3fa73b94b1ebda16bcd7ff7a696318e5df1ef83399004e715005ebf10",
+  "packageLockSha256": "755b3abfe403cb38c77d96152fe68b6599f6c67dbb7b09a59275ed6dfe0277f0"
+}

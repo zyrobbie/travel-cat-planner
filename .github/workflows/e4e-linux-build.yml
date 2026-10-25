@@ -1,0 +1,55 @@
+name: E4-E Linux build only
+
+on:
+  push:
+    branches: ['codex/e4e-linux-build-*']
+    paths:
+      - '.github/workflows/e4e-linux-build.yml'
+      - '.ci/e4e-linux/**'
+      - 'voice-build-input/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e4e-linux-build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.repository == 'zyrobbie/travel-cat-planner'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Check out the exact build commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+          sparse-checkout: |
+            .ci/e4e-linux
+            voice-build-input
+      - name: Install exact Node version
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22.23.3'
+          architecture: x64
+          check-latest: false
+      - name: Verify frozen input and install locked dependencies
+        env:
+          E4E_BUILD_COMMIT: ${{ github.sha }}
+        run: bash .ci/e4e-linux/build-linux.sh install
+      - name: Build without external networking and package
+        env:
+          E4E_BUILD_COMMIT: ${{ github.sha }}
+        run: bash .ci/e4e-linux/build-linux.sh offline-build
+      - name: Upload the Linux package for one day
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: e4e-linux-${{ github.sha }}
+          path: ${{ runner.temp }}/e4e-linux-artifacts/
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+          include-hidden-files: false
