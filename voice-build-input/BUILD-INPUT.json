@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "candidateVersion": "v07",
-  "sourceArchiveSha256": "e9eab79192f9fe15b1538df7c7bcd92d06d91ff337f1d3d565201e862d3c996e",
-  "engineeringFreezeSha256": "9717f51c39a3cffa0bc1bf3cbdfe38a6b70f8484b66ebf7003f6f5dbc76affbf",
-  "sourceManifestSha256": "c884bfb3fa73b94b1ebda16bcd7ff7a696318e5df1ef83399004e715005ebf10",
+  "candidateVersion": "v08",
+  "sourceArchiveSha256": "3bdf9c143af5b68290b830a3d6e1baea5e4d457ee5760f972df0308d5ffeab8c",
+  "engineeringFreezeSha256": "bb92c076adf92c49ee57df044df15fd7328c24d2e41a759987b0428eec3973ba",
+  "sourceManifestSha256": "232176f5dc83ca22c838d4ec573db466ab8e2d3cf42024c79c5aad63c8f62d39",
   "packageLockSha256": "755b3abfe403cb38c77d96152fe68b6599f6c67dbb7b09a59275ed6dfe0277f0"
 }

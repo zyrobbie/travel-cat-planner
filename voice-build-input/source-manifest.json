@@ -194,7 +194,7 @@
     "static-app/ReviewPanel.tsx": "c9004e0d73721361f1df00d29cb36cb0b5d94cc0f3e46991d11c6b5639f32750",
     "static-app/Scenes.tsx": "ec9a4c66a2b6ea1b029a60cafb59865d48d608fd90fb4227ada9e73570ac7496",
     "static-app/SourceHistory.tsx": "4b890e822926339bf1c85b49333a3bb98dac1026cee7549b8713ccccfcb47c32",
-    "static-app/VoiceComposer.tsx": "6fcd6ea56f478a5285f18a028d058bf432e97fbc83f3a83496989326bf2e8bc5",
+    "static-app/VoiceComposer.tsx": "ed53ca18dbd7bcb50a040db89c1be202f8f2081e5c2c0d6a7a48b4da304fea3d",
     "static-app/account-app/index.html": "6dc8e145738dbf80f209a9ae8e87edf09dcb3513482d359b687f0c9cc8b0a6e4",
     "static-app/account-app/main.tsx": "fdb7b8a94af5638eb2a08e4045e93858f2895dc81071ea2808482b51bea88add",
     "static-app/account-app/vite.config.ts": "8b9de06f6b739cbd0101268e5fb8724ff854b7cd85fd43bd7382a76babfce4a9",
@@ -271,7 +271,7 @@
     "tests/e4/private-cookie-entry.test.ts": "8d6fe0d6cdbb5f20805f75c2061d91f3651d93ab56053ae248182673725171f9",
     "tests/e4/private-voice-build-context.test.py": "99100154d95ebd1578235185cc9b8279b01b38fee86a6ad301af4492a4882420",
     "tests/e4/private-voice-deployment.test.ts": "2a75561352a16a782b3fee809456fe0bd5da7d9eb35612e30499481d4daf3ce1",
-    "tests/e4/private-voice.test.ts": "b79281abf0edce5b00c2ad06cda9024f1f500e67df6641dbc8647f5f4859b6dc",
+    "tests/e4/private-voice.test.ts": "b67cb89cc5b8a8876ffaa7da7a7fe8d68a31f31db7822745f1058410759fb9ea",
     "tests/e4/reading-latency.test.ts": "c2b793fc2d3bfc50c657a80b66169c817d395eda077e5b1cf614f67853a35828",
     "tests/e4/resend-transaction.test.ts": "6f4fa36ca0247e9d1f1e61fd1c723cb0c22451a53fce9ceee11541015234dfb0",
     "tests/e4/scoped-worker.test.ts": "273eb5096dc53799c892380c1026860116363812a5e62f57927b32f55681ff02",
@@ -390,5 +390,5 @@
     "ui-daily-core-v1/assets/web/postcard-rhine-cat-04-600.webp": "5241d98a9bac1a6c943a13dbffc8147a4933dda92e692238236188f3f100e4ff",
     "ui-daily-core-v1/home-poses.mjs": "697b01053921d0f7f7d9e31a4c73c26c020f84d344cff5188e84e3b928bdf8f7"
   },
-  "version": "v07"
+  "version": "v08"
 }
