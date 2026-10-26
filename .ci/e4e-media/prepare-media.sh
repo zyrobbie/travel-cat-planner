@@ -7,7 +7,7 @@ test "$(uname -s)" = Linux
 test "$(uname -m)" = x86_64
 test "$(. /etc/os-release; printf '%s' "$VERSION_ID")" = 24.04
 if [ "$#" -ne 3 ]; then
-  printf 'Usage: prepare-media.sh NEW_WORK_DIR V08_INPUT_DIR BUNDLE_EXTRACTOR\n' >&2
+  printf 'Usage: prepare-media.sh NEW_WORK_DIR V09_R2_INPUT_DIR BUNDLE_EXTRACTOR\n' >&2
   exit 2
 fi
 task_scripts="$(cd "$(dirname "$0")" && pwd)"

@@ -123,11 +123,13 @@ def check_input(input_dir, lock_path):
     root, lock = Path(input_dir), json.loads(Path(lock_path).read_text())
     document = json.loads((root / 'BUILD-INPUT.json').read_text())
     require(document['candidateVersion'] == lock['candidateVersion'], 'CANDIDATE_VERSION_MISMATCH')
+    require(document['engineeringFreezeSha256'] == lock['engineeringFreezeSha256'], 'ENGINEERING_FREEZE_MISMATCH')
     for key, file in [('sourceArchiveSha256', 'source.tar.gz'), ('sourceManifestSha256', 'source-manifest.json')]:
-        require(document[key] == lock[key] == sha(root / file), 'V08_INPUT_HASH_MISMATCH')
-    require(document['packageLockSha256'] == lock['packageLockSha256'], 'V08_LOCK_MISMATCH')
+        require(document[key] == lock[key] == sha(root / file), 'V09_R2_INPUT_HASH_MISMATCH')
+    require(document['packageLockSha256'] == lock['packageLockSha256'], 'V09_R2_LOCK_MISMATCH')
     manifest = json.loads((root / 'source-manifest.json').read_text())
-    require(manifest['version'] == lock['candidateVersion'] and len(manifest['filesSha256']) == lock['candidateSourceFileCount'], 'V08_MANIFEST_MISMATCH')
+    require(manifest['version'] == lock['candidateVersion'] and len(manifest['filesSha256']) == lock['candidateSourceFileCount'], 'V09_R2_MANIFEST_MISMATCH')
+    require(manifest['filesSha256']['src/server/voice-probe.ts'] == lock['candidateVoiceProbeSha256'], 'VOICE_PROBE_SOURCE_MISMATCH')
 
 
 def check_tree(candidate, input_dir):
@@ -191,18 +193,32 @@ def inspect(output, lock_path):
 def resource_check(output, fixtures, lock_path):
     output, fixtures = Path(output), Path(fixtures)
     lock = json.loads(Path(lock_path).read_text())
-    # This mirrors unchanged voice-probe.ts flags for resource measurement only.
+    # Frozen v09-r2 command shape for resource measurement only. AAC end_sample
+    # below is bound to this known synthetic fixture, not a substitute for proof.
     # Actual compatibility above imports the frozen functions instead of this list.
     probe = ['-v', 'error', '-protocol_whitelist', 'file,pipe', '-max_alloc', '16777216',
-             '-show_entries', 'stream=codec_type,codec_name:packet=pts_time,duration_time', '-of', 'json']
+             '-show_entries', 'stream=index,codec_type,codec_name,sample_rate,time_base,start_pts,duration_ts:packet=stream_index,pts,duration,pts_time,duration_time:packet_side_data=side_data_type,skip_samples', '-of', 'json']
+    frames = ['-v', 'error', '-protocol_whitelist', 'file,pipe', '-max_alloc', '16777216',
+              '-show_entries', 'frame=pts,nb_samples', '-of', 'json']
     decode_before = ['-nostdin', '-v', 'error', '-protocol_whitelist', 'file,pipe', '-max_alloc', '16777216',
                      '-probesize', '1048576', '-analyzeduration', '5000000', '-threads', '1', '-filter_threads', '1', '-i']
-    decode_after = ['-map', '0:a:0', '-vn', '-sn', '-dn', '-ac', '1', '-ar', '16000', '-c:a', 'pcm_s16le', '-f', 's16le', 'pipe:1']
+    decode_map = ['-map', '0:a:0', '-vn', '-sn', '-dn']
+    decode_output = ['-ac', '1', '-ar', '16000', '-c:a', 'pcm_s16le', '-f', 's16le', 'pipe:1']
     records = []
+    fixture_metadata = {item['file']: item for item in json.loads((fixtures / 'manifest.json').read_text())['records']}
     for filename in ['webm-opus-60s.webm', 'mp4-aac-60s.m4a']:
-        for name, arguments, timeout in [('ffprobe', [*probe, str(fixtures / filename)], 5),
-                                          ('ffmpeg', [*decode_before, str(fixtures / filename), *decode_after], 10)]:
-            report = output / 'evidence' / f'{name}-{filename}-resources.txt'
+        aac = filename == 'mp4-aac-60s.m4a'
+        fixture = fixture_metadata[filename]
+        require(fixture['sourceSeconds'] == 60 and sha(fixtures / filename) == fixture['sha256'], 'RESOURCE_FIXTURE_MISMATCH')
+        if aac:
+            require(fixture['sourceRate'] == 48000, 'AAC_RESOURCE_FIXTURE_RATE_MISMATCH')
+        trim = ['-af', 'atrim=end_sample=2880000'] if aac else []
+        steps = [('ffprobe', 'packets', [*probe, str(fixtures / filename)], 5)]
+        if aac:
+            steps.append(('ffprobe', 'frames', [*frames, str(fixtures / filename)], 5))
+        steps.append(('ffmpeg', 'decode', [*decode_before, str(fixtures / filename), *decode_map, *trim, *decode_output], 10))
+        for name, phase, arguments, timeout in steps:
+            report = output / 'evidence' / f'{name}-{phase}-{filename}-resources.txt'
             process = subprocess.Popen(['/usr/bin/time', '-v', '-o', str(report), str(output / 'bin' / name), *arguments],
                                        stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
                                        env={'LANG': 'C', 'PATH': '/usr/bin:/bin', 'NODE_ENV': 'production', 'TMPDIR': str(fixtures)},
@@ -219,9 +235,9 @@ def resource_check(output, fixtures, lock_path):
             require(match is not None, 'MISSING_RESOURCE_MEASUREMENT')
             rss = int(match.group(1))
             require(rss <= lock['mediaProcessMaxRssKiB'], 'MEDIA_RSS_BUDGET_EXCEEDED')
-            records.append({'binary': name, 'fixture': filename, 'peakRssKiB': rss, 'wallTimeoutSeconds': timeout, 'completedWithinTimeout': True})
+            records.append({'binary': name, 'phase': phase, 'fixture': filename, 'peakRssKiB': rss, 'wallTimeoutSeconds': timeout, 'completedWithinTimeout': True})
     save(output / 'evidence/resource-check.json', {'status': 'PASS_LIMITED', 'perProcessBudgetKiB': lock['mediaProcessMaxRssKiB'], 'records': records,
-        'scope': 'isolated runner, synthetic 60-second inputs; max_alloc is per allocation, not a total-memory cap',
+        'scope': 'isolated runner, synthetic 60-second inputs; v09-r2 AAC frame probe and known-fixture end_sample trim; individual-process timeouts only, shared probe deadline remains in actual product compatibility path; max_alloc is per allocation, not a total-memory cap',
         'notTested': ['2GB target server capacity', 'whole app/cgroup peak', 'adversarial media', 'multi-user production load']})
 
 
@@ -231,7 +247,7 @@ def finish(output):
     for file in ['compatibility.json', 'runtime-dependencies.json', 'resource-check.json']:
         require(json.loads((evidence / file).read_text())['status'] == 'PASS_LIMITED', 'REQUIRED_MEDIA_CHECK_FAILED')
     save(evidence / 'result.json', {'status': 'PASS_LIMITED_CI', 'completedAtUtc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
-        'scope': 'signed-source build, dependency checks, frozen v08 actual media functions with synthetic inputs, bounded runner resources',
+        'scope': 'signed-source build, dependency checks, frozen v09-r2 actual media functions with synthetic inputs, bounded runner resources',
         'notTested': ['server install/execution', 'real browser/iPhone recordings', 'real ASR', 'tmpfs service isolation', 'whole application', 'user acceptance'],
         'deploymentAuthorizedByThisArtifact': False})
     files = {}

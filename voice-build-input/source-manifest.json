@@ -89,7 +89,7 @@
     "scripts/package-pages.mjs": "38eeef4f294fac5ddbe3d5205d686b3a6ef178b0eec6724f21201f344c3d022d",
     "scripts/prepare-e2a-baseline.mjs": "4e90842f79556ec6643dc81051312af8483bd51ce77f62d9c62061178a02f933",
     "scripts/prepare-e2b-baseline.mjs": "34b9130d4b0ecdf6615f49319f2b66609596c50d4f1defa2b0d203197efb88d1",
-    "scripts/private-voice-linux-guard.ts": "e063f6d11c4e91551c719a1d26e22bf575772515547776aeca9ff637e509602f",
+    "scripts/private-voice-linux-guard.ts": "563942df736b0667f34fcc003b0bb06f2949fa7324fc004ea0c6e199ca1a9aca",
     "scripts/private-voice-startup.ts": "0afc4bf50f04ba2b60267e261c326ca2596062086bbe75ac232c00a406556a54",
     "scripts/restart-check.mjs": "1dd5cce720f21faf38f15a06754c64006b95fa8c899c98887777a8d28b8f6dad",
     "scripts/run-private-exports-synthetic.mjs": "5f649407db1d08cf2e448e347e43d005e7b1d1336f2c22aabd09c25461e82e25",
@@ -177,8 +177,8 @@
     "src/server/tencent-voice-readiness.ts": "aaf42c7f4e2c6f49c8b20832b3ccf72f45a70afcedccb5722cb40f795f9175b4",
     "src/server/voice-config.ts": "aa8f62d515dfcb9e7b3193033ad0b6b2a4d10444ac30e9a7dc69508a8a9173dd",
     "src/server/voice-directory.ts": "c63b4175768d188eba63f2e9941df31a8a5897a20e4d074c2217f501e468522b",
-    "src/server/voice-payload-store.ts": "808be849e9847b9ba25bcdb0e50ccea447655d424adf397be3ffa0f27bcb45c6",
-    "src/server/voice-probe.ts": "a9cff436ad03252ca233f2d547e693dba900754e3eb97db0c845afb874e97c34",
+    "src/server/voice-payload-store.ts": "a9af709ce583945aae8abfc2c6ca41d55853f549910c4eece28b16733e9bbe55",
+    "src/server/voice-probe.ts": "3f9832441a79a5327d9bfaee24dbdfdb02ef3ef66b11cf5788f4a82646c9e164",
     "src/server/voice-provider.ts": "fd053ed391bf1db7888c7883cb0d8ef0c46bf3c0c4672c67e52de7cac45c6685",
     "src/server/voice-service.ts": "5953507533bdf125705432c515a4b205648e13336276234d41bdf765c122f27b",
     "src/shared/export-download.ts": "f9cc126201c73db787aced827cf3cc45dfec58a7b0f8fa3c6d5bdb654adf7ebd",
@@ -271,6 +271,7 @@
     "tests/e4/private-cookie-entry.test.ts": "8d6fe0d6cdbb5f20805f75c2061d91f3651d93ab56053ae248182673725171f9",
     "tests/e4/private-voice-build-context.test.py": "99100154d95ebd1578235185cc9b8279b01b38fee86a6ad301af4492a4882420",
     "tests/e4/private-voice-deployment.test.ts": "2a75561352a16a782b3fee809456fe0bd5da7d9eb35612e30499481d4daf3ce1",
+    "tests/e4/private-voice-linux-guard-runtime.test.ts": "7ac863f655d3970d3b5837b393f81bbd6cb233d8115569d687f4a35d43ebbed1",
     "tests/e4/private-voice.test.ts": "b67cb89cc5b8a8876ffaa7da7a7fe8d68a31f31db7822745f1058410759fb9ea",
     "tests/e4/reading-latency.test.ts": "c2b793fc2d3bfc50c657a80b66169c817d395eda077e5b1cf614f67853a35828",
     "tests/e4/resend-transaction.test.ts": "6f4fa36ca0247e9d1f1e61fd1c723cb0c22451a53fce9ceee11541015234dfb0",
@@ -279,6 +280,7 @@
     "tests/e4/voice-browser.ts": "8f7a393cf25fe7a86d209e111e64d764a3fc17fcc26edb97e0a37c909cfac7e6",
     "tests/e4/voice-http.ts": "814e3c04375af3ed360e309c4376b8bcdaef61a59a882fafead6fb8045b3de56",
     "tests/e4/voice-payload-store.test.ts": "7e9c772f51f0965e816b6f756fe0f2d970ec2cd33ca1010bd38fa300648592bd",
+    "tests/e4/voice-probe-compat.test.ts": "b21951bd7c41e7cb156d73a62d2749bb7fe46e43fff2a5ea5b0b88669ba133c8",
     "tests/independent-ledger-snapshot.test.ts": "6d472d3da058994c8d38bd539bb430f124e3fbe46fbd777db5318fec18960067",
     "tests/integration.test.ts": "7bbc9915fcbddac56c7d9841d1bf0bfeedb242cbb1f7e5ac85957e560c90588c",
     "tests/otp-delivery.test.ts": "446ccd0d0f55c5b8cc9adc36d6761f89a4f65c9a9d406e29004d54a1f904d01e",
@@ -390,5 +392,5 @@
     "ui-daily-core-v1/assets/web/postcard-rhine-cat-04-600.webp": "5241d98a9bac1a6c943a13dbffc8147a4933dda92e692238236188f3f100e4ff",
     "ui-daily-core-v1/home-poses.mjs": "697b01053921d0f7f7d9e31a4c73c26c020f84d344cff5188e84e3b928bdf8f7"
   },
-  "version": "v08"
+  "version": "v09-r2"
 }

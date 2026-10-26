@@ -8,7 +8,7 @@ test "$(uname -s)" = Linux
 test "$(uname -m)" = x86_64
 test "$(. /etc/os-release; printf '%s' "$VERSION_ID")" = 24.04
 if [ "$#" -ne 3 ]; then
-  printf 'Usage: build-media.sh WORK_DIR NEW_ARTIFACT_DIR V08_INPUT_DIR\n' >&2
+  printf 'Usage: build-media.sh WORK_DIR NEW_ARTIFACT_DIR V09_R2_INPUT_DIR\n' >&2
   exit 2
 fi
 task_scripts="$(cd "$(dirname "$0")" && pwd)"
@@ -52,6 +52,7 @@ cp "$task_input/BUILD-INPUT.json" "$task_output/evidence/candidate-BUILD-INPUT.j
 printf 'Unmodified official source. No patches. FFmpeg libraries linked statically; host libc/libm remain dynamic.\n' > "$task_output/source/SOURCE-CHANGES.txt"
 python3 "$task_scripts/media-tools.py" inspect "$task_output" "$task_scripts/source-lock.json"
 python3 "$task_scripts/make-fixtures.py" "$task_work/fixtures"
+cp "$task_work/fixtures/manifest.json" "$task_output/evidence/synthetic-fixtures.json"
 (
   cd "$task_work/candidate"
   /usr/bin/time -v -o "$task_output/evidence/compat-harness-resources.txt" \
@@ -60,7 +61,6 @@ python3 "$task_scripts/make-fixtures.py" "$task_work/fixtures"
 )
 python3 "$task_scripts/media-tools.py" resource-check "$task_output" "$task_work/fixtures" "$task_scripts/source-lock.json"
 python3 "$task_scripts/media-tools.py" check-tree "$task_work/candidate" "$task_input"
-cp "$task_work/fixtures/manifest.json" "$task_output/evidence/synthetic-fixtures.json"
 mkdir "$task_output/build-recipe"
 cp "$task_scripts/"*.py "$task_scripts/"*.sh "$task_scripts/"*.mts "$task_scripts/"*.json "$task_scripts/README.md" "$task_output/build-recipe/"
 python3 "$task_scripts/media-tools.py" finish "$task_output"

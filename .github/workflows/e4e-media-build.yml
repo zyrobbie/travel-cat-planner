@@ -41,7 +41,7 @@ jobs:
         run: |
           sudo -n apt-get update
           sudo -n apt-get install --no-install-recommends -y build-essential nasm pkg-config gnupg ca-certificates xz-utils python3 binutils ffmpeg time util-linux iproute2
-      - name: Verify signed source and frozen v08 input; prepare npm dependencies
+      - name: Verify signed source and frozen v09-r2 input; prepare npm dependencies
         run: |
           bash .ci/e4e-media/prepare-media.sh "$RUNNER_TEMP/e4e-media-work" "$GITHUB_WORKSPACE/voice-build-input" "$GITHUB_WORKSPACE/.ci/e4e-linux/bundle.py"
       - name: Build and test without network access or secrets

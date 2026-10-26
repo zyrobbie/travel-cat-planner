@@ -13,7 +13,7 @@ const candidate = await realpath(candidateArg);
 const bin = await realpath(binArg);
 const fixtures = await realpath(fixtureArg);
 const source = await readFile(join(candidate, "src/server/voice-probe.ts"));
-assert.equal(createHash("sha256").update(source).digest("hex"), "a9cff436ad03252ca233f2d547e693dba900754e3eb97db0c845afb874e97c34");
+assert.equal(createHash("sha256").update(source).digest("hex"), "3f9832441a79a5327d9bfaee24dbdfdb02ef3ef66b11cf5788f4a82646c9e164");
 const root = await realpath(await mkdtemp(join(tmpdir(), "cat-private-voice-media-")));
 Object.assign(process.env, {
   APP_MODE: "INTERNAL", NODE_ENV: "test", DOTENV_CONFIG_PATH: "/dev/null",
@@ -97,9 +97,9 @@ try {
 } finally {
   await rm(root, { recursive: true, force: true });
   const failures = cases.filter(test => test.status === "FAIL").length;
-  await writeFile(resolve(reportArg), JSON.stringify({ schemaVersion: 1, candidateVersion: "v08", candidateVoiceProbeSha256: createHash("sha256").update(source).digest("hex"),
+  await writeFile(resolve(reportArg), JSON.stringify({ schemaVersion: 1, candidateVersion: "v09-r2", candidateVoiceProbeSha256: createHash("sha256").update(source).digest("hex"),
     status: failures ? "FAIL" : "PASS_LIMITED", total: cases.length, failures,
-    scope: "actual unchanged v08 inspectVoiceAudio/normalizeVoiceAudio; synthetic fixtures; Linux CI only",
+    scope: "actual unchanged v09-r2 inspectVoiceAudio/normalizeVoiceAudio; synthetic fixtures; Linux CI only",
     notTested: ["human/browser recordings", "ASR", "real credentials", "cloud endpoints", "target server", "tmpfs storage", "in-progress cancellation", "timeout injection", "hostile media fuzzing", "nationwide network"], cases }, null, 2) + "\n");
   if (failures) process.exitCode = 1;
 }
