@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "ffmpegVersion": "6.1.6",
+  "sourceUrl": "https://ffmpeg.org/releases/ffmpeg-6.1.6.tar.xz",
+  "signatureUrl": "https://ffmpeg.org/releases/ffmpeg-6.1.6.tar.xz.asc",
+  "signingKeyUrl": "https://ffmpeg.org/ffmpeg-devel.asc",
+  "signingPrimaryFingerprint": "FCF986EA15E6E293A5644F10B4322F04D67658D8",
+  "sourceAuthentication": "detached OpenPGP signature, pinned primary fingerprint; actual archive SHA256 recorded after verification",
+  "candidateVersion": "v08",
+  "sourceArchiveSha256": "3bdf9c143af5b68290b830a3d6e1baea5e4d457ee5760f972df0308d5ffeab8c",
+  "sourceManifestSha256": "232176f5dc83ca22c838d4ec573db466ab8e2d3cf42024c79c5aad63c8f62d39",
+  "packageLockSha256": "755b3abfe403cb38c77d96152fe68b6599f6c67dbb7b09a59275ed6dfe0277f0",
+  "candidateSourceFileCount": 389,
+  "platform": "Ubuntu 24.04 amd64",
+  "runtimeNeededAllowlist": ["libc.so.6", "libm.so.6"],
+  "maxGlibcVersion": "2.39",
+  "mediaProcessMaxRssKiB": 131072,
+  "notAuthorizedByThisPreparation": ["remote install", "push", "ASR request", "real audio", "credentials", "new paid service"]
+}

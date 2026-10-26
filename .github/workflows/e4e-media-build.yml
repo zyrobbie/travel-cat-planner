@@ -1,0 +1,75 @@
+name: E4-E isolated media build only
+
+on:
+  push:
+    branches: ['codex/e4e-linux-build-*']
+    paths:
+      - '.github/workflows/e4e-media-build.yml'
+      - '.ci/e4e-media/**'
+      - '.ci/e4e-linux/bundle.py'
+      - 'voice-build-input/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e4e-media-build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.repository == 'zyrobbie/travel-cat-planner'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+          sparse-checkout: |
+            .ci/e4e-media
+            .ci/e4e-linux
+            voice-build-input
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22.23.3'
+          architecture: x64
+          check-latest: false
+      - name: Install build tools on disposable runner only
+        run: |
+          sudo -n apt-get update
+          sudo -n apt-get install --no-install-recommends -y build-essential nasm pkg-config gnupg ca-certificates xz-utils python3 binutils ffmpeg time util-linux iproute2
+      - name: Verify signed source and frozen v08 input; prepare npm dependencies
+        run: |
+          bash .ci/e4e-media/prepare-media.sh "$RUNNER_TEMP/e4e-media-work" "$GITHUB_WORKSPACE/voice-build-input" "$GITHUB_WORKSPACE/.ci/e4e-linux/bundle.py"
+      - name: Build and test without network access or secrets
+        run: |
+          sudo -n unshare --net -- bash -c '
+            set -euo pipefail
+            ip link set lo up
+            exec setpriv --reuid="$1" --regid="$2" --init-groups \
+              env -i PATH="$3" HOME="$4/home" LANG=C.UTF-8 \
+              GITHUB_ACTIONS=true E4E_MEDIA_OFFLINE_NAMESPACE=1 \
+              bash "$5/build-media.sh" "$4" "$6" "$7"
+          ' bash "$(id -u)" "$(id -g)" "$PATH" "$RUNNER_TEMP/e4e-media-work" \
+            "$GITHUB_WORKSPACE/.ci/e4e-media" "$RUNNER_TEMP/e4e-media-artifacts" "$GITHUB_WORKSPACE/voice-build-input"
+      - name: Upload successful limited-CI candidate
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: e4e-media-candidate-${{ github.sha }}
+          path: ${{ runner.temp }}/e4e-media-artifacts/
+          retention-days: 1
+          compression-level: 0
+          include-hidden-files: false
+          if-no-files-found: error
+      - name: Preserve failed build diagnostics only
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: e4e-media-failure-evidence-${{ github.sha }}
+          path: ${{ runner.temp }}/e4e-media-artifacts/evidence/
+          retention-days: 1
+          include-hidden-files: false
+          if-no-files-found: ignore

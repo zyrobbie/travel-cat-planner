@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "checkedAtUtc": "2026-10-26T02:43:54.287409+00:00",
+  "status": "PASS_PREPARATION_ONLY",
+  "checks": [
+    {
+      "name": "bash syntax",
+      "status": "PASS",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "all Python syntax",
+      "status": "PASS"
+    },
+    {
+      "name": "four trust-boundary self-tests",
+      "status": "PASS",
+      "exitCode": 0,
+      "output": "....\n----------------------------------------------------------------------\nRan 4 tests in 0.000s\n\nOK"
+    },
+    {
+      "name": "v08 input hashes and 389-file count",
+      "status": "PASS",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "ESM TypeScript syntax",
+      "status": "PASS",
+      "exitCode": 0,
+      "output": "PASS"
+    },
+    {
+      "name": "external .mts loader reaches expected no-arguments guard",
+      "status": "PASS",
+      "expectedNoArgumentsExit": 1
+    },
+    {
+      "name": "workflow YAML syntax",
+      "status": "NOT_RUN",
+      "reason": "local YAML parser unavailable; parent manual review and GitHub parse required"
+    },
+    {
+      "name": "SHA256-bound v08 archive extraction and all 389 file hashes",
+      "status": "PASS",
+      "note": "Application archive is SHA256-bound, not OpenPGP-signed; FFmpeg signature remains NOT_RUN."
+    },
+    {
+      "name": "correct separate v08 candidate: all 389 files match archive",
+      "status": "PASS"
+    }
+  ],
+  "notRun": [
+    "FFmpeg source download/signature verification",
+    "Linux compile",
+    "synthetic media compatibility experiment",
+    "Linux ELF and resource measurements",
+    "target installation",
+    "ASR or real audio"
+  ],
+  "correctedCheckInvocation": {
+    "initialTarget": ".local/e4e-voice-20261024/code",
+    "classification": "retained v07 directory was mistakenly compared to v08 manifest; expected version difference, not an accidental source modification",
+    "correctTarget": ".local/e4e-voice-v08-20261026/code",
+    "ciInput": "only operations/linux-input-v08/source.tar.gz; never either working directory"
+  },
+  "independentReadOnlyReview": {
+    "status": "PASS_PREPARATION_ONLY",
+    "findingFixed": "Use .mts for external test entrypoint to avoid sparse checkout package-scope mismatch",
+    "linuxMediaEvidence": "NOT_RUN"
+  }
+}
