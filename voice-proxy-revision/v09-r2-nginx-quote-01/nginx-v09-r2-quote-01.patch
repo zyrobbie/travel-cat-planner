@@ -1,0 +1,11 @@
+--- a/deploy/private-voice/linux/nginx.conf
++++ b/deploy/private-voice/linux/nginx.conf
+@@ -74,7 +74,7 @@
+         location ~ ^/api/e4/auth/(request-code|verify-code|logout)$ { proxy_pass http://catvoice_app; }
+         location = /api/e4/account { proxy_pass http://catvoice_app; }
+         location = /api/e4/cat/adopt { proxy_pass http://catvoice_app; }
+-        location ~ ^/api/e4/requests/[a-f0-9-]{36}$ { proxy_pass http://catvoice_app; }
++        location ~ "^/api/e4/requests/[a-f0-9-]{36}$" { proxy_pass http://catvoice_app; }
+         location ^~ /api/e4/v1/ { proxy_pass http://catvoice_app; }
+         location ^~ /api/e4/privacy/ { proxy_pass http://catvoice_app; }
+         # Default gate is return 503; replacing it is a separate reviewed action.

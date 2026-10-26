@@ -1,0 +1,17 @@
+{
+  "revision": "v09-r2-nginx-quote-01",
+  "type": "reviewed-deployment-config-revision",
+  "status": "PREPARED_CI_AND_SERVER_RECOVERY_PENDING",
+  "originalCommit": "4bd4cb45b68019a192c7eb3e9fb1254dff52bbb3",
+  "originalCompleteRuntimeSha256": "6114cfa33f50bff5a6edc43b44cbdeab1edc73151a9f8659b8303d1d12ce7b14",
+  "nextRebuildRequired": false,
+  "containsRealCredentialsAccountsOrAudio": false,
+  "filesSha256": {
+    "06-resume-proxy-quote-01.py": "01412ee97f512635414b8577c39df0d10e75b70eb3c224ddb56186f9ffb6bf9b",
+    "README.md": "d05c5d0ce6443db8f72186d3fdb845b7cb08cabe65904723f08e70abe5a466ad",
+    "cat-voice-proxy-v09-r2-quote-01.service": "52d8d5f1e6861d489dbec60e34cbde16d79e8ee09d437f81b858c1c049eea318",
+    "check-nginx-quote-01.sh": "74597d4b020a9175051c4220ee592260e4b0300d20a5f32a3ff77b221b8237b7",
+    "nginx-v09-r2-quote-01.conf": "7ff0a69d28ad2de8f70f428fab5ac64ff64983b9f1f4423b270c931889e191a6",
+    "nginx-v09-r2-quote-01.patch": "34ff1cd7c7a5fd6fed675b59d626a1fac04900e3aea82746938c1f660112e98b"
+  }
+}

@@ -1,0 +1,40 @@
+[Unit]
+Description=Independent E4-E TLS proxy on 8443
+Requires=cat-voice-app.service run-cat\x2dvoice\x2dproxy.mount
+BindsTo=run-cat\x2dvoice\x2dproxy.mount
+After=cat-voice-app.service run-cat\x2dvoice\x2dproxy.mount
+StartLimitIntervalSec=300
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=catvoice-proxy
+Group=catvoice-proxy
+Slice=catvoice.slice
+WorkingDirectory=/srv/cat-voice-test/proxy-revisions/v09-r2-nginx-quote-01
+Environment=DOTENV_CONFIG_PATH=/dev/null TMPDIR=/run/cat-voice-proxy
+UnsetEnvironment=NODE_OPTIONS NODE_PATH
+ExecStartPre=/opt/cat-voice-runtime/node/bin/node --import tsx scripts/private-voice-linux-guard.ts proxy
+ExecStartPre=/usr/sbin/nginx -t -c /etc/cat-voice-test/proxy/nginx.conf -p /run/cat-voice-proxy/
+ExecStart=/usr/sbin/nginx -c /etc/cat-voice-test/proxy/nginx.conf -p /run/cat-voice-proxy/
+ExecReload=/opt/cat-voice-runtime/node/bin/node --import tsx scripts/private-voice-linux-guard.ts proxy
+ExecReload=/usr/sbin/nginx -t -c /etc/cat-voice-test/proxy/nginx.conf -p /run/cat-voice-proxy/
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=10s
+TimeoutStopSec=30s
+UMask=0077
+MemoryMax=64M
+MemorySwapMax=0
+LimitCORE=0
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ReadWritePaths=/run/cat-voice-proxy
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

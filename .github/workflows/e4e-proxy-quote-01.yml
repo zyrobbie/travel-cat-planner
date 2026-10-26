@@ -1,0 +1,26 @@
+name: E4-E proxy quote-01 syntax only
+on:
+  push:
+    branches: ['codex/e4e-linux-build-*']
+    paths:
+      - '.github/workflows/e4e-proxy-quote-01.yml'
+      - 'voice-proxy-revision/v09-r2-nginx-quote-01/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  nginx-syntax:
+    if: github.repository == 'zyrobbie/travel-cat-planner'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Install syntax test tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends nginx-core openssl
+      - name: Reproduce old failure and verify exact corrected config
+        run: bash voice-proxy-revision/v09-r2-nginx-quote-01/check-nginx-quote-01.sh
